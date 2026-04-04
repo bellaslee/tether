@@ -53,7 +53,7 @@ export function InteractionEditDisclosure({
     return (
       <Button
         type="button"
-        variant="ghostSubtle"
+        variant="link"
         size="sm"
         onClick={() => setOpen(true)}
       >
