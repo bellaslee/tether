@@ -132,7 +132,7 @@ export async function updatePerson(personId: string, _prev: ActionResult, formDa
   revalidatePath("/people");
   revalidatePath(`/people/${personId}`);
   revalidatePath(`/people/${personId}/edit`);
-  return { ok: true };
+  redirect(`/people/${personId}`);
 }
 
 function optionalString(value: FormDataEntryValue | null) {
