@@ -81,6 +81,69 @@ export interface Database {
         };
         Relationships: [];
       };
+      connection_types: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          inverse_type_id: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          inverse_type_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          inverse_type_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      person_connections: {
+        Row: {
+          id: string;
+          user_id: string;
+          person_id: string;
+          related_person_id: string;
+          connection_type_id: string;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          person_id: string;
+          related_person_id: string;
+          connection_type_id: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          person_id?: string;
+          related_person_id?: string;
+          connection_type_id?: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       people: {
         Row: {
           id: string;

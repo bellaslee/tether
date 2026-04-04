@@ -31,6 +31,12 @@ export function AppNav({ context }: AppNavProps) {
             >
               Categories
             </Link>
+            <Link
+              href="/people/connection-types"
+              className="transition hover:text-foreground"
+            >
+              Connection types
+            </Link>
             <Link href="/timeline" className="transition hover:text-foreground">
               Timeline
             </Link>

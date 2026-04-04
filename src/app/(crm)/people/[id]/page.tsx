@@ -18,6 +18,11 @@ import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
   type InteractionTypeOption,
 } from '@/lib/interactions/type-options';
+import {
+  defaultConnectionTypeId as pickDefaultConnectionTypeId,
+  type ConnectionTypeOption,
+} from '@/lib/people/connection-type-options';
+import { PersonConnectionsPanel } from '@/components/people/person-connections-panel';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -110,6 +115,67 @@ export default async function PersonDetailPage(props: PageProps) {
     interactionTypeOptions,
   );
 
+  const { data: connectionTypeRows } = await ctx.client
+    .from('connection_types')
+    .select('id, name')
+    .eq('user_id', ctx.userId)
+    .order('sort_order', { ascending: true });
+
+  const connectionTypeOptions: ConnectionTypeOption[] = (
+    connectionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultConnectionTypeId = pickDefaultConnectionTypeId(
+    connectionTypeOptions,
+  );
+
+  const { data: personConnectionRows, error: personConnectionsError } =
+    await ctx.client
+      .from('person_connections')
+      .select(
+        `
+        id,
+        notes,
+        connection_types ( name ),
+        related_person:people!person_connections_related_person_id_fkey (
+          id,
+          full_name,
+          display_name
+        )
+      `,
+      )
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .order('created_at', { ascending: true });
+
+  if (personConnectionsError) {
+    throw new Error(personConnectionsError.message);
+  }
+
+  type ConnectionRowDb = {
+    id: string;
+    notes: string | null;
+    connection_types: { name: string } | null;
+    related_person: {
+      id: string;
+      full_name: string;
+      display_name: string | null;
+    } | null;
+  };
+
+  const connectionListItems = (personConnectionRows ?? []).map((raw) => {
+    const row = raw as unknown as ConnectionRowDb;
+    const rel = row.related_person;
+    const label =
+      rel?.display_name?.trim() || rel?.full_name || 'Unknown';
+    return {
+      id: row.id,
+      typeName: row.connection_types?.name ?? '—',
+      relatedId: rel?.id ?? '',
+      relatedLabel: label,
+      notes: row.notes,
+    };
+  });
+
   const { data: links } = await ctx.client
     .from('interaction_people')
     .select('interaction_id, role')
@@ -182,6 +248,12 @@ export default async function PersonDetailPage(props: PageProps) {
     new Date(person.created_at),
   );
   const otherPeople = (allPeople ?? []).filter((p) => p.id !== person.id);
+  const otherPeopleOptions = otherPeople.map((p) => ({
+    id: p.id,
+    label: p.display_name?.trim() || p.full_name,
+  }));
+  const subjectName =
+    person.display_name?.trim() || person.full_name;
 
   const tabLinkBase =
     'inline-flex border-b-2 px-1 pb-3 text-sm font-semibold transition sm:text-base';
@@ -248,73 +320,85 @@ export default async function PersonDetailPage(props: PageProps) {
       </nav>
 
       {tab === 'context' ? (
-        <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="card-surface space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-            <h2 className="font-display text-2xl">Context</h2>
-            <div className="grid gap-4 text-sm sm:grid-cols-2">
-              <DetailItem label="Pronouns" value={person.pronouns} />
-              <DetailItem
-                label="Birthday"
-                value={person.birthday ? formatDateOnly(person.birthday) : null}
-              />
-              <DetailItem
-                label="Met"
-                value={person.met_at ? formatMonthYear(person.met_at) : null}
-              />
-              <DetailItem label="Location" value={person.location} />
-              <DetailItem label="Occupation" value={person.occupation} />
-              <DetailItem label="Company" value={person.company} />
-              <DetailItem
-                label="Last interaction"
-                value={
-                  person.last_interaction_at
-                    ? formatDateTime(person.last_interaction_at)
-                    : null
-                }
-              />
-              <div className="sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  How you met
-                </p>
-                <p className="mt-1 leading-7 text-foreground/90">
-                  {person.how_you_met ?? '—'}
-                </p>
-              </div>
-              <div className="sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  Relationship context
-                </p>
-                <p className="mt-1 leading-7 text-foreground/90">
-                  {person.relationship_context ?? '—'}
-                </p>
+        <>
+          <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="card-surface space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
+              <h2 className="font-display text-2xl">Context</h2>
+              <div className="grid gap-4 text-sm sm:grid-cols-2">
+                <DetailItem label="Pronouns" value={person.pronouns} />
+                <DetailItem
+                  label="Birthday"
+                  value={
+                    person.birthday ? formatDateOnly(person.birthday) : null
+                  }
+                />
+                <DetailItem
+                  label="Met"
+                  value={person.met_at ? formatMonthYear(person.met_at) : null}
+                />
+                <DetailItem label="Location" value={person.location} />
+                <DetailItem label="Occupation" value={person.occupation} />
+                <DetailItem label="Company" value={person.company} />
+                <DetailItem
+                  label="Last interaction"
+                  value={
+                    person.last_interaction_at
+                      ? formatDateTime(person.last_interaction_at)
+                      : null
+                  }
+                />
+                <div className="sm:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    How you met
+                  </p>
+                  <p className="mt-1 leading-7 text-foreground/90">
+                    {person.how_you_met ?? '—'}
+                  </p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    Relationship context
+                  </p>
+                  <p className="mt-1 leading-7 text-foreground/90">
+                    {person.relationship_context ?? '—'}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-6">
-            <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-              <h2 className="font-display text-2xl">Stay in touch</h2>
-              <ul className="mt-6 space-y-4">
-                {(contactMethods ?? []).length === 0 ? (
-                  <li className="text-sm text-muted">
-                    No contact methods yet.
-                  </li>
-                ) : (
-                  (contactMethods ?? []).map((method) => (
-                    <ContactMethodRow
-                      key={`${method.id}-${method.updated_at}`}
-                      personId={person.id}
-                      method={method}
-                    />
-                  ))
-                )}
-              </ul>
-              <div className="mt-6">
-                <ContactMethodAddDisclosure personId={person.id} />
+            <div className="space-y-6">
+              <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
+                <h2 className="font-display text-2xl">Stay in touch</h2>
+                <ul className="mt-6 space-y-4">
+                  {(contactMethods ?? []).length === 0 ? (
+                    <li className="text-sm text-muted">
+                      No contact methods yet.
+                    </li>
+                  ) : (
+                    (contactMethods ?? []).map((method) => (
+                      <ContactMethodRow
+                        key={`${method.id}-${method.updated_at}`}
+                        personId={person.id}
+                        method={method}
+                      />
+                    ))
+                  )}
+                </ul>
+                <div className="mt-6">
+                  <ContactMethodAddDisclosure personId={person.id} />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+          <PersonConnectionsPanel
+            personId={person.id}
+            subjectName={subjectName}
+            connections={connectionListItems}
+            otherPeople={otherPeopleOptions}
+            connectionTypes={connectionTypeOptions}
+            defaultConnectionTypeId={defaultConnectionTypeId}
+          />
+        </>
       ) : (
         <>
           <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
