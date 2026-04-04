@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { SetupStatus } from "@/components/home/setup-status";
+import { getCrmSupabaseContext } from "@/lib/crm/context";
 import { getSetupStatus } from "@/lib/env";
 
 const plannedAreas = [
@@ -28,7 +30,12 @@ const setupSteps = [
   "Run npm run dev and open http://localhost:3000.",
 ] as const;
 
-export default function Home() {
+export default async function Home() {
+  const ctx = await getCrmSupabaseContext();
+  if (ctx) {
+    redirect("/people");
+  }
+
   const setupStatus = getSetupStatus();
 
   return (
@@ -52,16 +59,22 @@ export default function Home() {
 
             <div className="flex flex-wrap gap-3 text-sm font-semibold">
               <Link
-                href="https://supabase.com/docs/guides/local-development/cli/getting-started"
+                href="/login"
                 className="rounded-full bg-accent px-5 py-3 text-white transition-transform duration-200 hover:-translate-y-0.5"
               >
-                Local Supabase guide
+                Sign in
               </Link>
               <Link
-                href="https://platform.openai.com/api-keys"
+                href="/signup"
                 className="rounded-full border border-border-soft bg-white/70 px-5 py-3 text-foreground transition-colors hover:bg-white"
               >
-                OpenAI API keys
+                Create account
+              </Link>
+              <Link
+                href="https://supabase.com/docs/guides/local-development/cli/getting-started"
+                className="rounded-full border border-border-soft bg-white/70 px-5 py-3 text-foreground transition-colors hover:bg-white"
+              >
+                Local Supabase guide
               </Link>
             </div>
           </div>
