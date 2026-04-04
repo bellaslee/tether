@@ -6,7 +6,7 @@ const crmLocalDevBypassAuth = process.env.CRM_LOCAL_DEV_BYPASS_AUTH;
 const crmLocalDevUserId = process.env.CRM_LOCAL_DEV_USER_ID;
 
 function isNonEmpty(value: string | undefined): value is string {
-  return typeof value === "string" && value.trim().length > 0;
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 /** True when cookie/session Supabase clients can be constructed without throwing. */
@@ -20,12 +20,12 @@ const uuidRe =
 export function isTruthyEnv(value: string | undefined) {
   if (!isNonEmpty(value)) return false;
   const normalized = value.trim().toLowerCase();
-  return normalized === "1" || normalized === "true" || normalized === "yes";
+  return normalized === '1' || normalized === 'true' || normalized === 'yes';
 }
 
 export function isLocalDevBypassAuthEnabled() {
   return (
-    process.env.NODE_ENV === "development" &&
+    process.env.NODE_ENV === 'development' &&
     isTruthyEnv(crmLocalDevBypassAuth) &&
     isNonEmpty(crmLocalDevUserId) &&
     uuidRe.test(crmLocalDevUserId.trim()) &&
@@ -34,20 +34,27 @@ export function isLocalDevBypassAuthEnabled() {
 }
 
 export function assertLocalDevBypassAllowed() {
-  if (process.env.NODE_ENV !== "development") {
-    throw new Error("Local dev auth bypass is only allowed when NODE_ENV is development.");
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error(
+      'Local dev auth bypass is only allowed when NODE_ENV is development.',
+    );
   }
   if (!isTruthyEnv(crmLocalDevBypassAuth)) {
-    throw new Error("Set CRM_LOCAL_DEV_BYPASS_AUTH=true to use the service role client locally.");
-  }
-  if (!isNonEmpty(crmLocalDevUserId) || !uuidRe.test(crmLocalDevUserId.trim())) {
     throw new Error(
-      "Set CRM_LOCAL_DEV_USER_ID to a valid auth.users UUID when bypass is enabled.",
+      'Set CRM_LOCAL_DEV_BYPASS_AUTH=true to use the service role client locally.',
+    );
+  }
+  if (
+    !isNonEmpty(crmLocalDevUserId) ||
+    !uuidRe.test(crmLocalDevUserId.trim())
+  ) {
+    throw new Error(
+      'Set CRM_LOCAL_DEV_USER_ID to a valid auth.users UUID when bypass is enabled.',
     );
   }
   if (!isNonEmpty(supabaseServiceRoleKey)) {
     throw new Error(
-      "Set SUPABASE_SERVICE_ROLE_KEY from `npx supabase status` when bypass is enabled.",
+      'Set SUPABASE_SERVICE_ROLE_KEY from `npx supabase status` when bypass is enabled.',
     );
   }
 }
@@ -61,7 +68,7 @@ export function getServiceRoleSupabaseEnv() {
   assertLocalDevBypassAllowed();
   const { url } = getPublicSupabaseEnv();
   if (!isNonEmpty(supabaseServiceRoleKey)) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY.');
   }
   return { serviceRoleKey: supabaseServiceRoleKey, url };
 }
@@ -69,7 +76,7 @@ export function getServiceRoleSupabaseEnv() {
 export function getPublicSupabaseEnv() {
   if (!isNonEmpty(publicSupabaseUrl) || !isNonEmpty(publicSupabaseAnonKey)) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Add them to .env.local.",
+      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Add them to .env.local.',
     );
   }
 
@@ -81,7 +88,9 @@ export function getPublicSupabaseEnv() {
 
 export function getOpenAiApiKey() {
   if (!isNonEmpty(openAiApiKey)) {
-    throw new Error("Missing OPENAI_API_KEY. Add it to .env.local before using AI features.");
+    throw new Error(
+      'Missing OPENAI_API_KEY. Add it to .env.local before using AI features.',
+    );
   }
 
   return openAiApiKey;
@@ -89,7 +98,7 @@ export function getOpenAiApiKey() {
 
 export function getSetupStatus() {
   const bypassReady =
-    process.env.NODE_ENV === "development" &&
+    process.env.NODE_ENV === 'development' &&
     isTruthyEnv(crmLocalDevBypassAuth) &&
     isNonEmpty(crmLocalDevUserId) &&
     uuidRe.test(crmLocalDevUserId.trim()) &&
@@ -98,30 +107,30 @@ export function getSetupStatus() {
   return [
     {
       description: isNonEmpty(publicSupabaseUrl)
-        ? "The browser-safe Supabase URL is available to the app."
-        : "Add NEXT_PUBLIC_SUPABASE_URL after running `npx supabase status -o env`.",
-      label: "Supabase URL",
+        ? 'The browser-safe Supabase URL is available to the app.'
+        : 'Add NEXT_PUBLIC_SUPABASE_URL after running `npx supabase status -o env`.',
+      label: 'Supabase URL',
       ready: isNonEmpty(publicSupabaseUrl),
     },
     {
       description: isNonEmpty(publicSupabaseAnonKey)
-        ? "The browser-safe anon key is available for the shared Supabase client."
-        : "Add NEXT_PUBLIC_SUPABASE_ANON_KEY from your local Supabase status output.",
-      label: "Supabase anon key",
+        ? 'The browser-safe anon key is available for the shared Supabase client.'
+        : 'Add NEXT_PUBLIC_SUPABASE_ANON_KEY from your local Supabase status output.',
+      label: 'Supabase anon key',
       ready: isNonEmpty(publicSupabaseAnonKey),
     },
     {
       description: isNonEmpty(openAiApiKey)
-        ? "Server-side OpenAI wiring is ready for future extraction and summary features."
-        : "Add OPENAI_API_KEY when you are ready to build AI features on top of the CRM.",
-      label: "OpenAI API key",
+        ? 'Server-side OpenAI wiring is ready for future extraction and summary features.'
+        : 'Add OPENAI_API_KEY when you are ready to build AI features on top of the CRM.',
+      label: 'OpenAI API key',
       ready: isNonEmpty(openAiApiKey),
     },
     {
       description: bypassReady
-        ? "Optional local dev auth bypass is configured (service role + CRM_LOCAL_DEV_USER_ID)."
-        : "Optional: set CRM_LOCAL_DEV_BYPASS_AUTH, CRM_LOCAL_DEV_USER_ID, and SUPABASE_SERVICE_ROLE_KEY to work without signing in locally.",
-      label: "Local dev bypass (optional)",
+        ? 'Optional local dev auth bypass is configured (service role + CRM_LOCAL_DEV_USER_ID).'
+        : 'Optional: set CRM_LOCAL_DEV_BYPASS_AUTH, CRM_LOCAL_DEV_USER_ID, and SUPABASE_SERVICE_ROLE_KEY to work without signing in locally.',
+      label: 'Local dev bypass (optional)',
       ready: bypassReady,
     },
   ] as const;

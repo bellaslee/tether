@@ -1,32 +1,35 @@
-"use client";
+'use client';
 
-import { useActionState } from "react";
-import type { Tables } from "@/lib/db/database.types";
-import type { ActionResult } from "@/lib/actions/people";
-import { createPerson, updatePersonFormAction } from "@/lib/actions/people";
-import { PERSON_CATEGORIES, PERSON_STATUSES } from "@/lib/domain/constants";
-import { formatCategory, formatStatus } from "@/lib/domain/labels";
+import { useActionState } from 'react';
+import type { Tables } from '@/lib/db/database.types';
+import type { ActionResult } from '@/lib/actions/people';
+import { createPerson, updatePersonFormAction } from '@/lib/actions/people';
+import { PERSON_CATEGORIES, PERSON_STATUSES } from '@/lib/domain/constants';
+import { formatCategory, formatStatus } from '@/lib/domain/labels';
 
 const initial: ActionResult = {};
 
 type PersonFormProps =
-  | { mode: "create" }
-  | { mode: "edit"; person: Tables<"people"> };
+  | { mode: 'create' }
+  | { mode: 'edit'; person: Tables<'people'> };
 
 export function PersonForm(props: PersonFormProps) {
   const [state, formAction, pending] = useActionState(
-    props.mode === "create"
+    props.mode === 'create'
       ? createPerson
       : updatePersonFormAction.bind(null, props.person.id),
     initial,
   );
 
-  const person = props.mode === "edit" ? props.person : null;
+  const person = props.mode === 'edit' ? props.person : null;
 
   return (
     <form action={formAction} className="space-y-6">
       {state.error ? (
-        <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+        <p
+          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+          role="alert"
+        >
           {state.error}
         </p>
       ) : null}
@@ -40,7 +43,22 @@ export function PersonForm(props: PersonFormProps) {
             id="full_name"
             name="full_name"
             required
-            defaultValue={person?.full_name ?? ""}
+            defaultValue={person?.full_name ?? ''}
+            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+          />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <label htmlFor="display_name" className="text-sm font-semibold">
+            Display name
+          </label>
+          <p className="text-xs text-muted">
+            Optional — used in lists, timeline, and pickers. Profile still shows
+            full name.
+          </p>
+          <input
+            id="display_name"
+            name="display_name"
+            defaultValue={person?.display_name ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -51,7 +69,7 @@ export function PersonForm(props: PersonFormProps) {
           <input
             id="preferred_name"
             name="preferred_name"
-            defaultValue={person?.preferred_name ?? ""}
+            defaultValue={person?.preferred_name ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -62,7 +80,7 @@ export function PersonForm(props: PersonFormProps) {
           <input
             id="pronouns"
             name="pronouns"
-            defaultValue={person?.pronouns ?? ""}
+            defaultValue={person?.pronouns ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -74,7 +92,7 @@ export function PersonForm(props: PersonFormProps) {
             id="category"
             name="category"
             required
-            defaultValue={person?.category ?? "friend"}
+            defaultValue={person?.category ?? 'friend'}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           >
             {PERSON_CATEGORIES.map((c) => (
@@ -92,7 +110,7 @@ export function PersonForm(props: PersonFormProps) {
             id="status"
             name="status"
             required
-            defaultValue={person?.status ?? "active"}
+            defaultValue={person?.status ?? 'active'}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           >
             {PERSON_STATUSES.map((s) => (
@@ -110,7 +128,7 @@ export function PersonForm(props: PersonFormProps) {
             id="birthday"
             name="birthday"
             type="date"
-            defaultValue={person?.birthday ? person.birthday.slice(0, 10) : ""}
+            defaultValue={person?.birthday ? person.birthday.slice(0, 10) : ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -121,7 +139,7 @@ export function PersonForm(props: PersonFormProps) {
           <input
             id="location"
             name="location"
-            defaultValue={person?.location ?? ""}
+            defaultValue={person?.location ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -132,7 +150,7 @@ export function PersonForm(props: PersonFormProps) {
           <input
             id="occupation"
             name="occupation"
-            defaultValue={person?.occupation ?? ""}
+            defaultValue={person?.occupation ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -143,7 +161,7 @@ export function PersonForm(props: PersonFormProps) {
           <input
             id="company"
             name="company"
-            defaultValue={person?.company ?? ""}
+            defaultValue={person?.company ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -155,19 +173,22 @@ export function PersonForm(props: PersonFormProps) {
             id="how_you_met"
             name="how_you_met"
             rows={3}
-            defaultValue={person?.how_you_met ?? ""}
+            defaultValue={person?.how_you_met ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <label htmlFor="relationship_context" className="text-sm font-semibold">
+          <label
+            htmlFor="relationship_context"
+            className="text-sm font-semibold"
+          >
             Relationship context
           </label>
           <textarea
             id="relationship_context"
             name="relationship_context"
             rows={4}
-            defaultValue={person?.relationship_context ?? ""}
+            defaultValue={person?.relationship_context ?? ''}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
@@ -180,12 +201,12 @@ export function PersonForm(props: PersonFormProps) {
           className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:opacity-60"
         >
           {pending
-            ? props.mode === "create"
-              ? "Adding…"
-              : "Saving…"
-            : props.mode === "create"
-              ? "Add person"
-              : "Save changes"}
+            ? props.mode === 'create'
+              ? 'Adding…'
+              : 'Saving…'
+            : props.mode === 'create'
+              ? 'Add person'
+              : 'Save changes'}
         </button>
       </div>
     </form>

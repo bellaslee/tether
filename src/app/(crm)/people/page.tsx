@@ -1,8 +1,9 @@
-import Link from "next/link";
-import type { PersonCategory, PersonStatus } from "@/lib/db/database.types";
-import { requireCrmAccess } from "@/lib/crm/guard";
-import { PERSON_CATEGORIES, PERSON_STATUSES } from "@/lib/domain/constants";
-import { formatCategory, formatStatus } from "@/lib/domain/labels";
+import Link from 'next/link';
+import type { PersonCategory, PersonStatus } from '@/lib/db/database.types';
+import { requireCrmAccess } from '@/lib/crm/guard';
+import { PERSON_CATEGORIES, PERSON_STATUSES } from '@/lib/domain/constants';
+import { formatCategory, formatStatus } from '@/lib/domain/labels';
+import { personShownName } from '@/lib/people/list-name';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -21,27 +22,34 @@ function isStatus(value: string | undefined): value is PersonStatus {
   return !!value && PERSON_STATUSES.includes(value as PersonStatus);
 }
 
-export default async function PeoplePage(props: { searchParams: SearchParams }) {
+export default async function PeoplePage(props: {
+  searchParams: SearchParams;
+}) {
   const ctx = await requireCrmAccess();
   const searchParams = await props.searchParams;
-  const q = first(searchParams.q)?.trim() ?? "";
+  const q = first(searchParams.q)?.trim() ?? '';
   const categoryFilter = first(searchParams.category);
   const statusFilter = first(searchParams.status);
 
   let query = ctx.client
-    .from("people")
-    .select("id, full_name, preferred_name, category, status, last_interaction_at")
-    .eq("user_id", ctx.userId)
-    .order("full_name", { ascending: true });
+    .from('people')
+    .select(
+      'id, full_name, display_name, preferred_name, category, status, last_interaction_at',
+    )
+    .eq('user_id', ctx.userId)
+    .order('full_name', { ascending: true });
 
   if (isCategory(categoryFilter)) {
-    query = query.eq("category", categoryFilter);
+    query = query.eq('category', categoryFilter);
   }
   if (isStatus(statusFilter)) {
-    query = query.eq("status", statusFilter);
+    query = query.eq('status', statusFilter);
   }
   if (q) {
-    query = query.ilike("full_name", `%${q}%`);
+    const pattern = `%${q}%`;
+    query = query.or(
+      `full_name.ilike.${pattern},display_name.ilike.${pattern}`,
+    );
   }
 
   const { data: people, error } = await query;
@@ -54,10 +62,13 @@ export default async function PeoplePage(props: { searchParams: SearchParams }) 
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">Your circle</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
+            Your circle
+          </p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">People</h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
-            Names, context, and gentle filters — nothing about pipelines or deals.
+            Names, context, and gentle filters — nothing about pipelines or
+            deals.
           </p>
         </div>
         <Link
@@ -69,9 +80,16 @@ export default async function PeoplePage(props: { searchParams: SearchParams }) 
       </header>
 
       <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-        <form className="flex flex-col gap-4 lg:flex-row lg:items-end" method="get" action="/people">
+        <form
+          className="flex flex-col gap-4 lg:flex-row lg:items-end"
+          method="get"
+          action="/people"
+        >
           <div className="flex-1 space-y-2">
-            <label htmlFor="q" className="text-xs font-semibold uppercase tracking-wide text-muted">
+            <label
+              htmlFor="q"
+              className="text-xs font-semibold uppercase tracking-wide text-muted"
+            >
               Search by name
             </label>
             <input
@@ -84,13 +102,16 @@ export default async function PeoplePage(props: { searchParams: SearchParams }) 
           </div>
           <div className="grid flex-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label htmlFor="category" className="text-xs font-semibold uppercase tracking-wide text-muted">
+              <label
+                htmlFor="category"
+                className="text-xs font-semibold uppercase tracking-wide text-muted"
+              >
                 Category
               </label>
               <select
                 id="category"
                 name="category"
-                defaultValue={isCategory(categoryFilter) ? categoryFilter : ""}
+                defaultValue={isCategory(categoryFilter) ? categoryFilter : ''}
                 className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
               >
                 <option value="">Any</option>
@@ -102,13 +123,16 @@ export default async function PeoplePage(props: { searchParams: SearchParams }) 
               </select>
             </div>
             <div className="space-y-2">
-              <label htmlFor="status" className="text-xs font-semibold uppercase tracking-wide text-muted">
+              <label
+                htmlFor="status"
+                className="text-xs font-semibold uppercase tracking-wide text-muted"
+              >
                 Status
               </label>
               <select
                 id="status"
                 name="status"
-                defaultValue={isStatus(statusFilter) ? statusFilter : ""}
+                defaultValue={isStatus(statusFilter) ? statusFilter : ''}
                 className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
               >
                 <option value="">Any</option>
@@ -139,8 +163,11 @@ export default async function PeoplePage(props: { searchParams: SearchParams }) 
       <section className="space-y-4">
         {(people ?? []).length === 0 ? (
           <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
-            No one here yet, or nothing matches your filters.{" "}
-            <Link href="/people/new" className="font-semibold text-accent underline-offset-4 hover:underline">
+            No one here yet, or nothing matches your filters.{' '}
+            <Link
+              href="/people/new"
+              className="font-semibold text-accent underline-offset-4 hover:underline"
+            >
               Add your first person
             </Link>
             .
@@ -155,9 +182,17 @@ export default async function PeoplePage(props: { searchParams: SearchParams }) 
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-display text-xl">{person.full_name}</p>
+                      <p className="font-display text-xl">
+                        {personShownName(person)}
+                      </p>
+                      {person.display_name?.trim() &&
+                      personShownName(person) !== person.full_name ? (
+                        <p className="text-sm text-muted">{person.full_name}</p>
+                      ) : null}
                       {person.preferred_name ? (
-                        <p className="text-sm text-muted">Goes by {person.preferred_name}</p>
+                        <p className="text-sm text-muted">
+                          Goes by {person.preferred_name}
+                        </p>
                       ) : null}
                     </div>
                     <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
@@ -170,10 +205,15 @@ export default async function PeoplePage(props: { searchParams: SearchParams }) 
                     </span>
                     {person.last_interaction_at ? (
                       <span className="rounded-full border border-border-soft px-2 py-1">
-                        Last touch {new Date(person.last_interaction_at).toLocaleDateString()}
+                        Last touch{' '}
+                        {new Date(
+                          person.last_interaction_at,
+                        ).toLocaleDateString()}
                       </span>
                     ) : (
-                      <span className="rounded-full border border-border-soft px-2 py-1">No interactions yet</span>
+                      <span className="rounded-full border border-border-soft px-2 py-1">
+                        No interactions yet
+                      </span>
                     )}
                   </div>
                 </Link>

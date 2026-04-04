@@ -1,29 +1,43 @@
-"use client";
+'use client';
 
-import { useActionState, useState } from "react";
-import type { ActionResult } from "@/lib/actions/interactions";
-import { createGlobalInteraction } from "@/lib/actions/interactions";
-import { INTERACTION_DIRECTIONS, INTERACTION_TYPES } from "@/lib/domain/constants";
-import { formatInteractionType } from "@/lib/domain/labels";
-import { AttendeePicker } from "@/components/people/attendee-picker";
+import { useActionState, useState } from 'react';
+import type { ActionResult } from '@/lib/actions/interactions';
+import { createGlobalInteraction } from '@/lib/actions/interactions';
+import {
+  INTERACTION_DIRECTIONS,
+  INTERACTION_TYPES,
+} from '@/lib/domain/constants';
+import { formatInteractionType } from '@/lib/domain/labels';
+import {
+  AttendeePicker,
+  type PersonOption,
+} from '@/components/people/attendee-picker';
+import { personShownName } from '@/lib/people/list-name';
 
 const initial: ActionResult = {};
-
-type PersonOption = { id: string; full_name: string };
 
 type GlobalInteractionFormProps = {
   people: PersonOption[];
   defaultOccurredAt: string;
 };
 
-export function GlobalInteractionForm({ people, defaultOccurredAt }: GlobalInteractionFormProps) {
-  const [state, formAction, pending] = useActionState(createGlobalInteraction, initial);
-  const [primaryId, setPrimaryId] = useState("");
+export function GlobalInteractionForm({
+  people,
+  defaultOccurredAt,
+}: GlobalInteractionFormProps) {
+  const [state, formAction, pending] = useActionState(
+    createGlobalInteraction,
+    initial,
+  );
+  const [primaryId, setPrimaryId] = useState('');
 
   return (
     <form action={formAction} className="space-y-6">
       {state.error ? (
-        <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+        <p
+          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+          role="alert"
+        >
           {state.error}
         </p>
       ) : null}
@@ -32,7 +46,9 @@ export function GlobalInteractionForm({ people, defaultOccurredAt }: GlobalInter
         <label htmlFor="primary_person_id" className="text-sm font-semibold">
           Main person
         </label>
-        <p className="text-xs text-muted">Who was this moment mainly about? Others can be linked as attendees.</p>
+        <p className="text-xs text-muted">
+          Who was this moment mainly about? Others can be linked as attendees.
+        </p>
         <select
           id="primary_person_id"
           name="primary_person_id"
@@ -44,7 +60,7 @@ export function GlobalInteractionForm({ people, defaultOccurredAt }: GlobalInter
           <option value="">Choose someone</option>
           {people.map((person) => (
             <option key={person.id} value={person.id}>
-              {person.full_name}
+              {personShownName(person)}
             </option>
           ))}
         </select>
@@ -132,7 +148,7 @@ export function GlobalInteractionForm({ people, defaultOccurredAt }: GlobalInter
         disabled={pending || people.length === 0}
         className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {pending ? "Saving…" : "Save interaction"}
+        {pending ? 'Saving…' : 'Save interaction'}
       </button>
     </form>
   );

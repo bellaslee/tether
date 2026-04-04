@@ -7,37 +7,37 @@ export type Json =
   | Json[];
 
 export type PersonCategory =
-  | "friend"
-  | "close_friend"
-  | "acquaintance"
-  | "networking"
-  | "mentor"
-  | "family";
+  | 'friend'
+  | 'close_friend'
+  | 'acquaintance'
+  | 'networking'
+  | 'mentor'
+  | 'family';
 
-export type PersonStatus = "active" | "dormant" | "archived";
+export type PersonStatus = 'active' | 'dormant' | 'archived';
 
 export type ContactMethodType =
-  | "phone"
-  | "email"
-  | "instagram"
-  | "linkedin"
-  | "discord"
-  | "address"
-  | "other";
+  | 'phone'
+  | 'email'
+  | 'instagram'
+  | 'linkedin'
+  | 'discord'
+  | 'address'
+  | 'other';
 
 export type InteractionType =
-  | "hangout"
-  | "text"
-  | "call"
-  | "dinner"
-  | "party"
-  | "coffee_chat"
-  | "meeting"
-  | "other";
+  | 'hangout'
+  | 'text'
+  | 'call'
+  | 'dinner'
+  | 'party'
+  | 'coffee_chat'
+  | 'meeting'
+  | 'other';
 
-export type InteractionDirection = "inbound" | "outbound" | "mutual";
+export type InteractionDirection = 'inbound' | 'outbound' | 'mutual';
 
-export type InteractionPersonRole = "primary" | "attendee";
+export type InteractionPersonRole = 'primary' | 'attendee';
 
 export interface Database {
   public: {
@@ -47,6 +47,7 @@ export interface Database {
           id: string;
           user_id: string;
           full_name: string;
+          display_name: string | null;
           preferred_name: string | null;
           category: PersonCategory;
           status: PersonStatus;
@@ -65,6 +66,7 @@ export interface Database {
           id?: string;
           user_id: string;
           full_name: string;
+          display_name?: string | null;
           preferred_name?: string | null;
           category: PersonCategory;
           status?: PersonStatus;
@@ -83,6 +85,7 @@ export interface Database {
           id?: string;
           user_id?: string;
           full_name?: string;
+          display_name?: string | null;
           preferred_name?: string | null;
           category?: PersonCategory;
           status?: PersonStatus;
@@ -197,5 +200,5 @@ export interface Database {
   };
 }
 
-export type Tables<T extends keyof Database["public"]["Tables"]> =
-  Database["public"]["Tables"][T]["Row"];
+export type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row'];

@@ -1,17 +1,21 @@
-"use client";
+'use client';
 
-import { useActionState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import type { ActionResult } from "@/lib/actions/interactions";
-import { createInteractionFromPerson } from "@/lib/actions/interactions";
-import { INTERACTION_DIRECTIONS, INTERACTION_TYPES } from "@/lib/domain/constants";
-import { formatInteractionType } from "@/lib/domain/labels";
-import { toDatetimeLocalInputValue } from "@/lib/datetime";
-import { AttendeePicker } from "@/components/people/attendee-picker";
+import { useActionState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import type { ActionResult } from '@/lib/actions/interactions';
+import { createInteractionFromPerson } from '@/lib/actions/interactions';
+import {
+  INTERACTION_DIRECTIONS,
+  INTERACTION_TYPES,
+} from '@/lib/domain/constants';
+import { formatInteractionType } from '@/lib/domain/labels';
+import { toDatetimeLocalInputValue } from '@/lib/datetime';
+import {
+  AttendeePicker,
+  type PersonOption,
+} from '@/components/people/attendee-picker';
 
 const initial: ActionResult = {};
-
-type PersonOption = { id: string; full_name: string };
 
 type PersonInteractionFormProps = {
   personId: string;
@@ -34,7 +38,9 @@ export function PersonInteractionForm({
   useEffect(() => {
     if (state.ok) {
       formRef.current?.reset();
-      const occurred = formRef.current?.elements.namedItem("occurred_at") as HTMLInputElement | null;
+      const occurred = formRef.current?.elements.namedItem(
+        'occurred_at',
+      ) as HTMLInputElement | null;
       if (occurred) {
         occurred.value = toDatetimeLocalInputValue();
       }
@@ -45,14 +51,20 @@ export function PersonInteractionForm({
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       {state.error ? (
-        <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+        <p
+          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+          role="alert"
+        >
           {state.error}
         </p>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label htmlFor={`occurred-${personId}`} className="text-sm font-semibold">
+          <label
+            htmlFor={`occurred-${personId}`}
+            className="text-sm font-semibold"
+          >
             When
           </label>
           <input
@@ -83,7 +95,10 @@ export function PersonInteractionForm({
           </select>
         </div>
         <div className="space-y-2">
-          <label htmlFor={`direction-${personId}`} className="text-sm font-semibold">
+          <label
+            htmlFor={`direction-${personId}`}
+            className="text-sm font-semibold"
+          >
             Direction
           </label>
           <select
@@ -100,7 +115,10 @@ export function PersonInteractionForm({
           </select>
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <label htmlFor={`title-${personId}`} className="text-sm font-semibold">
+          <label
+            htmlFor={`title-${personId}`}
+            className="text-sm font-semibold"
+          >
             Title
           </label>
           <input
@@ -124,7 +142,9 @@ export function PersonInteractionForm({
 
       <div className="space-y-2">
         <p className="text-sm font-semibold">Also there</p>
-        <p className="text-xs text-muted">Optional — link this memory to other people in one shared entry.</p>
+        <p className="text-xs text-muted">
+          Optional — link this memory to other people in one shared entry.
+        </p>
         <AttendeePicker people={otherPeople} excludeId={personId} />
       </div>
 
@@ -133,7 +153,7 @@ export function PersonInteractionForm({
         disabled={pending}
         className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:opacity-60"
       >
-        {pending ? "Saving…" : "Save to timeline"}
+        {pending ? 'Saving…' : 'Save to timeline'}
       </button>
     </form>
   );

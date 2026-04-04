@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { PersonInteractionForm } from "@/components/people/person-interaction-form";
-
-type PersonOption = { id: string; full_name: string };
+import { useState } from 'react';
+import type { PersonOption } from '@/components/people/attendee-picker';
+import { PersonInteractionForm } from '@/components/people/person-interaction-form';
 
 type LogMomentDisclosureProps = {
   personId: string;
