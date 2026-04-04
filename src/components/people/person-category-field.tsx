@@ -86,7 +86,7 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
             Category
           </label>
           <Link
-            href="/people/categories"
+            href="/settings#categories"
             className="text-xs font-semibold text-accent underline-offset-4 hover:underline"
           >
             Manage categories

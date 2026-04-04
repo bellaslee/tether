@@ -25,18 +25,6 @@ export function AppNav({ context }: AppNavProps) {
             <Link href="/people" className="transition hover:text-foreground">
               People
             </Link>
-            <Link
-              href="/people/categories"
-              className="transition hover:text-foreground"
-            >
-              Categories
-            </Link>
-            <Link
-              href="/people/connection-types"
-              className="transition hover:text-foreground"
-            >
-              Connection types
-            </Link>
             <Link href="/timeline" className="transition hover:text-foreground">
               Timeline
             </Link>
@@ -45,6 +33,9 @@ export function AppNav({ context }: AppNavProps) {
               className="transition hover:text-foreground"
             >
               Log interaction
+            </Link>
+            <Link href="/settings" className="transition hover:text-foreground">
+              Settings
             </Link>
           </nav>
         </div>

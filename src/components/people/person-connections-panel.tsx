@@ -247,7 +247,7 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
           </p>
         </div>
         <Link
-          href="/people/connection-types"
+          href="/settings#connection-types"
           className="shrink-0 text-sm font-semibold text-accent underline-offset-4 hover:underline"
         >
           Manage types
@@ -272,7 +272,7 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
         <p className="mt-6 text-sm text-muted">
           Add at least one connection type under{' '}
           <Link
-            href="/people/connection-types"
+            href="/settings#connection-types"
             className="font-semibold text-accent underline-offset-4 hover:underline"
           >
             Connection types

@@ -117,14 +117,6 @@ export default async function TimelinePage() {
             Every row is one real moment. People listed together shared that
             memory — it is not duplicated in the database.
           </p>
-          <p className="mt-3">
-            <Link
-              href="/timeline/types"
-              className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
-            >
-              Manage timeline types
-            </Link>
-          </p>
         </div>
         <ButtonLink href="/interactions/new" variant="primary" size="lg">
           Log interaction
