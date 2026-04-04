@@ -129,7 +129,6 @@ export function PersonForm(props: PersonFormProps) {
           <label htmlFor="met_at" className="text-sm font-semibold">
             Date met
           </label>
-          <p className="text-xs text-muted">Month and year only.</p>
           <input
             id="met_at"
             name="met_at"
