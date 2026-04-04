@@ -12,18 +12,24 @@ This work matters because the project is currently in a documentation-only state
 
 ## Progress
 
-- [ ] Create the initial Next.js App Router application with TypeScript and Tailwind CSS in the repository root.
-- [ ] Add the baseline project files needed for local development, including `package.json`, `src/app`, Tailwind-enabled global styles, TypeScript config, and Next.js config.
-- [ ] Add Supabase local configuration and the first migration for the Phase 1 schema described in `docs/phase-1-mvp-schema-design.md`.
-- [ ] Add server-side environment variable handling for Supabase and OpenAI without exposing secrets to the browser.
-- [ ] Add minimal database and AI utility modules under `src/lib`.
-- [ ] Add a minimal app shell route that proves the stack is wired correctly.
-- [ ] Verify the project with install, local Supabase startup, lint, build, and an observable browser-level smoke test.
+- [x] (2026-04-04 19:06Z) Create the initial Next.js App Router application with TypeScript and Tailwind CSS in the repository root.
+- [x] (2026-04-04 19:10Z) Add the baseline project files needed for local development, including `package.json`, `src/app`, Tailwind-enabled global styles, TypeScript config, and Next.js config.
+- [x] (2026-04-04 19:10Z) Add Supabase local configuration and the first migration for the Phase 1 schema described in `docs/phase-1-mvp-schema-design.md`.
+- [x] (2026-04-04 19:10Z) Add server-side environment variable handling for Supabase and OpenAI without exposing secrets to the browser.
+- [x] (2026-04-04 19:10Z) Add minimal database and AI utility modules under `src/lib`.
+- [x] (2026-04-04 19:10Z) Add a minimal app shell route that proves the stack is wired correctly.
+- [x] (2026-04-04 20:30Z) Verify the project with install, local Supabase startup, lint, build, and an observable browser-level smoke test.
 
 ## Surprises & Discoveries
 
-- Observation: None yet.
-  Evidence: Planning-only repository; implementation has not started.
+- Observation: `create-next-app` ignored the non-interactive flags and prompted for choices anyway, so initialization had to continue in an interactive temporary directory before copying files back into the repository root.
+  Evidence: The CLI presented “Would you like to use the recommended Next.js defaults?” despite the original scripted flags.
+
+- Observation: Docker is installed on the machine, but the Docker daemon was not running during validation, which blocked `npx supabase start` and therefore blocked `npx supabase db reset`.
+  Evidence: `npx supabase start` failed with `Cannot connect to the Docker daemon at unix:///var/run/docker.sock.`
+
+- Observation: `npx supabase migration list` is not useful for an unlinked local-only project because it expects a linked project ref, even when local migrations are working correctly.
+  Evidence: The command returned `Cannot find project ref. Have you run supabase link?`
 
 ## Decision Log
 
@@ -39,9 +45,19 @@ This work matters because the project is currently in a documentation-only state
   Rationale: The app needs a working relational foundation first; facts, summaries, embeddings, and imports belong to later milestones.
   Date/Author: 2026-04-04 / Codex
 
+- Decision: Use `npx supabase` commands instead of requiring a globally installed Supabase CLI.
+  Rationale: The machine did not already have `supabase` on the PATH, and repository-local instructions are more reliable for a novice contributor.
+  Date/Author: 2026-04-04 / Codex
+
+- Decision: Make the home page render useful setup guidance even when environment variables are missing instead of crashing on first load.
+  Rationale: Initialization should be observable and beginner-friendly before local secrets are configured.
+  Date/Author: 2026-04-04 / Codex
+
 ## Outcomes & Retrospective
 
-No implementation has been completed yet. The intended outcome of this plan is a working local application and database foundation that can support immediate Phase 1 feature development without revisiting the basic stack setup.
+The repository now contains a working Next.js App Router application, local Supabase configuration, a Phase 1 schema migration, environment-variable helpers, and server-only module boundaries for Supabase and OpenAI. A novice can install dependencies, run the web app, and open a home page that clearly identifies the project and explains any missing configuration.
+
+The full initialization plan is now validated end to end. `npx supabase start` completed successfully, `npx supabase db reset` reapplied the checked-in migration cleanly, and direct SQL queries against the running Postgres container confirmed the `people`, `contact_methods`, `interactions`, and `interaction_people` tables along with their row-level security policies and indexes.
 
 ## Context and Orientation
 
@@ -81,18 +97,20 @@ Scaffold the Next.js app:
 
 If the scaffolder refuses to run in a non-empty directory, create the app in a temporary folder, then move the generated files into the repository root while preserving `.git` and existing docs.
 
+Actual implementation note: this repository was non-empty, so the app was scaffolded in a temporary directory and copied into the repo root after generation.
+
 Install Supabase CLI if it is not already available on the machine, then initialize local Supabase configuration:
 
-    supabase init
+    npx supabase init
 
 Start local Supabase services once Docker is available:
 
-    supabase start
+    npx supabase start
 
 Create and apply the first migration after writing the SQL:
 
-    supabase migration new phase_1_initial_schema
-    supabase db reset
+    npx supabase migration new phase_1_initial_schema
+    npx supabase db reset
 
 Install project dependencies if the scaffold step did not do so:
 
@@ -106,6 +124,38 @@ Run the Next.js quality checks:
 Start the application locally:
 
     npm run dev
+
+Validation status from this implementation session:
+
+    $ npm install
+    added 373 packages
+
+    $ npm run lint
+    exited successfully
+
+    $ npm run build
+    Compiled successfully
+    Finished TypeScript
+    Generating static pages
+
+    $ npx supabase start
+    Started supabase local development setup
+
+    $ npm run dev
+    Local: http://localhost:3000
+
+    $ curl -I http://localhost:3000
+    HTTP/1.1 200 OK
+
+    $ npx supabase db reset
+    Applying migration 20260404190722_phase_1_initial_schema.sql
+    Finished supabase db reset on branch main
+
+    $ docker exec supabase_db_personal-crm psql -U postgres -d postgres -c "select tablename ..."
+    contact_methods
+    interaction_people
+    interactions
+    people
 
 Expected browser outcome after opening `http://localhost:3000`:
 
@@ -124,11 +174,11 @@ Expected Supabase outcome:
 
 Acceptance is complete when a novice can perform the following observable checks:
 
-First, from the repository root, run `npm install`, `supabase start`, `supabase db reset`, `npm run lint`, and `npm run build` without encountering unresolved configuration errors beyond missing local secrets that are clearly documented.
+First, from the repository root, run `npm install`, `npx supabase start`, `npx supabase db reset`, `npm run lint`, and `npm run build` without encountering unresolved configuration errors beyond missing local secrets that are clearly documented.
 
 Second, run `npm run dev`, open `http://localhost:3000`, and observe a rendered page that identifies the CRM project and confirms the app shell is running. The page does not need to contain real CRM features yet, but it must prove that the stack has been initialized successfully.
 
-Third, inspect the local database through Supabase tooling and confirm that the tables `people`, `contact_methods`, `interactions`, and `interaction_people` exist with the expected ownership columns, constraints, and indexes. This can be verified by a successful `supabase db reset` and optional SQL inspection.
+Third, inspect the local database through Supabase tooling and confirm that the tables `people`, `contact_methods`, `interactions`, and `interaction_people` exist with the expected ownership columns, constraints, and indexes. This can be verified by a successful `npx supabase db reset` and optional SQL inspection.
 
 Fourth, inspect the repository tree and confirm the existence of the key files and directories:
 
@@ -161,9 +211,18 @@ The most useful artifacts to capture during implementation are short command tra
     ✓ Compiled successfully
     ✓ Generated static pages
 
-    $ supabase db reset
+    $ npx supabase db reset
     Applying migration <timestamp>_phase_1_initial_schema.sql
     Finished supabase db reset
+
+    $ curl -I http://localhost:3000
+    HTTP/1.1 200 OK
+
+    $ docker exec supabase_db_personal-crm psql -U postgres -d postgres -c "select tablename ..."
+    contact_methods
+    interaction_people
+    interactions
+    people
 
 The home page can remain intentionally simple during initialization. Its purpose is to prove the stack is operational, not to serve as final UI.
 
@@ -189,3 +248,7 @@ In `src/app/page.tsx`, define the initial application shell route.
 In `supabase/migrations/<timestamp>_phase_1_initial_schema.sql`, define the Phase 1 schema from `docs/phase-1-mvp-schema-design.md`.
 
 Revision note: Moved this ExecPlan out of `.agent/PLANS.md` and into `docs/plans/initialize-project.md` so the guide file remains a guide and plan documents live in `docs/plans`.
+
+Revision note: Updated the plan after implementation to record the completed scaffold, the checked-in migration and helper modules, the successful Next.js validation, and the remaining Docker-daemon blocker for local Supabase runtime validation.
+
+Revision note: Updated the plan again after Docker came online to record successful `npx supabase start`, successful `npx supabase db reset`, and direct SQL verification of the Phase 1 schema.
