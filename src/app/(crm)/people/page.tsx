@@ -83,7 +83,12 @@ export default async function PeoplePage(props: {
   const searchParams = await props.searchParams;
   const q = first(searchParams.q)?.trim() ?? '';
   const categoryIds = parseCategoryIds(searchParams.category);
-  const statusValues = parseStatuses(searchParams.status);
+  const statusInUrl = Object.hasOwn(searchParams, 'status');
+  const statusFromUrl = parseStatuses(searchParams.status);
+  const statusValues: PersonStatus[] =
+    !statusInUrl && statusFromUrl.length === 0
+      ? ['active']
+      : statusFromUrl;
 
   const { data: categoryOptions, error: categoriesError } = await ctx.client
     .from('person_categories')
@@ -187,8 +192,8 @@ export default async function PeoplePage(props: {
                 </div>
               </PeopleFilterDisclosure>
               <PeopleFilterDisclosure
-                key={`status-filters-${statusValues.slice().sort().join('|')}`}
-                initialOpen={statusValues.length > 0}
+                key={`status-filters-${statusFromUrl.slice().sort().join('|')}`}
+                initialOpen={statusInUrl && statusFromUrl.length > 0}
                 labelId="people-filter-status-label"
                 label="Status"
               >
@@ -242,54 +247,42 @@ export default async function PeoplePage(props: {
               .
             </div>
           ) : (
-            <ul className="grid gap-4 md:grid-cols-2">
+            <ul className="grid gap-3 md:grid-cols-2 md:items-start">
               {peopleList.map((person) => (
-                <li key={person.id} className="flex h-full min-h-0">
+                <li key={person.id} className="min-w-0">
                   <Link
                     href={`/people/${person.id}`}
-                    className="card-surface flex h-full min-h-0 w-full flex-col gap-3 rounded-[1.5rem] border border-border-soft p-5 transition hover:-translate-y-0.5"
+                    className="card-surface flex w-full flex-col gap-2 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5"
                   >
-                    <div className="flex min-h-0 flex-1 items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-display text-xl leading-snug">
-                          {personShownName(person)}
+                    <div className="min-w-0">
+                      <p className="font-display text-lg leading-snug tracking-tight">
+                        {personShownName(person)}
+                      </p>
+                      {person.preferred_name ? (
+                        <p className="mt-0.5 truncate text-xs leading-snug text-muted">
+                          Goes by {person.preferred_name}
                         </p>
-                        <div className="mt-1 min-h-[2.75rem] space-y-0.5">
-                          {person.display_name?.trim() &&
-                          personShownName(person) !== person.full_name ? (
-                            <p className="text-sm leading-snug text-muted">
-                              {person.full_name}
-                            </p>
-                          ) : null}
-                          {person.preferred_name ? (
-                            <p className="text-sm leading-snug text-muted">
-                              Goes by {person.preferred_name}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <span className="shrink-0 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-                        {person.person_categories?.name ?? '—'}
-                      </span>
+                      ) : null}
                     </div>
-                    <div className="mt-auto flex flex-wrap items-center gap-2 text-xs text-muted">
-                      <span className="rounded-full border border-border-soft px-2 py-1">
-                        {formatStatus(person.status)}
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                      <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
+                        {person.person_categories?.name ?? '—'}
                       </span>
                       <RelationshipWarmthChip
                         lastInteractionAt={person.last_interaction_at}
                         metAt={person.met_at}
                         createdAt={person.created_at}
+                        size="compact"
                       />
                       {person.last_interaction_at ? (
-                        <span className="rounded-full border border-border-soft px-2 py-1">
+                        <span className="rounded-full border border-border-soft px-2.5 py-0.5">
                           Last touch{' '}
                           {new Date(
                             person.last_interaction_at,
                           ).toLocaleDateString()}
                         </span>
                       ) : (
-                        <span className="rounded-full border border-border-soft px-2 py-1">
+                        <span className="rounded-full border border-border-soft px-2.5 py-0.5">
                           No interactions yet
                         </span>
                       )}
