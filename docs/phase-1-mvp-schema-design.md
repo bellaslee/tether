@@ -74,6 +74,7 @@ people
 - company text
 - how_you_met text
 - relationship_context text
+- met_at date (optional; month and year only, stored as the first day of that month)
 - last_interaction_at timestamptz
 - created_at timestamptz not null
 - updated_at timestamptz not null
@@ -86,7 +87,7 @@ Notes:
 - `category` should exist now because friend versus networking context is already part of the product vision.
 - `status` helps hide dormant or archived relationships without deleting them.
 - `last_interaction_at` should be maintained by application logic or a later trigger.
-- Do not add `relationship_score` in Phase 1.
+- Do not add `relationship_score` in Phase 1. A derived “warmth” indicator (hot / warm / cold) may be computed in the app from `last_interaction_at` and relationship tenure instead of storing a score.
 
 Recommended `category` values:
 

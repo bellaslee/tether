@@ -97,6 +97,7 @@ export interface Database {
           company: string | null;
           how_you_met: string | null;
           relationship_context: string | null;
+          met_at: string | null;
           last_interaction_at: string | null;
           created_at: string;
           updated_at: string;
@@ -116,6 +117,7 @@ export interface Database {
           company?: string | null;
           how_you_met?: string | null;
           relationship_context?: string | null;
+          met_at?: string | null;
           last_interaction_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -135,6 +137,7 @@ export interface Database {
           company?: string | null;
           how_you_met?: string | null;
           relationship_context?: string | null;
+          met_at?: string | null;
           last_interaction_at?: string | null;
           created_at?: string;
           updated_at?: string;

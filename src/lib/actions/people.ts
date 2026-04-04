@@ -43,6 +43,10 @@ export async function createPerson(
     formData.get('relationship_context'),
   );
   const birthday = optionalString(formData.get('birthday'));
+  const metAtResult = parseOptionalMetAt(formData.get('met_at'));
+  if (metAtResult === 'invalid') {
+    return { error: 'Date met must be a valid month and year.' };
+  }
 
   if (!full_name) {
     return { error: 'Name is required.' };
@@ -81,6 +85,7 @@ export async function createPerson(
       how_you_met,
       relationship_context,
       birthday: birthday || null,
+      met_at: metAtResult,
     })
     .select('id')
     .single();
@@ -125,6 +130,10 @@ export async function updatePerson(
     formData.get('relationship_context'),
   );
   const birthday = optionalString(formData.get('birthday'));
+  const metAtResult = parseOptionalMetAt(formData.get('met_at'));
+  if (metAtResult === 'invalid') {
+    return { error: 'Date met must be a valid month and year.' };
+  }
 
   if (!full_name) {
     return { error: 'Name is required.' };
@@ -173,6 +182,7 @@ export async function updatePerson(
       how_you_met,
       relationship_context,
       birthday: birthday || null,
+      met_at: metAtResult,
     })
     .eq('id', personId)
     .eq('user_id', ctx.userId);
@@ -209,4 +219,20 @@ export async function updatePerson(
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? '').trim();
   return text.length > 0 ? text : null;
+}
+
+const MET_MONTH_RE = /^(\d{4})-(0[1-9]|1[0-2])$/;
+
+/** `YYYY-MM` from month input → `YYYY-MM-01`, or null. Invalid pattern → `invalid`. */
+function parseOptionalMetAt(
+  value: FormDataEntryValue | null,
+): string | null | 'invalid' {
+  const text = String(value ?? '').trim();
+  if (!text) {
+    return null;
+  }
+  if (!MET_MONTH_RE.test(text)) {
+    return 'invalid';
+  }
+  return `${text}-01`;
 }

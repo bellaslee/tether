@@ -3,13 +3,14 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
 import { ContactMethodRow } from '@/components/people/contact-method-row';
+import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
 import { LogMomentDisclosure } from '@/components/people/log-moment-disclosure';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { requireCrmAccess } from '@/lib/crm/guard';
 import { formatInteractionTypeName, formatStatus } from '@/lib/domain/labels';
-import { toDatetimeLocalInputValue } from '@/lib/datetime';
+import { formatMonthYear, toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
@@ -206,6 +207,11 @@ export default async function PersonDetailPage(props: PageProps) {
             <span className="rounded-full border border-border-soft px-3 py-1 text-xs font-semibold text-muted">
               {formatStatus(person.status)}
             </span>
+            <RelationshipWarmthChip
+              lastInteractionAt={person.last_interaction_at}
+              metAt={person.met_at}
+              createdAt={person.created_at}
+            />
           </div>
           {person.preferred_name ? (
             <p className="mt-2 text-sm text-muted">
@@ -248,6 +254,10 @@ export default async function PersonDetailPage(props: PageProps) {
               <DetailItem
                 label="Birthday"
                 value={person.birthday ? formatDateOnly(person.birthday) : null}
+              />
+              <DetailItem
+                label="Met"
+                value={person.met_at ? formatMonthYear(person.met_at) : null}
               />
               <DetailItem label="Location" value={person.location} />
               <DetailItem label="Occupation" value={person.occupation} />

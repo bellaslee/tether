@@ -126,6 +126,21 @@ export function PersonForm(props: PersonFormProps) {
           />
         </div>
         <div className="space-y-2">
+          <label htmlFor="met_at" className="text-sm font-semibold">
+            Date met
+          </label>
+          <p className="text-xs text-muted">Month and year only.</p>
+          <input
+            id="met_at"
+            name="met_at"
+            type="month"
+            defaultValue={
+              person?.met_at ? person.met_at.slice(0, 7) : ''
+            }
+            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+          />
+        </div>
+        <div className="space-y-2">
           <label htmlFor="location" className="text-sm font-semibold">
             Location
           </label>

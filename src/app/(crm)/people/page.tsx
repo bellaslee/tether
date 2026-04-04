@@ -4,6 +4,7 @@ import { requireCrmAccess } from '@/lib/crm/guard';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { formatStatus } from '@/lib/domain/labels';
 import { personShownName } from '@/lib/people/list-name';
+import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -34,6 +35,8 @@ type PersonListRow = Pick<
   | 'category_id'
   | 'status'
   | 'last_interaction_at'
+  | 'met_at'
+  | 'created_at'
 > & {
   person_categories: { name: string } | null;
 };
@@ -60,7 +63,7 @@ export default async function PeoplePage(props: {
   let query = ctx.client
     .from('people')
     .select(
-      'id, full_name, display_name, preferred_name, category_id, status, last_interaction_at, person_categories ( name )',
+      'id, full_name, display_name, preferred_name, category_id, status, last_interaction_at, met_at, created_at, person_categories ( name )',
     )
     .eq('user_id', ctx.userId)
     .order('full_name', { ascending: true });
@@ -229,10 +232,15 @@ export default async function PeoplePage(props: {
                       {person.person_categories?.name ?? '—'}
                     </span>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted">
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
                     <span className="rounded-full border border-border-soft px-2 py-1">
                       {formatStatus(person.status)}
                     </span>
+                    <RelationshipWarmthChip
+                      lastInteractionAt={person.last_interaction_at}
+                      metAt={person.met_at}
+                      createdAt={person.created_at}
+                    />
                     {person.last_interaction_at ? (
                       <span className="rounded-full border border-border-soft px-2 py-1">
                         Last touch{' '}
