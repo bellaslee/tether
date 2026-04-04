@@ -4,14 +4,18 @@ import { useActionState } from 'react';
 import type { Tables } from '@/lib/db/database.types';
 import type { ActionResult } from '@/lib/actions/people';
 import { createPerson, updatePersonFormAction } from '@/lib/actions/people';
-import { PERSON_CATEGORIES, PERSON_STATUSES } from '@/lib/domain/constants';
-import { formatCategory, formatStatus } from '@/lib/domain/labels';
+import { PERSON_STATUSES } from '@/lib/domain/constants';
+import { formatStatus } from '@/lib/domain/labels';
+import {
+  PersonCategoryField,
+  type PersonCategoryOption,
+} from '@/components/people/person-category-field';
 
 const initial: ActionResult = {};
 
 type PersonFormProps =
-  | { mode: 'create' }
-  | { mode: 'edit'; person: Tables<'people'> };
+  | { mode: 'create'; categories: PersonCategoryOption[] }
+  | { mode: 'edit'; person: Tables<'people'>; categories: PersonCategoryOption[] };
 
 export function PersonForm(props: PersonFormProps) {
   const [state, formAction, pending] = useActionState(
@@ -22,6 +26,7 @@ export function PersonForm(props: PersonFormProps) {
   );
 
   const person = props.mode === 'edit' ? props.person : null;
+  const categories = props.categories;
 
   return (
     <form action={formAction} className="space-y-6">
@@ -84,23 +89,11 @@ export function PersonForm(props: PersonFormProps) {
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
-        <div className="space-y-2">
-          <label htmlFor="category" className="text-sm font-semibold">
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            required
-            defaultValue={person?.category ?? 'friend'}
-            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
-          >
-            {PERSON_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {formatCategory(c)}
-              </option>
-            ))}
-          </select>
+        <div className="space-y-2 sm:col-span-2">
+          <PersonCategoryField
+            initialCategories={categories}
+            defaultCategoryId={person?.category_id}
+          />
         </div>
         <div className="space-y-2">
           <label htmlFor="status" className="text-sm font-semibold">

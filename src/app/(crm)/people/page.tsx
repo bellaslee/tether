@@ -1,11 +1,14 @@
 import Link from 'next/link';
-import type { PersonCategory, PersonStatus } from '@/lib/db/database.types';
+import type { PersonStatus, Tables } from '@/lib/db/database.types';
 import { requireCrmAccess } from '@/lib/crm/guard';
-import { PERSON_CATEGORIES, PERSON_STATUSES } from '@/lib/domain/constants';
-import { formatCategory, formatStatus } from '@/lib/domain/labels';
+import { PERSON_STATUSES } from '@/lib/domain/constants';
+import { formatStatus } from '@/lib/domain/labels';
 import { personShownName } from '@/lib/people/list-name';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function first(param: string | string[] | undefined) {
   if (Array.isArray(param)) {
@@ -14,13 +17,26 @@ function first(param: string | string[] | undefined) {
   return param;
 }
 
-function isCategory(value: string | undefined): value is PersonCategory {
-  return !!value && PERSON_CATEGORIES.includes(value as PersonCategory);
+function isCategoryIdFilter(value: string | undefined): value is string {
+  return !!value && UUID_RE.test(value);
 }
 
 function isStatus(value: string | undefined): value is PersonStatus {
   return !!value && PERSON_STATUSES.includes(value as PersonStatus);
 }
+
+type PersonListRow = Pick<
+  Tables<'people'>,
+  | 'id'
+  | 'full_name'
+  | 'display_name'
+  | 'preferred_name'
+  | 'category_id'
+  | 'status'
+  | 'last_interaction_at'
+> & {
+  person_categories: { name: string } | null;
+};
 
 export default async function PeoplePage(props: {
   searchParams: SearchParams;
@@ -31,16 +47,26 @@ export default async function PeoplePage(props: {
   const categoryFilter = first(searchParams.category);
   const statusFilter = first(searchParams.status);
 
+  const { data: categoryOptions, error: categoriesError } = await ctx.client
+    .from('person_categories')
+    .select('id, name')
+    .eq('user_id', ctx.userId)
+    .order('sort_order', { ascending: true });
+
+  if (categoriesError) {
+    throw new Error(categoriesError.message);
+  }
+
   let query = ctx.client
     .from('people')
     .select(
-      'id, full_name, display_name, preferred_name, category, status, last_interaction_at',
+      'id, full_name, display_name, preferred_name, category_id, status, last_interaction_at, person_categories ( name )',
     )
     .eq('user_id', ctx.userId)
     .order('full_name', { ascending: true });
 
-  if (isCategory(categoryFilter)) {
-    query = query.eq('category', categoryFilter);
+  if (isCategoryIdFilter(categoryFilter)) {
+    query = query.eq('category_id', categoryFilter);
   }
   if (isStatus(statusFilter)) {
     query = query.eq('status', statusFilter);
@@ -57,6 +83,8 @@ export default async function PeoplePage(props: {
   if (error) {
     throw new Error(error.message);
   }
+
+  const peopleList = (people ?? []) as PersonListRow[];
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
@@ -111,13 +139,15 @@ export default async function PeoplePage(props: {
               <select
                 id="category"
                 name="category"
-                defaultValue={isCategory(categoryFilter) ? categoryFilter : ''}
+                defaultValue={
+                  isCategoryIdFilter(categoryFilter) ? categoryFilter : ''
+                }
                 className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
               >
                 <option value="">Any</option>
-                {PERSON_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {formatCategory(c)}
+                {(categoryOptions ?? []).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
                   </option>
                 ))}
               </select>
@@ -161,7 +191,7 @@ export default async function PeoplePage(props: {
       </section>
 
       <section className="space-y-4">
-        {(people ?? []).length === 0 ? (
+        {peopleList.length === 0 ? (
           <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
             No one here yet, or nothing matches your filters.{' '}
             <Link
@@ -174,7 +204,7 @@ export default async function PeoplePage(props: {
           </div>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
-            {(people ?? []).map((person) => (
+            {peopleList.map((person) => (
               <li key={person.id}>
                 <Link
                   href={`/people/${person.id}`}
@@ -196,7 +226,7 @@ export default async function PeoplePage(props: {
                       ) : null}
                     </div>
                     <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-                      {formatCategory(person.category)}
+                      {person.person_categories?.name ?? '—'}
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted">

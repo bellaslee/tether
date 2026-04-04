@@ -1,18 +1,8 @@
 import type {
   ContactMethodType,
   InteractionType,
-  PersonCategory,
   PersonStatus,
 } from "@/lib/db/database.types";
-
-const categoryLabels: Record<PersonCategory, string> = {
-  friend: "Friend",
-  close_friend: "Close friend",
-  acquaintance: "Acquaintance",
-  networking: "Networking",
-  mentor: "Mentor",
-  family: "Family",
-};
 
 const statusLabels: Record<PersonStatus, string> = {
   active: "Active",
@@ -40,10 +30,6 @@ const interactionTypeLabels: Record<InteractionType, string> = {
   meeting: "Meeting",
   other: "Other",
 };
-
-export function formatCategory(category: PersonCategory) {
-  return categoryLabels[category];
-}
 
 export function formatStatus(status: PersonStatus) {
   return statusLabels[status];

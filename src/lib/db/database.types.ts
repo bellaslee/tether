@@ -6,14 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type PersonCategory =
-  | 'friend'
-  | 'close_friend'
-  | 'acquaintance'
-  | 'networking'
-  | 'mentor'
-  | 'family';
-
 export type PersonStatus = 'active' | 'dormant' | 'archived';
 
 export type ContactMethodType =
@@ -42,6 +34,33 @@ export type InteractionPersonRole = 'primary' | 'attendee';
 export interface Database {
   public: {
     Tables: {
+      person_categories: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       people: {
         Row: {
           id: string;
@@ -49,7 +68,7 @@ export interface Database {
           full_name: string;
           display_name: string | null;
           preferred_name: string | null;
-          category: PersonCategory;
+          category_id: string;
           status: PersonStatus;
           birthday: string | null;
           pronouns: string | null;
@@ -68,7 +87,7 @@ export interface Database {
           full_name: string;
           display_name?: string | null;
           preferred_name?: string | null;
-          category: PersonCategory;
+          category_id: string;
           status?: PersonStatus;
           birthday?: string | null;
           pronouns?: string | null;
@@ -87,7 +106,7 @@ export interface Database {
           full_name?: string;
           display_name?: string | null;
           preferred_name?: string | null;
-          category?: PersonCategory;
+          category_id?: string;
           status?: PersonStatus;
           birthday?: string | null;
           pronouns?: string | null;

@@ -24,6 +24,16 @@ export default async function EditPersonPage(props: PageProps) {
     notFound();
   }
 
+  const { data: categories, error: categoriesError } = await ctx.client
+    .from('person_categories')
+    .select('id, name')
+    .eq('user_id', ctx.userId)
+    .order('sort_order', { ascending: true });
+
+  if (categoriesError) {
+    throw new Error(categoriesError.message);
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
       <div>
@@ -42,7 +52,13 @@ export default async function EditPersonPage(props: PageProps) {
         </p>
       </div>
       <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-        <PersonForm mode="edit" person={person} />
+        {(categories ?? []).length === 0 ? (
+          <p className="text-sm text-muted">
+            Categories are still loading for your account. Refresh in a moment or sign out and back in.
+          </p>
+        ) : (
+          <PersonForm mode="edit" person={person} categories={categories ?? []} />
+        )}
       </div>
     </main>
   );

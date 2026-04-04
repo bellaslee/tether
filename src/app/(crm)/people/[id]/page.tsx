@@ -7,11 +7,7 @@ import { LogMomentDisclosure } from '@/components/people/log-moment-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { requireCrmAccess } from '@/lib/crm/guard';
-import {
-  formatCategory,
-  formatInteractionType,
-  formatStatus,
-} from '@/lib/domain/labels';
+import { formatInteractionType, formatStatus } from '@/lib/domain/labels';
 import { toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 
@@ -20,6 +16,10 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 type PageProps = {
   params: Promise<{ id: string }>;
   searchParams: SearchParams;
+};
+
+type PersonWithCategory = Tables<'people'> & {
+  person_categories: { name: string } | null;
 };
 
 function first(param: string | string[] | undefined) {
@@ -56,9 +56,9 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const ctx = await requireCrmAccess();
 
-  const { data: person, error: personError } = await ctx.client
+  const { data: personRow, error: personError } = await ctx.client
     .from('people')
-    .select('*')
+    .select('*, person_categories ( name )')
     .eq('id', id)
     .eq('user_id', ctx.userId)
     .maybeSingle();
@@ -66,9 +66,11 @@ export default async function PersonDetailPage(props: PageProps) {
   if (personError) {
     throw new Error(personError.message);
   }
-  if (!person) {
+  if (!personRow) {
     notFound();
   }
+
+  const person = personRow as PersonWithCategory;
 
   const { data: contactMethods } = await ctx.client
     .from('contact_methods')
@@ -139,7 +141,7 @@ export default async function PersonDetailPage(props: PageProps) {
               {person.full_name}
             </h1>
             <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-              {formatCategory(person.category)}
+              {person.person_categories?.name ?? '—'}
             </span>
             <span className="rounded-full border border-border-soft px-3 py-1 text-xs font-semibold text-muted">
               {formatStatus(person.status)}

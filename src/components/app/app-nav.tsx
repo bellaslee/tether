@@ -18,6 +18,12 @@ export function AppNav({ context }: AppNavProps) {
             <Link href="/people" className="transition hover:text-foreground">
               People
             </Link>
+            <Link
+              href="/people/categories"
+              className="transition hover:text-foreground"
+            >
+              Categories
+            </Link>
             <Link href="/timeline" className="transition hover:text-foreground">
               Timeline
             </Link>

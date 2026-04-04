@@ -2,18 +2,8 @@ import type {
   ContactMethodType,
   InteractionDirection,
   InteractionType,
-  PersonCategory,
   PersonStatus,
 } from "@/lib/db/database.types";
-
-export const PERSON_CATEGORIES: PersonCategory[] = [
-  "friend",
-  "close_friend",
-  "acquaintance",
-  "networking",
-  "mentor",
-  "family",
-];
 
 export const PERSON_STATUSES: PersonStatus[] = ["active", "dormant", "archived"];
 

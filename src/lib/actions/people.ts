@@ -2,14 +2,17 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type { PersonCategory, PersonStatus } from '@/lib/db/database.types';
+import type { PersonStatus } from '@/lib/db/database.types';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
-import { PERSON_CATEGORIES, PERSON_STATUSES } from '@/lib/domain/constants';
+import { PERSON_STATUSES } from '@/lib/domain/constants';
 
 export type ActionResult = { error?: string; ok?: true };
 
-function isPersonCategory(value: string): value is PersonCategory {
-  return PERSON_CATEGORIES.includes(value as PersonCategory);
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_RE.test(value);
 }
 
 function isPersonStatus(value: string): value is PersonStatus {
@@ -26,7 +29,7 @@ export async function createPerson(
   }
 
   const full_name = String(formData.get('full_name') ?? '').trim();
-  const categoryRaw = String(formData.get('category') ?? '');
+  const categoryIdRaw = String(formData.get('category_id') ?? '').trim();
   const statusRaw = String(formData.get('status') ?? 'active');
   const display_name = optionalString(formData.get('display_name'));
   const preferred_name = optionalString(formData.get('preferred_name'));
@@ -43,11 +46,22 @@ export async function createPerson(
   if (!full_name) {
     return { error: 'Name is required.' };
   }
-  if (!isPersonCategory(categoryRaw)) {
+  if (!isUuid(categoryIdRaw)) {
     return { error: 'Choose a valid category.' };
   }
   if (!isPersonStatus(statusRaw)) {
     return { error: 'Choose a valid status.' };
+  }
+
+  const { data: categoryRow } = await ctx.client
+    .from('person_categories')
+    .select('id')
+    .eq('id', categoryIdRaw)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (!categoryRow) {
+    return { error: 'Choose a valid category.' };
   }
 
   const { data, error } = await ctx.client
@@ -56,7 +70,7 @@ export async function createPerson(
       user_id: ctx.userId,
       full_name,
       display_name,
-      category: categoryRaw,
+      category_id: categoryIdRaw,
       status: statusRaw,
       preferred_name,
       pronouns,
@@ -97,7 +111,7 @@ export async function updatePerson(
   }
 
   const full_name = String(formData.get('full_name') ?? '').trim();
-  const categoryRaw = String(formData.get('category') ?? '');
+  const categoryIdRaw = String(formData.get('category_id') ?? '').trim();
   const statusRaw = String(formData.get('status') ?? 'active');
   const display_name = optionalString(formData.get('display_name'));
   const preferred_name = optionalString(formData.get('preferred_name'));
@@ -114,11 +128,22 @@ export async function updatePerson(
   if (!full_name) {
     return { error: 'Name is required.' };
   }
-  if (!isPersonCategory(categoryRaw)) {
+  if (!isUuid(categoryIdRaw)) {
     return { error: 'Choose a valid category.' };
   }
   if (!isPersonStatus(statusRaw)) {
     return { error: 'Choose a valid status.' };
+  }
+
+  const { data: categoryRow } = await ctx.client
+    .from('person_categories')
+    .select('id')
+    .eq('id', categoryIdRaw)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (!categoryRow) {
+    return { error: 'Choose a valid category.' };
   }
 
   const { error } = await ctx.client
@@ -126,7 +151,7 @@ export async function updatePerson(
     .update({
       full_name,
       display_name,
-      category: categoryRaw,
+      category_id: categoryIdRaw,
       status: statusRaw,
       preferred_name,
       pronouns,
