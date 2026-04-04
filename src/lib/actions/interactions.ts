@@ -225,6 +225,125 @@ export async function createGlobalInteraction(
   redirect('/timeline');
 }
 
+export async function updateInteraction(
+  interactionId: string,
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  if (!isUuid(interactionId)) {
+    return { error: 'Invalid interaction.' };
+  }
+
+  const ctx = await getCrmSupabaseContext();
+  if (!ctx) {
+    return { error: 'You need to sign in again.' };
+  }
+
+  const { data: existing, error: existingError } = await ctx.client
+    .from('interactions')
+    .select('id')
+    .eq('id', interactionId)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (existingError || !existing) {
+    return { error: 'Interaction not found.' };
+  }
+
+  const { data: oldLinks, error: oldLinksError } = await ctx.client
+    .from('interaction_people')
+    .select('person_id')
+    .eq('interaction_id', interactionId);
+
+  if (oldLinksError) {
+    return { error: oldLinksError.message };
+  }
+  const oldPersonIds = (oldLinks ?? []).map((row) => row.person_id);
+
+  const primaryPersonId = String(
+    formData.get('primary_person_id') ?? '',
+  ).trim();
+  const attendeeRaw = String(formData.get('attendee_ids') ?? '').trim();
+  const attendeeIds = attendeeRaw
+    ? attendeeRaw
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean)
+    : [];
+
+  if (!primaryPersonId) {
+    return { error: 'Choose who this moment was mainly about.' };
+  }
+
+  const allIds = [
+    primaryPersonId,
+    ...attendeeIds.filter((id) => id !== primaryPersonId),
+  ];
+  const gate = await assertOwnsPeople(allIds);
+  if (!gate.ctx) {
+    return { error: gate.error };
+  }
+
+  const payload = parseInteractionFields(formData);
+  if ('error' in payload) {
+    return { error: payload.error };
+  }
+
+  const typeGate = await assertOwnsInteractionType(ctx, payload.interaction_type_id);
+  if ('error' in typeGate) {
+    return { error: typeGate.error };
+  }
+
+  const { error: updateError } = await ctx.client
+    .from('interactions')
+    .update({
+      occurred_at: payload.occurred_at,
+      interaction_type_id: payload.interaction_type_id,
+      direction: payload.direction,
+      title: payload.title,
+      raw_note: payload.raw_note,
+    })
+    .eq('id', interactionId)
+    .eq('user_id', ctx.userId);
+
+  if (updateError) {
+    return { error: updateError.message };
+  }
+
+  const { error: deleteLinksError } = await ctx.client
+    .from('interaction_people')
+    .delete()
+    .eq('interaction_id', interactionId);
+
+  if (deleteLinksError) {
+    return { error: deleteLinksError.message };
+  }
+
+  const rows = allIds.map((personId) => ({
+    interaction_id: interactionId,
+    person_id: personId,
+    role:
+      personId === primaryPersonId
+        ? ('primary' as const)
+        : ('attendee' as const),
+  }));
+
+  const { error: linkError } = await ctx.client
+    .from('interaction_people')
+    .insert(rows);
+
+  if (linkError) {
+    return { error: linkError.message };
+  }
+
+  const touchIds = [...new Set([...oldPersonIds, ...allIds])];
+  await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, touchIds);
+
+  revalidatePath('/timeline');
+  touchIds.forEach((pid) => revalidatePath(`/people/${pid}`));
+  return { ok: true };
+}
+
 export async function deleteInteraction(
   interactionId: string,
 ): Promise<ActionResult> {

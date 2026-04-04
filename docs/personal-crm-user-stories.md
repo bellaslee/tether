@@ -171,7 +171,66 @@ Feature: Ask my CRM
     Then the system should use structured filters and semantic retrieval together
     And the answer should only include relevant matching contacts
 
-## Phase 4: Imports and Relationship Modes
+## Phase 4: Plans, rate limits, and fair use
+
+Feature: Usage limits and predictable costs
+  As a user of a hosted CRM
+  I want clear limits and steady performance
+  So that the service stays reliable and I understand what I am entitled to use
+
+  Scenario: Respect per-user rate limits on sensitive actions
+    Given I am signed in
+    When I perform actions that are expensive for the host (such as AI extraction, summary refresh, or semantic search)
+    Then the system should enforce reasonable per-user rate limits
+    And I should receive a clear message when I need to wait or try again later
+
+  Scenario: Different limits by subscription tier
+    Given the product offers a free tier and a paid tier
+    When I compare what each tier includes
+    Then limits for AI usage, imports, or high-volume features should be higher on the paid tier than on the free tier
+    And the limits should be described in plain language before I subscribe or upgrade
+
+  Scenario: Core CRM works when AI limits are reached
+    Given I have reached my AI or premium-feature limit for the current period
+    When I continue using the CRM
+    Then I should still be able to use core CRM features such as people, interactions, and timeline
+    And AI-backed features should fail gracefully with guidance on when I can use them again or how to upgrade
+
+Feature: Paid tier and upgrades
+  As a user who needs more capacity
+  I want a straightforward paid option
+  So that I can use the product heavily without surprise cutoffs
+
+  Scenario: Upgrade to unlock higher limits
+    Given I am on the free tier and I hit a documented limit
+    When I choose to upgrade to the paid tier
+    Then my subscription should unlock the higher limits associated with that tier
+    And I should see confirmation of what changed
+
+  Scenario: Optional bring-your-own API key
+    Given the product supports connecting my own model provider account
+    When I add my own API key according to the product’s instructions
+    Then AI features may use my key for inference where supported
+    And I should understand that usage on my provider bill is my responsibility
+
+  Scenario: Usage visibility for the current period
+    Given I am on a plan with periodic limits (such as monthly AI credits)
+    When I view my account or plan settings
+    Then I should see my current usage and remaining allowance for those limits
+    And the numbers should match the limits described for my tier
+
+Feature: Abuse resistance without punishing normal use
+  As a user and as part of a shared hosted service
+  I want proportionate protections
+  So that bad actors cannot burn down the product for everyone
+
+  Scenario: Protect signup and authentication endpoints
+    Given the service is publicly reachable
+    When automated or repeated abuse targets sign-in or sign-up
+    Then the system should apply appropriate throttling or challenge mechanisms
+    And legitimate users should still be able to access their accounts
+
+## Phase 5: Imports and Relationship Modes
 
 Feature: Calendar and email imports
   As a user

@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { requireCrmAccess } from '@/lib/crm/guard';
 import { formatInteractionTypeName } from '@/lib/domain/labels';
+import { toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
+import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { personShownName } from '@/lib/people/list-name';
 
 type InteractionWithType = Tables<'interactions'> & {
@@ -11,6 +14,32 @@ type InteractionWithType = Tables<'interactions'> & {
 
 export default async function TimelinePage() {
   const ctx = await requireCrmAccess();
+
+  const { data: interactionTypeRows, error: typesError } = await ctx.client
+    .from('interaction_types')
+    .select('id, name')
+    .eq('user_id', ctx.userId)
+    .order('sort_order', { ascending: true });
+
+  if (typesError) {
+    throw new Error(typesError.message);
+  }
+
+  const interactionTypeOptions: InteractionTypeOption[] = (
+    interactionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+
+  const { data: allPeopleRows, error: allPeopleError } = await ctx.client
+    .from('people')
+    .select('id, full_name, display_name')
+    .eq('user_id', ctx.userId)
+    .order('full_name', { ascending: true });
+
+  if (allPeopleError) {
+    throw new Error(allPeopleError.message);
+  }
+
+  const allPeople = allPeopleRows ?? [];
 
   const { data: interactions, error } = await ctx.client
     .from('interactions')
@@ -111,13 +140,20 @@ export default async function TimelinePage() {
         ) : (
           interactionList.map((interaction) => {
             const people = peopleByInteraction.get(interaction.id) ?? [];
+            const primaryPersonId =
+              people.find((p) => p.role === 'primary')?.id ??
+              people[0]?.id ??
+              '';
+            const attendeeIds = people
+              .filter((p) => p.role === 'attendee')
+              .map((p) => p.id);
             return (
               <li
                 key={interaction.id}
                 className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-2">
+                  <div className="min-w-0 flex-1 space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                       {formatDateTime(interaction.occurred_at)} ·{' '}
                       {formatInteractionTypeName(
@@ -152,7 +188,25 @@ export default async function TimelinePage() {
                       </div>
                     ) : null}
                   </div>
-                  <InteractionDeleteButton interactionId={interaction.id} />
+                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+                    {allPeople.length > 0 ? (
+                      <InteractionEditDisclosure
+                        interactionId={interaction.id}
+                        defaultOccurredAt={toDatetimeLocalInputValue(
+                          new Date(interaction.occurred_at),
+                        )}
+                        defaultInteractionTypeId={interaction.interaction_type_id}
+                        defaultDirection={interaction.direction ?? ''}
+                        defaultTitle={interaction.title ?? ''}
+                        defaultRawNote={interaction.raw_note ?? ''}
+                        primaryPersonId={primaryPersonId}
+                        attendeeIds={attendeeIds}
+                        people={allPeople}
+                        interactionTypes={interactionTypeOptions}
+                      />
+                    ) : null}
+                    <InteractionDeleteButton interactionId={interaction.id} />
+                  </div>
                 </div>
               </li>
             );

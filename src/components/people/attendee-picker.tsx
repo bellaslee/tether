@@ -13,18 +13,23 @@ type AttendeePickerProps = {
   people: PersonOption[];
   excludeId: string;
   name?: string;
+  /** For edit flows; pair with a stable `key` when switching rows. */
+  initialSelectedIds?: string[];
 };
 
 export function AttendeePicker({
   people,
   excludeId,
   name = 'attendee_ids',
+  initialSelectedIds,
 }: AttendeePickerProps) {
   const options = useMemo(
     () => people.filter((person) => !excludeId || person.id !== excludeId),
     [people, excludeId],
   );
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(
+    () => initialSelectedIds?.filter(Boolean) ?? [],
+  );
 
   const value = selected.join(',');
 

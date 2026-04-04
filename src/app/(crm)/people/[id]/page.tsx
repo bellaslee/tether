@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
 import { ContactMethodRow } from '@/components/people/contact-method-row';
 import { LogMomentDisclosure } from '@/components/people/log-moment-disclosure';
+import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { requireCrmAccess } from '@/lib/crm/guard';
@@ -116,11 +117,47 @@ export default async function PersonDetailPage(props: PageProps) {
     (links ?? []).map((row) => [row.interaction_id, row.role]),
   );
 
+  const participantsByInteraction = new Map<
+    string,
+    { primaryPersonId: string; attendeeIds: string[] }
+  >();
+
   let timelineRows: Array<{
     interaction: InteractionWithType;
     role: string;
   }> = [];
   if (interactionIds.length > 0) {
+    const { data: fullTimelineLinks, error: fullLinksError } = await ctx.client
+      .from('interaction_people')
+      .select('interaction_id, person_id, role')
+      .in('interaction_id', interactionIds);
+
+    if (fullLinksError) {
+      throw new Error(fullLinksError.message);
+    }
+
+    const grouped = new Map<
+      string,
+      Array<{ person_id: string; role: string }>
+    >();
+    for (const row of fullTimelineLinks ?? []) {
+      const list = grouped.get(row.interaction_id) ?? [];
+      list.push({ person_id: row.person_id, role: row.role });
+      grouped.set(row.interaction_id, list);
+    }
+    for (const [intId, plist] of grouped) {
+      const primary = plist.find((p) => p.role === 'primary');
+      const primaryPersonId =
+        primary?.person_id ?? plist[0]?.person_id ?? '';
+      const attendeeIds = plist
+        .filter((p) => p.role === 'attendee')
+        .map((p) => p.person_id);
+      participantsByInteraction.set(intId, {
+        primaryPersonId,
+        attendeeIds,
+      });
+    }
+
     const { data: interactions, error: timelineError } = await ctx.client
       .from('interactions')
       .select('*, interaction_types ( name )')
@@ -307,42 +344,72 @@ export default async function PersonDetailPage(props: PageProps) {
                   No interactions yet. Log a moment when you are ready.
                 </li>
               ) : (
-                timelineRows.map(({ interaction, role }) => (
-                  <li
-                    key={interaction.id}
-                    className="rounded-[1.5rem] border border-border-soft bg-white/60 px-5 py-4"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                          {formatDateTime(interaction.occurred_at)} ·{' '}
-                          {formatInteractionTypeName(
-                            interaction.interaction_types?.name ?? 'Moment',
-                          )}
-                          {interaction.direction
-                            ? ` · ${interaction.direction}`
-                            : ''}
-                          {role === 'primary' ? (
-                            <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] text-accent">
-                              Primary in this memory
-                            </span>
+                timelineRows.map(({ interaction, role }) => {
+                  const participants = participantsByInteraction.get(
+                    interaction.id,
+                  ) ?? {
+                    primaryPersonId: id,
+                    attendeeIds: [] as string[],
+                  };
+                  return (
+                    <li
+                      key={interaction.id}
+                      className="rounded-[1.5rem] border border-border-soft bg-white/60 px-5 py-4"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                            {formatDateTime(interaction.occurred_at)} ·{' '}
+                            {formatInteractionTypeName(
+                              interaction.interaction_types?.name ?? 'Moment',
+                            )}
+                            {interaction.direction
+                              ? ` · ${interaction.direction}`
+                              : ''}
+                            {role === 'primary' ? (
+                              <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] text-accent">
+                                Primary in this memory
+                              </span>
+                            ) : null}
+                          </p>
+                          {interaction.title ? (
+                            <p className="mt-2 font-display text-xl">
+                              {interaction.title}
+                            </p>
                           ) : null}
-                        </p>
-                        {interaction.title ? (
-                          <p className="mt-2 font-display text-xl">
-                            {interaction.title}
-                          </p>
-                        ) : null}
-                        {interaction.raw_note ? (
-                          <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-                            {interaction.raw_note}
-                          </p>
-                        ) : null}
+                          {interaction.raw_note ? (
+                            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
+                              {interaction.raw_note}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+                          {(allPeople ?? []).length > 0 ? (
+                            <InteractionEditDisclosure
+                              interactionId={interaction.id}
+                              defaultOccurredAt={toDatetimeLocalInputValue(
+                                new Date(interaction.occurred_at),
+                              )}
+                              defaultInteractionTypeId={
+                                interaction.interaction_type_id
+                              }
+                              defaultDirection={interaction.direction ?? ''}
+                              defaultTitle={interaction.title ?? ''}
+                              defaultRawNote={interaction.raw_note ?? ''}
+                              primaryPersonId={participants.primaryPersonId}
+                              attendeeIds={participants.attendeeIds}
+                              people={allPeople ?? []}
+                              interactionTypes={interactionTypeOptions}
+                            />
+                          ) : null}
+                          <InteractionDeleteButton
+                            interactionId={interaction.id}
+                          />
+                        </div>
                       </div>
-                      <InteractionDeleteButton interactionId={interaction.id} />
-                    </div>
-                  </li>
-                ))
+                    </li>
+                  );
+                })
               )}
             </ol>
           </section>
