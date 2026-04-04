@@ -244,33 +244,35 @@ export default async function PeoplePage(props: {
           ) : (
             <ul className="grid gap-4 md:grid-cols-2">
               {peopleList.map((person) => (
-                <li key={person.id}>
+                <li key={person.id} className="flex h-full min-h-0">
                   <Link
                     href={`/people/${person.id}`}
-                    className="card-surface block rounded-[1.5rem] border border-border-soft p-5 transition hover:-translate-y-0.5"
+                    className="card-surface flex h-full min-h-0 w-full flex-col gap-3 rounded-[1.5rem] border border-border-soft p-5 transition hover:-translate-y-0.5"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-display text-xl">
+                    <div className="flex min-h-0 flex-1 items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-display text-xl leading-snug">
                           {personShownName(person)}
                         </p>
-                        {person.display_name?.trim() &&
-                        personShownName(person) !== person.full_name ? (
-                          <p className="text-sm text-muted">
-                            {person.full_name}
-                          </p>
-                        ) : null}
-                        {person.preferred_name ? (
-                          <p className="text-sm text-muted">
-                            Goes by {person.preferred_name}
-                          </p>
-                        ) : null}
+                        <div className="mt-1 min-h-[2.75rem] space-y-0.5">
+                          {person.display_name?.trim() &&
+                          personShownName(person) !== person.full_name ? (
+                            <p className="text-sm leading-snug text-muted">
+                              {person.full_name}
+                            </p>
+                          ) : null}
+                          {person.preferred_name ? (
+                            <p className="text-sm leading-snug text-muted">
+                              Goes by {person.preferred_name}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
-                      <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+                      <span className="shrink-0 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
                         {person.person_categories?.name ?? '—'}
                       </span>
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <div className="mt-auto flex flex-wrap items-center gap-2 text-xs text-muted">
                       <span className="rounded-full border border-border-soft px-2 py-1">
                         {formatStatus(person.status)}
                       </span>

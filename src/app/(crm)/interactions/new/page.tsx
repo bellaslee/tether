@@ -52,8 +52,8 @@ export default async function NewInteractionPage() {
           Log a shared moment
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          Pick who this was mainly about, then link anyone else who was part of
-          it. One entry, everyone&apos;s timelines stay in sync.
+          Optionally name who this was mainly about, then add everyone who was
+          part of it under Also there. One entry keeps every timeline in sync.
         </p>
       </div>
 

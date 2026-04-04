@@ -360,7 +360,7 @@ export default async function PersonDetailPage(props: PageProps) {
                   const participants = participantsByInteraction.get(
                     interaction.id,
                   ) ?? {
-                    primaryPersonId: id,
+                    primaryPersonId: '',
                     attendeeIds: [] as string[],
                   };
                   return (
