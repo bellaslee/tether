@@ -9,6 +9,7 @@ import {
   AttendeePicker,
   type PersonOption,
 } from '@/components/people/attendee-picker';
+import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { personShownName } from '@/lib/people/list-name';
 import { Button } from '@/components/ui/button';
 
@@ -46,20 +47,21 @@ export function GlobalInteractionForm({
 
       <div className="space-y-2">
         <label htmlFor="primary_person_id" className="text-sm font-semibold">
-          Main person
+          Main person{' '}
+          <span className="font-normal text-muted">(optional)</span>
         </label>
         <p className="text-xs text-muted">
-          Who was this moment mainly about? Others can be linked as attendees.
+          If it was mainly about one person, choose them here. Otherwise leave
+          this empty and select everyone under Also there.
         </p>
         <select
           id="primary_person_id"
           name="primary_person_id"
-          required
           value={primaryId}
           onChange={(event) => setPrimaryId(event.target.value)}
           className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
         >
-          <option value="">Choose someone</option>
+          <option value="">No main person</option>
           {people.map((person) => (
             <option key={person.id} value={person.id}>
               {personShownName(person)}
@@ -68,10 +70,13 @@ export function GlobalInteractionForm({
         </select>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-sm font-semibold">Also there</p>
+      <PeopleFilterDisclosure
+        initialOpen={false}
+        labelId="global-interaction-also-there"
+        label="Also there"
+      >
         <AttendeePicker people={people} excludeId={primaryId} />
-      </div>
+      </PeopleFilterDisclosure>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">

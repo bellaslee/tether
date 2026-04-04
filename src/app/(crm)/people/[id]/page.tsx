@@ -10,7 +10,8 @@ import { InteractionEditDisclosure } from '@/components/interactions/interaction
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { requireCrmAccess } from '@/lib/crm/guard';
-import { formatInteractionTypeName, formatStatus } from '@/lib/domain/labels';
+import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
+import { formatStatus } from '@/lib/domain/labels';
 import { formatMonthYear, toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import {
@@ -149,8 +150,7 @@ export default async function PersonDetailPage(props: PageProps) {
     }
     for (const [intId, plist] of grouped) {
       const primary = plist.find((p) => p.role === 'primary');
-      const primaryPersonId =
-        primary?.person_id ?? plist[0]?.person_id ?? '';
+      const primaryPersonId = primary?.person_id ?? '';
       const attendeeIds = plist
         .filter((p) => p.role === 'attendee')
         .map((p) => p.person_id);
@@ -370,20 +370,20 @@ export default async function PersonDetailPage(props: PageProps) {
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                            {formatDateTime(interaction.occurred_at)} ·{' '}
-                            {formatInteractionTypeName(
-                              interaction.interaction_types?.name ?? 'Moment',
-                            )}
-                            {interaction.direction
-                              ? ` · ${interaction.direction}`
-                              : ''}
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+                              {formatDateTime(interaction.occurred_at)}
+                            </span>
+                            <InteractionMetaChips
+                              typeName={interaction.interaction_types?.name}
+                              direction={interaction.direction}
+                            />
                             {role === 'primary' ? (
-                              <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] text-accent">
+                              <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] text-accent">
                                 Primary in this memory
                               </span>
                             ) : null}
-                          </p>
+                          </div>
                           {interaction.title ? (
                             <p className="mt-2 font-display text-xl">
                               {interaction.title}

@@ -155,14 +155,20 @@ export async function createGlobalInteraction(
         .filter(Boolean)
     : [];
 
-  if (!primaryPersonId) {
-    return { error: 'Choose who this moment was mainly about.' };
+  const allIds = primaryPersonId
+    ? [
+        primaryPersonId,
+        ...attendeeIds.filter((id) => id !== primaryPersonId),
+      ]
+    : [...new Set(attendeeIds)];
+
+  if (allIds.length === 0) {
+    return {
+      error:
+        "Link at least one person — use 'Also there', or choose a main person.",
+    };
   }
 
-  const allIds = [
-    primaryPersonId,
-    ...attendeeIds.filter((id) => id !== primaryPersonId),
-  ];
   const gate = await assertOwnsPeople(allIds);
   if (!gate.ctx) {
     return { error: gate.error };
@@ -201,7 +207,7 @@ export async function createGlobalInteraction(
     interaction_id: interaction.id,
     person_id: personId,
     role:
-      personId === primaryPersonId
+      primaryPersonId && personId === primaryPersonId
         ? ('primary' as const)
         : ('attendee' as const),
   }));
@@ -271,14 +277,20 @@ export async function updateInteraction(
         .filter(Boolean)
     : [];
 
-  if (!primaryPersonId) {
-    return { error: 'Choose who this moment was mainly about.' };
+  const allIds = primaryPersonId
+    ? [
+        primaryPersonId,
+        ...attendeeIds.filter((id) => id !== primaryPersonId),
+      ]
+    : [...new Set(attendeeIds)];
+
+  if (allIds.length === 0) {
+    return {
+      error:
+        "Link at least one person — use 'Also there', or choose a main person.",
+    };
   }
 
-  const allIds = [
-    primaryPersonId,
-    ...attendeeIds.filter((id) => id !== primaryPersonId),
-  ];
   const gate = await assertOwnsPeople(allIds);
   if (!gate.ctx) {
     return { error: gate.error };
@@ -323,7 +335,7 @@ export async function updateInteraction(
     interaction_id: interactionId,
     person_id: personId,
     role:
-      personId === primaryPersonId
+      primaryPersonId && personId === primaryPersonId
         ? ('primary' as const)
         : ('attendee' as const),
   }));

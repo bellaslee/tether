@@ -11,6 +11,7 @@ import {
   AttendeePicker,
   type PersonOption,
 } from '@/components/people/attendee-picker';
+import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { Button } from '@/components/ui/button';
 
 const initial: ActionResult = {};
@@ -142,13 +143,16 @@ export function PersonInteractionForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-sm font-semibold">Also there</p>
-        <p className="text-xs text-muted">
+      <PeopleFilterDisclosure
+        initialOpen={false}
+        labelId={`person-interaction-also-there-${personId}`}
+        label="Also there"
+      >
+        <p className="mb-2 text-xs text-muted">
           Optional — link this memory to other people in one shared entry.
         </p>
         <AttendeePicker people={otherPeople} excludeId={personId} />
-      </div>
+      </PeopleFilterDisclosure>
 
       <Button type="submit" variant="primary" size="lg" disabled={pending}>
         {pending ? 'Saving…' : 'Save to timeline'}

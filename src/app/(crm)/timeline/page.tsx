@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/button';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
+import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
 import { requireCrmAccess } from '@/lib/crm/guard';
-import { formatInteractionTypeName } from '@/lib/domain/labels';
 import { toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
@@ -107,23 +107,28 @@ export default async function TimelinePage() {
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-          Across your Circle
-        </p>
-        <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-          Every row is one real moment. People listed together shared that
-          memory — it is not duplicated in the database.
-        </p>
-        <p className="mt-3">
-          <Link
-            href="/timeline/types"
-            className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
-          >
-            Manage timeline types
-          </Link>
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
+            Across your Circle
+          </p>
+          <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+            Every row is one real moment. People listed together shared that
+            memory — it is not duplicated in the database.
+          </p>
+          <p className="mt-3">
+            <Link
+              href="/timeline/types"
+              className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
+            >
+              Manage timeline types
+            </Link>
+          </p>
+        </div>
+        <ButtonLink href="/interactions/new" variant="primary" size="lg">
+          Log interaction
+        </ButtonLink>
       </header>
 
       <ol className="space-y-5">
@@ -142,9 +147,7 @@ export default async function TimelinePage() {
           interactionList.map((interaction) => {
             const people = peopleByInteraction.get(interaction.id) ?? [];
             const primaryPersonId =
-              people.find((p) => p.role === 'primary')?.id ??
-              people[0]?.id ??
-              '';
+              people.find((p) => p.role === 'primary')?.id ?? '';
             const attendeeIds = people
               .filter((p) => p.role === 'attendee')
               .map((p) => p.id);
@@ -155,15 +158,15 @@ export default async function TimelinePage() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0 flex-1 space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      {formatDateTime(interaction.occurred_at)} ·{' '}
-                      {formatInteractionTypeName(
-                        interaction.interaction_types?.name ?? 'Moment',
-                      )}
-                      {interaction.direction
-                        ? ` · ${interaction.direction}`
-                        : ''}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+                        {formatDateTime(interaction.occurred_at)}
+                      </span>
+                      <InteractionMetaChips
+                        typeName={interaction.interaction_types?.name}
+                        direction={interaction.direction}
+                      />
+                    </div>
                     {interaction.title ? (
                       <p className="font-display text-2xl">
                         {interaction.title}
@@ -180,11 +183,14 @@ export default async function TimelinePage() {
                           <ButtonLink
                             key={`${interaction.id}-${person.id}`}
                             href={`/people/${person.id}`}
-                            variant="secondaryMuted"
+                            variant={
+                              person.id === primaryPersonId
+                                ? 'primary'
+                                : 'secondary'
+                            }
                             size="chip"
                           >
                             {personShownName(person)}
-                            {person.role === 'primary' ? ' · main' : ''}
                           </ButtonLink>
                         ))}
                       </div>

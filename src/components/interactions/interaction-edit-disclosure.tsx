@@ -1,6 +1,12 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { updateInteraction } from '@/lib/actions/interactions';
@@ -11,6 +17,7 @@ import {
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { personShownName } from '@/lib/people/list-name';
+import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { Button } from '@/components/ui/button';
 
 const initial: ActionResult = {};
@@ -98,8 +105,26 @@ function InteractionEditForm({
   const resolvedPrimary =
     primaryPersonId && people.some((p) => p.id === primaryPersonId)
       ? primaryPersonId
-      : (people[0]?.id ?? '');
+      : '';
   const [primaryId, setPrimaryId] = useState(resolvedPrimary);
+  const [boostIds, setBoostIds] = useState<string[]>([]);
+  const [pickerEpoch, setPickerEpoch] = useState(0);
+
+  const mergedAttendeeInitial = useMemo(
+    () => [...new Set([...attendeeIds, ...boostIds])],
+    [attendeeIds, boostIds],
+  );
+
+  function handlePrimaryChange(next: string) {
+    if (!next && primaryId) {
+      setBoostIds((prev) => [...new Set([...prev, primaryId])]);
+    } else {
+      setBoostIds([]);
+    }
+    setPickerEpoch((e) => e + 1);
+    setPrimaryId(next);
+  }
+
   const [state, formAction, pending] = useActionState(
     updateInteraction.bind(null, interactionId),
     initial,
@@ -131,16 +156,21 @@ function InteractionEditForm({
 
       <div className="space-y-2">
         <label htmlFor={`primary-${interactionId}`} className="text-sm font-semibold">
-          Main person
+          Main person{' '}
+          <span className="font-normal text-muted">(optional)</span>
         </label>
+        <p className="text-xs text-muted">
+          Leave empty if no one was the focus — everyone can be under Also
+          there.
+        </p>
         <select
           id={`primary-${interactionId}`}
           name="primary_person_id"
-          required
           value={primaryId}
-          onChange={(event) => setPrimaryId(event.target.value)}
+          onChange={(event) => handlePrimaryChange(event.target.value)}
           className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
         >
+          <option value="">No main person</option>
           {people.map((person) => (
             <option key={person.id} value={person.id}>
               {personShownName(person)}
@@ -149,15 +179,19 @@ function InteractionEditForm({
         </select>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-sm font-semibold">Also there</p>
+      <PeopleFilterDisclosure
+        key={`also-there-${interactionId}-${attendeeIds.slice().sort().join('|')}`}
+        initialOpen={attendeeIds.length > 0}
+        labelId={`interaction-edit-also-there-${interactionId}`}
+        label="Also there"
+      >
         <AttendeePicker
-          key={interactionId}
+          key={`${interactionId}-${pickerEpoch}`}
           people={people}
           excludeId={primaryId}
-          initialSelectedIds={attendeeIds}
+          initialSelectedIds={mergedAttendeeInitial}
         />
-      </div>
+      </PeopleFilterDisclosure>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
