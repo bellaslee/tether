@@ -20,9 +20,7 @@ function first(param: string | string[] | undefined) {
   return param;
 }
 
-function searchParamToStrings(
-  param: string | string[] | undefined,
-): string[] {
+function searchParamToStrings(param: string | string[] | undefined): string[] {
   if (param === undefined) {
     return [];
   }
@@ -37,9 +35,7 @@ function isStatus(value: string): value is PersonStatus {
   return PERSON_STATUSES.includes(value as PersonStatus);
 }
 
-function parseCategoryIds(
-  param: string | string[] | undefined,
-): string[] {
+function parseCategoryIds(param: string | string[] | undefined): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const raw of searchParamToStrings(param)) {
@@ -52,9 +48,7 @@ function parseCategoryIds(
   return out;
 }
 
-function parseStatuses(
-  param: string | string[] | undefined,
-): PersonStatus[] {
+function parseStatuses(param: string | string[] | undefined): PersonStatus[] {
   const seen = new Set<PersonStatus>();
   const out: PersonStatus[] = [];
   for (const raw of searchParamToStrings(param)) {
@@ -139,8 +133,7 @@ export default async function PeoplePage(props: {
           </p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">People</h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
-            Names, context, and gentle filters — nothing about pipelines or
-            deals.
+            Details you don’t want to forget. Let them know you care.
           </p>
         </div>
         <ButtonLink href="/people/new" variant="primary" size="lg">
@@ -150,11 +143,7 @@ export default async function PeoplePage(props: {
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
         <section className="card-surface order-1 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-2 lg:w-full lg:max-w-sm lg:shrink-0">
-          <form
-            className="flex flex-col gap-4"
-            method="get"
-            action="/people"
-          >
+          <form className="flex flex-col gap-4" method="get" action="/people">
             <div className="min-w-0 w-full">
               <input
                 id="q"
@@ -231,7 +220,9 @@ export default async function PeoplePage(props: {
           </form>
 
           <div className="mt-6 flex flex-wrap gap-2 text-xs text-muted">
-            <span className="font-semibold uppercase tracking-wide">Quick:</span>
+            <span className="font-semibold uppercase tracking-wide">
+              Quick:
+            </span>
             <Link className="underline-offset-4 hover:underline" href="/people">
               Clear filters
             </Link>
@@ -265,7 +256,9 @@ export default async function PeoplePage(props: {
                         </p>
                         {person.display_name?.trim() &&
                         personShownName(person) !== person.full_name ? (
-                          <p className="text-sm text-muted">{person.full_name}</p>
+                          <p className="text-sm text-muted">
+                            {person.full_name}
+                          </p>
                         ) : null}
                         {person.preferred_name ? (
                           <p className="text-sm text-muted">

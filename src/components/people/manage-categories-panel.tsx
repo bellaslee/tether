@@ -118,8 +118,7 @@ export function ManageCategoriesPanel(props: ManageCategoriesPanelProps) {
       <section className="space-y-3">
         <h2 className="font-display text-xl tracking-tight">Your labels</h2>
         <p className="text-sm leading-7 text-muted">
-          Rename anytime — people stay linked because each category keeps the same
-          id behind the scenes.
+          Rename anytime — people stay linked to the same category.
         </p>
         {categories.length === 0 ? (
           <p className="text-sm text-muted">
@@ -132,11 +131,7 @@ export function ManageCategoriesPanel(props: ManageCategoriesPanelProps) {
         ) : (
           <ul className="space-y-3">
             {categories.map((cat) => (
-              <CategoryRow
-                key={cat.id}
-                category={cat}
-                onUpdated={refresh}
-              />
+              <CategoryRow key={cat.id} category={cat} onUpdated={refresh} />
             ))}
           </ul>
         )}

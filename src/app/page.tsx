@@ -1,39 +1,43 @@
-import { ButtonLink } from "@/components/ui/button";
-import { redirect } from "next/navigation";
-import { SetupStatus } from "@/components/home/setup-status";
-import { getCrmSupabaseContext } from "@/lib/crm/context";
-import { getSetupStatus } from "@/lib/env";
+import { ButtonLink } from '@/components/ui/button';
+import { redirect } from 'next/navigation';
+import { SetupStatus } from '@/components/home/setup-status';
+import { getCrmSupabaseContext } from '@/lib/crm/context';
+import { getSetupStatus } from '@/lib/env';
 
 const plannedAreas = [
   {
-    name: "People",
-    description: "Profiles, context, and the details you want to remember before reaching out.",
+    name: 'People',
+    description:
+      'Profiles, context, and the details you want to remember before reaching out.',
   },
   {
-    name: "Timeline",
-    description: "A shared history of interactions, from quick texts to multi-person hangouts.",
+    name: 'Timeline',
+    description:
+      'A shared history of interactions, from quick texts to multi-person hangouts.',
   },
   {
-    name: "Tasks",
-    description: "Gentle follow-ups and reminders that stay grounded in real relationship context.",
+    name: 'Tasks',
+    description:
+      'Gentle follow-ups and reminders that stay grounded in real relationship context.',
   },
   {
-    name: "Ask",
-    description: "Later phases will add grounded AI recall on top of editable source material.",
+    name: 'Ask',
+    description:
+      'Later phases will add grounded AI recall on top of editable source material.',
   },
 ] as const;
 
 const setupSteps = [
-  "Copy .env.example to .env.local.",
-  "Run npx supabase start, then npx supabase status -o env to collect local credentials.",
-  "Fill in the Supabase variables and add your OpenAI API key when you are ready for AI features.",
-  "Run npm run dev and open http://localhost:3000.",
+  'Copy .env.example to .env.local.',
+  'Run npx supabase start, then npx supabase status -o env to collect local credentials.',
+  'Fill in the Supabase variables and add your OpenAI API key when you are ready for AI features.',
+  'Run npm run dev and open http://localhost:3000.',
 ] as const;
 
 export default async function Home() {
   const ctx = await getCrmSupabaseContext();
   if (ctx) {
-    redirect("/people");
+    redirect('/people');
   }
 
   const setupStatus = getSetupStatus();
@@ -44,16 +48,17 @@ export default async function Home() {
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.3fr_0.9fr] lg:px-12 lg:py-12">
           <div className="space-y-6">
             <div className="inline-flex items-center rounded-full border border-border-soft bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-              Personal Relationship CRM
+              Tether
             </div>
             <div className="space-y-4">
               <h1 className="max-w-3xl font-display text-5xl leading-none tracking-tight text-balance sm:text-6xl">
                 Remember people with warmth, context, and care.
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-muted">
-                The foundation is now a real Next.js and Supabase app instead of a docs-only repo.
-                This first shell keeps the tone personal, shows what still needs configuration, and
-                gives us a clean base for people, timelines, notes, and grounded AI later on.
+                The foundation is now a real Next.js and Supabase app instead of
+                a docs-only repo. This first shell keeps the tone personal,
+                shows what still needs configuration, and gives us a clean base
+                for people, timelines, notes, and grounded AI later on.
               </p>
             </div>
 
@@ -80,17 +85,33 @@ export default async function Home() {
 
       <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-          <h2 className="font-display text-3xl leading-tight">What this starter already proves</h2>
+          <h2 className="font-display text-3xl leading-tight">
+            What this starter already proves
+          </h2>
           <ul className="mt-6 space-y-4 text-sm leading-7 text-muted">
-            <li>Next.js App Router is running from <code>src/app</code> with TypeScript and Tailwind.</li>
-            <li>Supabase local config and the first Phase 1 migration are checked in under <code>supabase/</code>.</li>
-            <li>Database and OpenAI helpers live under <code>src/lib</code> with server-only boundaries in place.</li>
-            <li>The home page stays useful even before secrets are configured, so setup errors are visible instead of silent.</li>
+            <li>
+              Next.js App Router is running from <code>src/app</code> with
+              TypeScript and Tailwind.
+            </li>
+            <li>
+              Supabase local config and the first Phase 1 migration are checked
+              in under <code>supabase/</code>.
+            </li>
+            <li>
+              Database and OpenAI helpers live under <code>src/lib</code> with
+              server-only boundaries in place.
+            </li>
+            <li>
+              The home page stays useful even before secrets are configured, so
+              setup errors are visible instead of silent.
+            </li>
           </ul>
         </div>
 
         <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-          <h2 className="font-display text-3xl leading-tight">Local setup flow</h2>
+          <h2 className="font-display text-3xl leading-tight">
+            Local setup flow
+          </h2>
           <ol className="mt-6 space-y-4 text-sm leading-7 text-muted">
             {setupSteps.map((step, index) => (
               <li key={step} className="flex gap-3">
@@ -115,8 +136,9 @@ export default async function Home() {
             </h2>
           </div>
           <p className="max-w-xl text-sm leading-7 text-muted">
-            The pages below are the next obvious milestones. They are listed here so the scaffold
-            reads like the product we are actually building.
+            The pages below are the next obvious milestones. They are listed
+            here so the scaffold reads like the product we are actually
+            building.
           </p>
         </div>
 
@@ -129,7 +151,9 @@ export default async function Home() {
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">
                 {area.name}
               </p>
-              <p className="mt-3 text-sm leading-7 text-foreground/80">{area.description}</p>
+              <p className="mt-3 text-sm leading-7 text-foreground/80">
+                {area.description}
+              </p>
             </article>
           ))}
         </div>

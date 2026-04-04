@@ -109,7 +109,7 @@ export default async function TimelinePage() {
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
       <header>
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-          Across your CRM
+          Across your Circle
         </p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
@@ -197,7 +197,9 @@ export default async function TimelinePage() {
                         defaultOccurredAt={toDatetimeLocalInputValue(
                           new Date(interaction.occurred_at),
                         )}
-                        defaultInteractionTypeId={interaction.interaction_type_id}
+                        defaultInteractionTypeId={
+                          interaction.interaction_type_id
+                        }
                         defaultDirection={interaction.direction ?? ''}
                         defaultTitle={interaction.title ?? ''}
                         defaultRawNote={interaction.raw_note ?? ''}

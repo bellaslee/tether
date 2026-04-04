@@ -35,8 +35,7 @@ export default async function ManageCategoriesPage() {
           Manage categories
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          These labels describe how someone fits in your life — not a sales
-          pipeline.
+          These labels describe how someone fits in your life.
         </p>
       </div>
 
