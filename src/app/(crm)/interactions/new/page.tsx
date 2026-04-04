@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { GlobalInteractionForm } from '@/components/interactions/global-interaction-form';
 import { requireCrmAccess } from '@/lib/crm/guard';
 import { toDatetimeLocalInputValue } from '@/lib/datetime';
+import {
+  defaultInteractionTypeId as pickDefaultInteractionTypeId,
+  type InteractionTypeOption,
+} from '@/lib/interactions/type-options';
 
 export default async function NewInteractionPage() {
   const ctx = await requireCrmAccess();
@@ -15,6 +19,23 @@ export default async function NewInteractionPage() {
   if (error) {
     throw new Error(error.message);
   }
+
+  const { data: interactionTypeRows, error: typesError } = await ctx.client
+    .from('interaction_types')
+    .select('id, name')
+    .eq('user_id', ctx.userId)
+    .order('sort_order', { ascending: true });
+
+  if (typesError) {
+    throw new Error(typesError.message);
+  }
+
+  const interactionTypeOptions: InteractionTypeOption[] = (
+    interactionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
+    interactionTypeOptions,
+  );
 
   const defaultOccurredAt = toDatetimeLocalInputValue();
 
@@ -52,6 +73,8 @@ export default async function NewInteractionPage() {
           <GlobalInteractionForm
             people={people ?? []}
             defaultOccurredAt={defaultOccurredAt}
+            interactionTypes={interactionTypeOptions}
+            defaultInteractionTypeId={defaultInteractionTypeId}
           />
         </div>
       )}

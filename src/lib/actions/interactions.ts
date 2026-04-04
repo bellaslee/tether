@@ -2,21 +2,18 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type {
-  InteractionDirection,
-  InteractionType,
-} from '@/lib/db/database.types';
+import type { InteractionDirection } from '@/lib/db/database.types';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
-import {
-  INTERACTION_DIRECTIONS,
-  INTERACTION_TYPES,
-} from '@/lib/domain/constants';
+import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
 
 export type ActionResult = { error?: string; ok?: true };
 
-function isInteractionType(value: string): value is InteractionType {
-  return INTERACTION_TYPES.includes(value as InteractionType);
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_RE.test(value);
 }
 
 function isDirection(value: string): value is InteractionDirection {
@@ -41,6 +38,26 @@ async function assertOwnsPeople(personIds: string[]) {
     return { error: 'One or more people could not be found.', ctx: null };
   }
   return { ctx, error: undefined };
+}
+
+async function assertOwnsInteractionType(
+  ctx: NonNullable<Awaited<ReturnType<typeof getCrmSupabaseContext>>>,
+  interactionTypeId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const { data, error } = await ctx.client
+    .from('interaction_types')
+    .select('id')
+    .eq('id', interactionTypeId)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (error) {
+    return { error: error.message };
+  }
+  if (!data) {
+    return { error: 'Choose a valid interaction type.' };
+  }
+  return { ok: true };
 }
 
 export async function createInteractionFromPerson(
@@ -71,15 +88,21 @@ export async function createInteractionFromPerson(
     return { error: payload.error };
   }
 
+  const typeGate = await assertOwnsInteractionType(ctx, payload.interaction_type_id);
+  if ('error' in typeGate) {
+    return { error: typeGate.error };
+  }
+
   const { data: interaction, error: insertError } = await ctx.client
     .from('interactions')
     .insert({
       user_id: ctx.userId,
       occurred_at: payload.occurred_at,
-      type: payload.type,
+      interaction_type_id: payload.interaction_type_id,
       direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
+      counts_toward_last_touch: true,
     })
     .select('id')
     .single();
@@ -151,15 +174,21 @@ export async function createGlobalInteraction(
     return { error: payload.error };
   }
 
+  const typeGate = await assertOwnsInteractionType(ctx, payload.interaction_type_id);
+  if ('error' in typeGate) {
+    return { error: typeGate.error };
+  }
+
   const { data: interaction, error: insertError } = await ctx.client
     .from('interactions')
     .insert({
       user_id: ctx.userId,
       occurred_at: payload.occurred_at,
-      type: payload.type,
+      interaction_type_id: payload.interaction_type_id,
       direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
+      counts_toward_last_touch: true,
     })
     .select('id')
     .single();
@@ -246,14 +275,14 @@ export async function deleteInteraction(
 function parseInteractionFields(formData: FormData):
   | {
       occurred_at: string;
-      type: InteractionType;
+      interaction_type_id: string;
       direction: InteractionDirection | null;
       title: string | null;
       raw_note: string | null;
     }
   | { error: string } {
   const occurredLocal = String(formData.get('occurred_at') ?? '').trim();
-  const typeRaw = String(formData.get('type') ?? '');
+  const typeIdRaw = String(formData.get('interaction_type_id') ?? '').trim();
   const directionRaw = String(formData.get('direction') ?? '').trim();
   const title = optionalString(formData.get('title'));
   const raw_note = optionalString(formData.get('raw_note'));
@@ -261,7 +290,7 @@ function parseInteractionFields(formData: FormData):
   if (!occurredLocal) {
     return { error: 'When did this happen?' };
   }
-  if (!isInteractionType(typeRaw)) {
+  if (!isUuid(typeIdRaw)) {
     return { error: 'Choose a valid interaction type.' };
   }
 
@@ -278,7 +307,13 @@ function parseInteractionFields(formData: FormData):
     direction = directionRaw;
   }
 
-  return { occurred_at, type: typeRaw, direction, title, raw_note };
+  return {
+    occurred_at,
+    interaction_type_id: typeIdRaw,
+    direction,
+    title,
+    raw_note,
+  };
 }
 
 function optionalString(value: FormDataEntryValue | null) {

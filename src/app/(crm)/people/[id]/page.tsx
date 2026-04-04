@@ -7,9 +7,13 @@ import { LogMomentDisclosure } from '@/components/people/log-moment-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { requireCrmAccess } from '@/lib/crm/guard';
-import { formatInteractionType, formatStatus } from '@/lib/domain/labels';
+import { formatInteractionTypeName, formatStatus } from '@/lib/domain/labels';
 import { toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
+import {
+  defaultInteractionTypeId as pickDefaultInteractionTypeId,
+  type InteractionTypeOption,
+} from '@/lib/interactions/type-options';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -20,6 +24,10 @@ type PageProps = {
 
 type PersonWithCategory = Tables<'people'> & {
   person_categories: { name: string } | null;
+};
+
+type InteractionWithType = Tables<'interactions'> & {
+  interaction_types: { name: string } | null;
 };
 
 function first(param: string | string[] | undefined) {
@@ -85,6 +93,19 @@ export default async function PersonDetailPage(props: PageProps) {
     .eq('user_id', ctx.userId)
     .order('full_name', { ascending: true });
 
+  const { data: interactionTypeRows } = await ctx.client
+    .from('interaction_types')
+    .select('id, name')
+    .eq('user_id', ctx.userId)
+    .order('sort_order', { ascending: true });
+
+  const interactionTypeOptions: InteractionTypeOption[] = (
+    interactionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
+    interactionTypeOptions,
+  );
+
   const { data: links } = await ctx.client
     .from('interaction_people')
     .select('interaction_id, role')
@@ -96,13 +117,13 @@ export default async function PersonDetailPage(props: PageProps) {
   );
 
   let timelineRows: Array<{
-    interaction: Tables<'interactions'>;
+    interaction: InteractionWithType;
     role: string;
   }> = [];
   if (interactionIds.length > 0) {
     const { data: interactions, error: timelineError } = await ctx.client
       .from('interactions')
-      .select('*')
+      .select('*, interaction_types ( name )')
       .eq('user_id', ctx.userId)
       .in('id', interactionIds)
       .order('occurred_at', { ascending: false });
@@ -111,14 +132,16 @@ export default async function PersonDetailPage(props: PageProps) {
       throw new Error(timelineError.message);
     }
 
-    timelineRows =
-      interactions?.map((interaction) => ({
-        interaction,
-        role: roleByInteraction.get(interaction.id) ?? 'attendee',
-      })) ?? [];
+    const typed = (interactions ?? []) as InteractionWithType[];
+    timelineRows = typed.map((interaction) => ({
+      interaction,
+      role: roleByInteraction.get(interaction.id) ?? 'attendee',
+    }));
   }
 
-  const defaultOccurredAt = toDatetimeLocalInputValue();
+  const defaultOccurredAt = toDatetimeLocalInputValue(
+    new Date(person.created_at),
+  );
   const otherPeople = (allPeople ?? []).filter((p) => p.id !== person.id);
 
   const tabLinkBase =
@@ -222,10 +245,6 @@ export default async function PersonDetailPage(props: PageProps) {
           <div className="space-y-6">
             <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
               <h2 className="font-display text-2xl">Stay in touch</h2>
-              <p className="mt-2 text-sm leading-7 text-muted">
-                One primary keeps things simple. Marking a new primary quietly
-                moves the others aside.
-              </p>
               <ul className="mt-6 space-y-4">
                 {(contactMethods ?? []).length === 0 ? (
                   <li className="text-sm text-muted">
@@ -260,6 +279,8 @@ export default async function PersonDetailPage(props: PageProps) {
                 personId={person.id}
                 otherPeople={otherPeople}
                 defaultOccurredAt={defaultOccurredAt}
+                interactionTypes={interactionTypeOptions}
+                defaultInteractionTypeId={defaultInteractionTypeId}
               />
             </div>
           </section>
@@ -295,7 +316,9 @@ export default async function PersonDetailPage(props: PageProps) {
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                           {formatDateTime(interaction.occurred_at)} ·{' '}
-                          {formatInteractionType(interaction.type)}
+                          {formatInteractionTypeName(
+                            interaction.interaction_types?.name ?? 'Moment',
+                          )}
                           {interaction.direction
                             ? ` · ${interaction.direction}`
                             : ''}

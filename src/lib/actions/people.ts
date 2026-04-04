@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import type { PersonStatus } from '@/lib/db/database.types';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
+import { syncCategoryChangeTimelineEntry } from '@/lib/interactions/category-change-audit';
 
 export type ActionResult = { error?: string; ok?: true };
 
@@ -146,6 +147,17 @@ export async function updatePerson(
     return { error: 'Choose a valid category.' };
   }
 
+  const { data: personBefore, error: beforeError } = await ctx.client
+    .from('people')
+    .select('category_id, created_at')
+    .eq('id', personId)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (beforeError || !personBefore) {
+    return { error: beforeError?.message ?? 'Person not found.' };
+  }
+
   const { error } = await ctx.client
     .from('people')
     .update({
@@ -169,9 +181,28 @@ export async function updatePerson(
     return { error: error.message };
   }
 
+  if (personBefore.category_id !== categoryIdRaw) {
+    try {
+      await syncCategoryChangeTimelineEntry(
+        ctx.client,
+        ctx.userId,
+        personId,
+        personBefore.category_id,
+        categoryIdRaw,
+        personBefore.created_at,
+      );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Something went wrong.';
+      return {
+        error: `Profile updated, but the timeline entry for this category change could not be saved (${msg}).`,
+      };
+    }
+  }
+
   revalidatePath('/people');
   revalidatePath(`/people/${personId}`);
   revalidatePath(`/people/${personId}/edit`);
+  revalidatePath('/timeline');
   redirect(`/people/${personId}`);
 }
 

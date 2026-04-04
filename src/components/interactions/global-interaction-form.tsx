@@ -3,11 +3,8 @@
 import { useActionState, useState } from 'react';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { createGlobalInteraction } from '@/lib/actions/interactions';
-import {
-  INTERACTION_DIRECTIONS,
-  INTERACTION_TYPES,
-} from '@/lib/domain/constants';
-import { formatInteractionType } from '@/lib/domain/labels';
+import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
+import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
   AttendeePicker,
   type PersonOption,
@@ -19,11 +16,15 @@ const initial: ActionResult = {};
 type GlobalInteractionFormProps = {
   people: PersonOption[];
   defaultOccurredAt: string;
+  interactionTypes: InteractionTypeOption[];
+  defaultInteractionTypeId: string;
 };
 
 export function GlobalInteractionForm({
   people,
   defaultOccurredAt,
+  interactionTypes,
+  defaultInteractionTypeId,
 }: GlobalInteractionFormProps) {
   const [state, formAction, pending] = useActionState(
     createGlobalInteraction,
@@ -91,14 +92,14 @@ export function GlobalInteractionForm({
           </label>
           <select
             id="type"
-            name="type"
+            name="interaction_type_id"
             required
-            defaultValue="hangout"
+            defaultValue={defaultInteractionTypeId}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           >
-            {INTERACTION_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {formatInteractionType(t)}
+            {interactionTypes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
               </option>
             ))}
           </select>

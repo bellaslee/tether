@@ -4,12 +4,9 @@ import { useActionState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { createInteractionFromPerson } from '@/lib/actions/interactions';
-import {
-  INTERACTION_DIRECTIONS,
-  INTERACTION_TYPES,
-} from '@/lib/domain/constants';
-import { formatInteractionType } from '@/lib/domain/labels';
+import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { toDatetimeLocalInputValue } from '@/lib/datetime';
+import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
   AttendeePicker,
   type PersonOption,
@@ -21,12 +18,16 @@ type PersonInteractionFormProps = {
   personId: string;
   otherPeople: PersonOption[];
   defaultOccurredAt: string;
+  interactionTypes: InteractionTypeOption[];
+  defaultInteractionTypeId: string;
 };
 
 export function PersonInteractionForm({
   personId,
   otherPeople,
   defaultOccurredAt,
+  interactionTypes,
+  defaultInteractionTypeId,
 }: PersonInteractionFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -82,14 +83,14 @@ export function PersonInteractionForm({
           </label>
           <select
             id={`type-${personId}`}
-            name="type"
+            name="interaction_type_id"
             required
-            defaultValue="hangout"
+            defaultValue={defaultInteractionTypeId}
             className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           >
-            {INTERACTION_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {formatInteractionType(t)}
+            {interactionTypes.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
               </option>
             ))}
           </select>

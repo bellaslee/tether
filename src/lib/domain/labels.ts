@@ -1,8 +1,4 @@
-import type {
-  ContactMethodType,
-  InteractionType,
-  PersonStatus,
-} from "@/lib/db/database.types";
+import type { ContactMethodType, PersonStatus } from "@/lib/db/database.types";
 
 const statusLabels: Record<PersonStatus, string> = {
   active: "Active",
@@ -20,17 +16,6 @@ const contactTypeLabels: Record<ContactMethodType, string> = {
   other: "Other",
 };
 
-const interactionTypeLabels: Record<InteractionType, string> = {
-  hangout: "Hangout",
-  text: "Text",
-  call: "Call",
-  dinner: "Dinner",
-  party: "Party",
-  coffee_chat: "Coffee chat",
-  meeting: "Meeting",
-  other: "Other",
-};
-
 export function formatStatus(status: PersonStatus) {
   return statusLabels[status];
 }
@@ -39,6 +24,6 @@ export function formatContactType(type: ContactMethodType) {
   return contactTypeLabels[type];
 }
 
-export function formatInteractionType(type: InteractionType) {
-  return interactionTypeLabels[type];
+export function formatInteractionTypeName(name: string) {
+  return name;
 }

@@ -1,7 +1,6 @@
 import type {
   ContactMethodType,
   InteractionDirection,
-  InteractionType,
   PersonStatus,
 } from "@/lib/db/database.types";
 
@@ -14,17 +13,6 @@ export const CONTACT_METHOD_TYPES: ContactMethodType[] = [
   "linkedin",
   "discord",
   "address",
-  "other",
-];
-
-export const INTERACTION_TYPES: InteractionType[] = [
-  "hangout",
-  "text",
-  "call",
-  "dinner",
-  "party",
-  "coffee_chat",
-  "meeting",
   "other",
 ];
 

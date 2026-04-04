@@ -27,6 +27,7 @@ export async function refreshLastInteractionAtForPersonIds(
         .from("interactions")
         .select("occurred_at")
         .eq("user_id", userId)
+        .eq("counts_toward_last_touch", true)
         .in("id", interactionIds)
         .order("occurred_at", { ascending: false })
         .limit(1)

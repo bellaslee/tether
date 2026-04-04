@@ -3,17 +3,22 @@
 import { useState } from 'react';
 import type { PersonOption } from '@/components/people/attendee-picker';
 import { PersonInteractionForm } from '@/components/people/person-interaction-form';
+import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 
 type LogMomentDisclosureProps = {
   personId: string;
   otherPeople: PersonOption[];
   defaultOccurredAt: string;
+  interactionTypes: InteractionTypeOption[];
+  defaultInteractionTypeId: string;
 };
 
 export function LogMomentDisclosure({
   personId,
   otherPeople,
   defaultOccurredAt,
+  interactionTypes,
+  defaultInteractionTypeId,
 }: LogMomentDisclosureProps) {
   const [open, setOpen] = useState(false);
 
@@ -36,6 +41,8 @@ export function LogMomentDisclosure({
           personId={personId}
           otherPeople={otherPeople}
           defaultOccurredAt={defaultOccurredAt}
+          interactionTypes={interactionTypes}
+          defaultInteractionTypeId={defaultInteractionTypeId}
         />
       </div>
       <button

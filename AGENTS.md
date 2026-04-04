@@ -258,6 +258,11 @@ Avoid:
   JSON-file persistence
 - Keep all schema changes in migration files instead of applying manual one-off
   database edits
+- **Always run Supabase migrations** when database changes are made: after adding
+  or editing SQL under `supabase/migrations/`, apply them to the target database
+  (for example `npx supabase db push --local` for local development, or the
+  equivalent push / migration run for linked remote projects) so the live schema
+  matches the repo before relying on the app or tests against that database
 - Add `user_id` ownership early to user-scoped tables so RLS and future
   evolution stay straightforward
 - Enable and design for row-level security from the start

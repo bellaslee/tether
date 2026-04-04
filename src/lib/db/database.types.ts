@@ -17,16 +17,6 @@ export type ContactMethodType =
   | 'address'
   | 'other';
 
-export type InteractionType =
-  | 'hangout'
-  | 'text'
-  | 'call'
-  | 'dinner'
-  | 'party'
-  | 'coffee_chat'
-  | 'meeting'
-  | 'other';
-
 export type InteractionDirection = 'inbound' | 'outbound' | 'mutual';
 
 export type InteractionPersonRole = 'primary' | 'attendee';
@@ -55,6 +45,36 @@ export interface Database {
           id?: string;
           user_id?: string;
           name?: string;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      interaction_types: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          slug: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          slug?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          slug?: string | null;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;
@@ -159,10 +179,11 @@ export interface Database {
           id: string;
           user_id: string;
           occurred_at: string;
-          type: InteractionType;
+          interaction_type_id: string;
           direction: InteractionDirection | null;
           title: string | null;
           raw_note: string | null;
+          counts_toward_last_touch: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -170,10 +191,11 @@ export interface Database {
           id?: string;
           user_id: string;
           occurred_at: string;
-          type: InteractionType;
+          interaction_type_id: string;
           direction?: InteractionDirection | null;
           title?: string | null;
           raw_note?: string | null;
+          counts_toward_last_touch?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -181,10 +203,11 @@ export interface Database {
           id?: string;
           user_id?: string;
           occurred_at?: string;
-          type?: InteractionType;
+          interaction_type_id?: string;
           direction?: InteractionDirection | null;
           title?: string | null;
           raw_note?: string | null;
+          counts_toward_last_touch?: boolean;
           created_at?: string;
           updated_at?: string;
         };

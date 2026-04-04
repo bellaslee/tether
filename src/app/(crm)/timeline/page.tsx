@@ -1,15 +1,20 @@
 import Link from 'next/link';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { requireCrmAccess } from '@/lib/crm/guard';
-import { formatInteractionType } from '@/lib/domain/labels';
+import { formatInteractionTypeName } from '@/lib/domain/labels';
+import type { Tables } from '@/lib/db/database.types';
 import { personShownName } from '@/lib/people/list-name';
+
+type InteractionWithType = Tables<'interactions'> & {
+  interaction_types: { name: string } | null;
+};
 
 export default async function TimelinePage() {
   const ctx = await requireCrmAccess();
 
   const { data: interactions, error } = await ctx.client
     .from('interactions')
-    .select('*')
+    .select('*, interaction_types ( name )')
     .eq('user_id', ctx.userId)
     .order('occurred_at', { ascending: false });
 
@@ -17,7 +22,8 @@ export default async function TimelinePage() {
     throw new Error(error.message);
   }
 
-  const interactionIds = (interactions ?? []).map((row) => row.id);
+  const interactionList = (interactions ?? []) as InteractionWithType[];
+  const interactionIds = interactionList.map((row) => row.id);
   const peopleByInteraction = new Map<
     string,
     Array<{
@@ -80,10 +86,18 @@ export default async function TimelinePage() {
           Every row is one real moment. People listed together shared that
           memory — it is not duplicated in the database.
         </p>
+        <p className="mt-3">
+          <Link
+            href="/timeline/types"
+            className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
+          >
+            Manage timeline types
+          </Link>
+        </p>
       </header>
 
       <ol className="space-y-5">
-        {(interactions ?? []).length === 0 ? (
+        {interactionList.length === 0 ? (
           <li className="card-surface rounded-[1.75rem] border border-border-soft p-8 text-sm text-muted">
             Nothing logged yet. Start from a person&apos;s page or{' '}
             <Link
@@ -95,7 +109,7 @@ export default async function TimelinePage() {
             .
           </li>
         ) : (
-          (interactions ?? []).map((interaction) => {
+          interactionList.map((interaction) => {
             const people = peopleByInteraction.get(interaction.id) ?? [];
             return (
               <li
@@ -106,7 +120,9 @@ export default async function TimelinePage() {
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                       {formatDateTime(interaction.occurred_at)} ·{' '}
-                      {formatInteractionType(interaction.type)}
+                      {formatInteractionTypeName(
+                        interaction.interaction_types?.name ?? 'Moment',
+                      )}
                       {interaction.direction
                         ? ` · ${interaction.direction}`
                         : ''}
