@@ -4,6 +4,7 @@ import { requireCrmAccess } from '@/lib/crm/guard';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { formatStatus } from '@/lib/domain/labels';
 import { personShownName } from '@/lib/people/list-name';
+import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -18,12 +19,51 @@ function first(param: string | string[] | undefined) {
   return param;
 }
 
-function isCategoryIdFilter(value: string | undefined): value is string {
-  return !!value && UUID_RE.test(value);
+function searchParamToStrings(
+  param: string | string[] | undefined,
+): string[] {
+  if (param === undefined) {
+    return [];
+  }
+  return Array.isArray(param) ? param : [param];
 }
 
-function isStatus(value: string | undefined): value is PersonStatus {
-  return !!value && PERSON_STATUSES.includes(value as PersonStatus);
+function isCategoryIdFilter(value: string): value is string {
+  return UUID_RE.test(value);
+}
+
+function isStatus(value: string): value is PersonStatus {
+  return PERSON_STATUSES.includes(value as PersonStatus);
+}
+
+function parseCategoryIds(
+  param: string | string[] | undefined,
+): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of searchParamToStrings(param)) {
+    const id = raw.trim();
+    if (isCategoryIdFilter(id) && !seen.has(id)) {
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  return out;
+}
+
+function parseStatuses(
+  param: string | string[] | undefined,
+): PersonStatus[] {
+  const seen = new Set<PersonStatus>();
+  const out: PersonStatus[] = [];
+  for (const raw of searchParamToStrings(param)) {
+    const s = raw.trim();
+    if (isStatus(s) && !seen.has(s)) {
+      seen.add(s);
+      out.push(s);
+    }
+  }
+  return out;
 }
 
 type PersonListRow = Pick<
@@ -47,8 +87,8 @@ export default async function PeoplePage(props: {
   const ctx = await requireCrmAccess();
   const searchParams = await props.searchParams;
   const q = first(searchParams.q)?.trim() ?? '';
-  const categoryFilter = first(searchParams.category);
-  const statusFilter = first(searchParams.status);
+  const categoryIds = parseCategoryIds(searchParams.category);
+  const statusValues = parseStatuses(searchParams.status);
 
   const { data: categoryOptions, error: categoriesError } = await ctx.client
     .from('person_categories')
@@ -68,11 +108,11 @@ export default async function PeoplePage(props: {
     .eq('user_id', ctx.userId)
     .order('full_name', { ascending: true });
 
-  if (isCategoryIdFilter(categoryFilter)) {
-    query = query.eq('category_id', categoryFilter);
+  if (categoryIds.length > 0) {
+    query = query.in('category_id', categoryIds);
   }
-  if (isStatus(statusFilter)) {
-    query = query.eq('status', statusFilter);
+  if (statusValues.length > 0) {
+    query = query.in('status', statusValues);
   }
   if (q) {
     const pattern = `%${q}%`;
@@ -112,74 +152,83 @@ export default async function PeoplePage(props: {
 
       <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
         <form
-          className="flex flex-col gap-4 lg:flex-row lg:items-end"
+          className="flex flex-col gap-4 lg:flex-row lg:items-start"
           method="get"
           action="/people"
         >
-          <div className="flex-1 space-y-2">
-            <label
-              htmlFor="q"
-              className="text-xs font-semibold uppercase tracking-wide text-muted"
-            >
-              Search by name
-            </label>
+          <div className="min-w-0 flex-1 lg:max-w-xs">
             <input
               id="q"
               name="q"
               defaultValue={q}
-              placeholder="Start typing a name"
+              placeholder="Search by name"
+              aria-label="Search by name"
               className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
             />
           </div>
-          <div className="grid flex-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label
-                htmlFor="category"
-                className="text-xs font-semibold uppercase tracking-wide text-muted"
-              >
-                Category
-              </label>
-              <select
-                id="category"
-                name="category"
-                defaultValue={
-                  isCategoryIdFilter(categoryFilter) ? categoryFilter : ''
-                }
-                className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
-              >
-                <option value="">Any</option>
-                {(categoryOptions ?? []).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="status"
-                className="text-xs font-semibold uppercase tracking-wide text-muted"
-              >
-                Status
-              </label>
-              <select
-                id="status"
-                name="status"
-                defaultValue={isStatus(statusFilter) ? statusFilter : ''}
-                className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
-              >
-                <option value="">Any</option>
+          <div className="grid min-w-0 flex-1 items-start gap-4 sm:grid-cols-2">
+            <PeopleFilterDisclosure
+              key={`category-filters-${categoryIds.slice().sort().join('|')}`}
+              initialOpen={categoryIds.length > 0}
+              labelId="people-filter-categories-label"
+              label="Categories"
+            >
+              <p className="mb-2 text-xs text-muted">
+                Leave all unchecked to show every category.
+              </p>
+              <div className="flex max-h-40 flex-col gap-2 overflow-y-auto text-sm">
+                {(categoryOptions ?? []).length === 0 ? (
+                  <span className="text-muted">No categories yet.</span>
+                ) : (
+                  (categoryOptions ?? []).map((c) => (
+                    <label
+                      key={c.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
+                    >
+                      <input
+                        type="checkbox"
+                        name="category"
+                        value={c.id}
+                        defaultChecked={categoryIds.includes(c.id)}
+                        className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
+                      />
+                      <span>{c.name}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </PeopleFilterDisclosure>
+            <PeopleFilterDisclosure
+              key={`status-filters-${statusValues.slice().sort().join('|')}`}
+              initialOpen={statusValues.length > 0}
+              labelId="people-filter-status-label"
+              label="Status"
+            >
+              <p className="mb-2 text-xs text-muted">
+                Leave all unchecked to show every status.
+              </p>
+              <div className="flex flex-col gap-2 text-sm">
                 {PERSON_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {formatStatus(s)}
-                  </option>
+                  <label
+                    key={s}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
+                  >
+                    <input
+                      type="checkbox"
+                      name="status"
+                      value={s}
+                      defaultChecked={statusValues.includes(s)}
+                      className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
+                    />
+                    <span>{formatStatus(s)}</span>
+                  </label>
                 ))}
-              </select>
-            </div>
+              </div>
+            </PeopleFilterDisclosure>
           </div>
           <button
             type="submit"
-            className="rounded-full border border-border-soft bg-white/80 px-6 py-3 text-sm font-semibold transition hover:bg-white"
+            className="shrink-0 rounded-full border border-border-soft bg-white/80 px-6 py-3 text-sm font-semibold transition hover:bg-white"
           >
             Apply
           </button>
