@@ -6,6 +6,7 @@ import {
   createPersonCategory,
   type CreateCategoryResult,
 } from '@/lib/actions/person-categories';
+import { Button } from '@/components/ui/button';
 
 export type PersonCategoryOption = { id: string; name: string };
 
@@ -139,22 +140,24 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
               aria-label="New category name"
             />
             <div className="flex flex-wrap gap-2">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="md"
                 onClick={() => void handleAddCategory()}
                 disabled={pending}
-                className="rounded-full border border-border-soft bg-white/80 px-4 py-2.5 text-sm font-semibold transition enabled:hover:bg-white disabled:opacity-60"
               >
                 {pending ? 'Adding…' : 'Add'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghostPill"
+                size="md"
                 onClick={closePanel}
                 disabled={pending}
-                className="rounded-full border border-transparent px-4 py-2.5 text-sm font-semibold text-muted transition enabled:hover:text-foreground disabled:opacity-60"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
           {message ? (

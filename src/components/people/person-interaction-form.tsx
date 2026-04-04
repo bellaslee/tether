@@ -11,6 +11,7 @@ import {
   AttendeePicker,
   type PersonOption,
 } from '@/components/people/attendee-picker';
+import { Button } from '@/components/ui/button';
 
 const initial: ActionResult = {};
 
@@ -149,13 +150,9 @@ export function PersonInteractionForm({
         <AttendeePicker people={otherPeople} excludeId={personId} />
       </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:opacity-60"
-      >
+      <Button type="submit" variant="primary" size="lg" disabled={pending}>
         {pending ? 'Saving…' : 'Save to timeline'}
-      </button>
+      </Button>
     </form>
   );
 }

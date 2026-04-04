@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
@@ -69,14 +69,15 @@ function TypeRow(props: {
           className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-2.5 text-sm outline-none ring-accent/30 focus:ring-2"
           aria-label={`Rename ${row.name}`}
         />
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="md"
           onClick={() => void save()}
           disabled={!canSave || pending}
-          className="shrink-0 rounded-full border border-border-soft bg-white/80 px-4 py-2.5 text-sm font-semibold transition enabled:hover:bg-white disabled:opacity-50"
         >
           {pending ? 'Saving…' : 'Save'}
-        </button>
+        </Button>
       </div>
       {error ? (
         <p className="text-sm text-red-800" role="alert">
@@ -132,12 +133,9 @@ export function ManageInteractionTypesPanel(
         {types.length === 0 ? (
           <p className="text-sm text-muted">
             No types yet. Add one below, or{' '}
-            <Link
-              href="/timeline"
-              className="font-semibold text-accent underline-offset-4 hover:underline"
-            >
+            <ButtonLink href="/timeline" variant="link" size="sm">
               go back to Timeline
-            </Link>
+            </ButtonLink>
             .
           </p>
         ) : (
@@ -164,14 +162,15 @@ export function ManageInteractionTypesPanel(
             className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
             aria-label="New interaction type name"
           />
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="lg"
             onClick={() => void addType()}
             disabled={adding}
-            className="shrink-0 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:opacity-60"
           >
             {adding ? 'Adding…' : 'Add type'}
-          </button>
+          </Button>
         </div>
         {addError ? (
           <p className="mt-3 text-sm text-red-800" role="alert">

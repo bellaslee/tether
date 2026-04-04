@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import type { AuthFormState } from "@/lib/actions/auth";
 import { signInAction } from "@/lib/actions/auth";
+import { Button } from "@/components/ui/button";
 
 const initial: AuthFormState = {};
 
@@ -42,13 +43,9 @@ export function LoginForm() {
           className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 transition focus:ring-2"
         />
       </div>
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <Button type="submit" variant="primary" size="lg" fullWidth disabled={pending}>
         {pending ? "Signing in…" : "Sign in"}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -10,6 +10,7 @@ import {
   PersonCategoryField,
   type PersonCategoryOption,
 } from '@/components/people/person-category-field';
+import { Button } from '@/components/ui/button';
 
 const initial: ActionResult = {};
 
@@ -202,11 +203,7 @@ export function PersonForm(props: PersonFormProps) {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:opacity-60"
-        >
+        <Button type="submit" variant="primary" size="lg" disabled={pending}>
           {pending
             ? props.mode === 'create'
               ? 'Adding…'
@@ -214,7 +211,7 @@ export function PersonForm(props: PersonFormProps) {
             : props.mode === 'create'
               ? 'Add person'
               : 'Save changes'}
-        </button>
+        </Button>
       </div>
     </form>
   );

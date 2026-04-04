@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button";
 import { redirect } from "next/navigation";
 import { SetupStatus } from "@/components/home/setup-status";
 import { getCrmSupabaseContext } from "@/lib/crm/context";
@@ -58,24 +58,19 @@ export default async function Home() {
             </div>
 
             <div className="flex flex-wrap gap-3 text-sm font-semibold">
-              <Link
-                href="/login"
-                className="rounded-full bg-accent px-5 py-3 text-white transition-transform duration-200 hover:-translate-y-0.5"
-              >
+              <ButtonLink href="/login" variant="primary" size="lg">
                 Sign in
-              </Link>
-              <Link
-                href="/signup"
-                className="rounded-full border border-border-soft bg-white/70 px-5 py-3 text-foreground transition-colors hover:bg-white"
-              >
+              </ButtonLink>
+              <ButtonLink href="/signup" variant="secondaryMuted" size="lg">
                 Create account
-              </Link>
-              <Link
+              </ButtonLink>
+              <ButtonLink
                 href="https://supabase.com/docs/guides/local-development/cli/getting-started"
-                className="rounded-full border border-border-soft bg-white/70 px-5 py-3 text-foreground transition-colors hover:bg-white"
+                variant="secondaryMuted"
+                size="lg"
               >
                 Local Supabase guide
-              </Link>
+              </ButtonLink>
             </div>
           </div>
 

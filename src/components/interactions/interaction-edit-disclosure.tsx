@@ -11,6 +11,7 @@ import {
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { personShownName } from '@/lib/people/list-name';
+import { Button } from '@/components/ui/button';
 
 const initial: ActionResult = {};
 
@@ -43,13 +44,14 @@ export function InteractionEditDisclosure({
 
   if (!open) {
     return (
-      <button
+      <Button
         type="button"
+        variant="ghostSubtle"
+        size="sm"
         onClick={() => setOpen(true)}
-        className="text-xs font-semibold text-muted underline-offset-4 transition hover:text-foreground hover:underline"
       >
         Edit
-      </button>
+      </Button>
     );
   }
 
@@ -239,21 +241,23 @@ function InteractionEditForm({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="md"
           disabled={pending || people.length === 0}
-          className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? 'Saving…' : 'Save changes'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="ghost"
+          size="md"
           disabled={pending}
           onClick={onCancel}
-          className="text-sm font-semibold text-muted underline-offset-4 hover:underline disabled:opacity-50"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

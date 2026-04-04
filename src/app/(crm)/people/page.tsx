@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Button, ButtonLink } from '@/components/ui/button';
 import type { PersonStatus, Tables } from '@/lib/db/database.types';
 import { requireCrmAccess } from '@/lib/crm/guard';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
@@ -142,173 +143,169 @@ export default async function PeoplePage(props: {
             deals.
           </p>
         </div>
-        <Link
-          href="/people/new"
-          className="inline-flex items-center justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
-        >
+        <ButtonLink href="/people/new" variant="primary" size="lg">
           Add someone
-        </Link>
+        </ButtonLink>
       </header>
 
-      <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-        <form
-          className="flex flex-col gap-4 lg:flex-row lg:items-start"
-          method="get"
-          action="/people"
-        >
-          <div className="min-w-0 flex-1 lg:max-w-xs">
-            <input
-              id="q"
-              name="q"
-              defaultValue={q}
-              placeholder="Search by name"
-              aria-label="Search by name"
-              className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
-            />
-          </div>
-          <div className="grid min-w-0 flex-1 items-start gap-4 sm:grid-cols-2">
-            <PeopleFilterDisclosure
-              key={`category-filters-${categoryIds.slice().sort().join('|')}`}
-              initialOpen={categoryIds.length > 0}
-              labelId="people-filter-categories-label"
-              label="Categories"
-            >
-              <p className="mb-2 text-xs text-muted">
-                Leave all unchecked to show every category.
-              </p>
-              <div className="flex max-h-40 flex-col gap-2 overflow-y-auto text-sm">
-                {(categoryOptions ?? []).length === 0 ? (
-                  <span className="text-muted">No categories yet.</span>
-                ) : (
-                  (categoryOptions ?? []).map((c) => (
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+        <section className="card-surface order-1 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-2 lg:w-full lg:max-w-sm lg:shrink-0">
+          <form
+            className="flex flex-col gap-4"
+            method="get"
+            action="/people"
+          >
+            <div className="min-w-0 w-full">
+              <input
+                id="q"
+                name="q"
+                defaultValue={q}
+                placeholder="Search by name"
+                aria-label="Search by name"
+                className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+              />
+            </div>
+            <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              <PeopleFilterDisclosure
+                key={`category-filters-${categoryIds.slice().sort().join('|')}`}
+                initialOpen={categoryIds.length > 0}
+                labelId="people-filter-categories-label"
+                label="Categories"
+              >
+                <p className="mb-2 text-xs text-muted">
+                  Leave all unchecked to show every category.
+                </p>
+                <div className="flex max-h-40 flex-col gap-2 overflow-y-auto text-sm">
+                  {(categoryOptions ?? []).length === 0 ? (
+                    <span className="text-muted">No categories yet.</span>
+                  ) : (
+                    (categoryOptions ?? []).map((c) => (
+                      <label
+                        key={c.id}
+                        className="flex items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
+                      >
+                        <input
+                          type="checkbox"
+                          name="category"
+                          value={c.id}
+                          defaultChecked={categoryIds.includes(c.id)}
+                          className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
+                        />
+                        <span>{c.name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </PeopleFilterDisclosure>
+              <PeopleFilterDisclosure
+                key={`status-filters-${statusValues.slice().sort().join('|')}`}
+                initialOpen={statusValues.length > 0}
+                labelId="people-filter-status-label"
+                label="Status"
+              >
+                <p className="mb-2 text-xs text-muted">
+                  Leave all unchecked to show every status.
+                </p>
+                <div className="flex flex-col gap-2 text-sm">
+                  {PERSON_STATUSES.map((s) => (
                     <label
-                      key={c.id}
-                      className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
+                      key={s}
+                      className="flex items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
                     >
                       <input
                         type="checkbox"
-                        name="category"
-                        value={c.id}
-                        defaultChecked={categoryIds.includes(c.id)}
+                        name="status"
+                        value={s}
+                        defaultChecked={statusValues.includes(s)}
                         className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
                       />
-                      <span>{c.name}</span>
+                      <span>{formatStatus(s)}</span>
                     </label>
-                  ))
-                )}
-              </div>
-            </PeopleFilterDisclosure>
-            <PeopleFilterDisclosure
-              key={`status-filters-${statusValues.slice().sort().join('|')}`}
-              initialOpen={statusValues.length > 0}
-              labelId="people-filter-status-label"
-              label="Status"
-            >
-              <p className="mb-2 text-xs text-muted">
-                Leave all unchecked to show every status.
-              </p>
-              <div className="flex flex-col gap-2 text-sm">
-                {PERSON_STATUSES.map((s) => (
-                  <label
-                    key={s}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
-                  >
-                    <input
-                      type="checkbox"
-                      name="status"
-                      value={s}
-                      defaultChecked={statusValues.includes(s)}
-                      className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
-                    />
-                    <span>{formatStatus(s)}</span>
-                  </label>
-                ))}
-              </div>
-            </PeopleFilterDisclosure>
-          </div>
-          <button
-            type="submit"
-            className="shrink-0 rounded-full border border-border-soft bg-white/80 px-6 py-3 text-sm font-semibold transition hover:bg-white"
-          >
-            Apply
-          </button>
-        </form>
+                  ))}
+                </div>
+              </PeopleFilterDisclosure>
+            </div>
+            <Button type="submit" variant="secondary" size="lg">
+              Apply
+            </Button>
+          </form>
 
-        <div className="mt-6 flex flex-wrap gap-2 text-xs text-muted">
-          <span className="font-semibold uppercase tracking-wide">Quick:</span>
-          <Link className="underline-offset-4 hover:underline" href="/people">
-            Clear filters
-          </Link>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        {peopleList.length === 0 ? (
-          <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
-            No one here yet, or nothing matches your filters.{' '}
-            <Link
-              href="/people/new"
-              className="font-semibold text-accent underline-offset-4 hover:underline"
-            >
-              Add your first person
+          <div className="mt-6 flex flex-wrap gap-2 text-xs text-muted">
+            <span className="font-semibold uppercase tracking-wide">Quick:</span>
+            <Link className="underline-offset-4 hover:underline" href="/people">
+              Clear filters
             </Link>
-            .
           </div>
-        ) : (
-          <ul className="grid gap-4 md:grid-cols-2">
-            {peopleList.map((person) => (
-              <li key={person.id}>
-                <Link
-                  href={`/people/${person.id}`}
-                  className="card-surface block rounded-[1.5rem] border border-border-soft p-5 transition hover:-translate-y-0.5"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-display text-xl">
-                        {personShownName(person)}
-                      </p>
-                      {person.display_name?.trim() &&
-                      personShownName(person) !== person.full_name ? (
-                        <p className="text-sm text-muted">{person.full_name}</p>
-                      ) : null}
-                      {person.preferred_name ? (
-                        <p className="text-sm text-muted">
-                          Goes by {person.preferred_name}
+        </section>
+
+        <section className="order-2 min-w-0 space-y-4 lg:order-1 lg:flex-1">
+          {peopleList.length === 0 ? (
+            <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
+              No one here yet, or nothing matches your filters.{' '}
+              <Link
+                href="/people/new"
+                className="font-semibold text-accent underline-offset-4 hover:underline"
+              >
+                Add your first person
+              </Link>
+              .
+            </div>
+          ) : (
+            <ul className="grid gap-4 md:grid-cols-2">
+              {peopleList.map((person) => (
+                <li key={person.id}>
+                  <Link
+                    href={`/people/${person.id}`}
+                    className="card-surface block rounded-[1.5rem] border border-border-soft p-5 transition hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-display text-xl">
+                          {personShownName(person)}
                         </p>
-                      ) : null}
+                        {person.display_name?.trim() &&
+                        personShownName(person) !== person.full_name ? (
+                          <p className="text-sm text-muted">{person.full_name}</p>
+                        ) : null}
+                        {person.preferred_name ? (
+                          <p className="text-sm text-muted">
+                            Goes by {person.preferred_name}
+                          </p>
+                        ) : null}
+                      </div>
+                      <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+                        {person.person_categories?.name ?? '—'}
+                      </span>
                     </div>
-                    <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-                      {person.person_categories?.name ?? '—'}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    <span className="rounded-full border border-border-soft px-2 py-1">
-                      {formatStatus(person.status)}
-                    </span>
-                    <RelationshipWarmthChip
-                      lastInteractionAt={person.last_interaction_at}
-                      metAt={person.met_at}
-                      createdAt={person.created_at}
-                    />
-                    {person.last_interaction_at ? (
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
                       <span className="rounded-full border border-border-soft px-2 py-1">
-                        Last touch{' '}
-                        {new Date(
-                          person.last_interaction_at,
-                        ).toLocaleDateString()}
+                        {formatStatus(person.status)}
                       </span>
-                    ) : (
-                      <span className="rounded-full border border-border-soft px-2 py-1">
-                        No interactions yet
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                      <RelationshipWarmthChip
+                        lastInteractionAt={person.last_interaction_at}
+                        metAt={person.met_at}
+                        createdAt={person.created_at}
+                      />
+                      {person.last_interaction_at ? (
+                        <span className="rounded-full border border-border-soft px-2 py-1">
+                          Last touch{' '}
+                          {new Date(
+                            person.last_interaction_at,
+                          ).toLocaleDateString()}
+                        </span>
+                      ) : (
+                        <span className="rounded-full border border-border-soft px-2 py-1">
+                          No interactions yet
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

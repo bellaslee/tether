@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
@@ -219,12 +220,13 @@ export default async function PersonDetailPage(props: PageProps) {
             </p>
           ) : null}
         </div>
-        <Link
+        <ButtonLink
           href={`/people/${person.id}/edit`}
-          className="inline-flex items-center justify-center rounded-full border border-border-soft bg-white/80 px-5 py-3 text-sm font-semibold transition hover:bg-white"
+          variant="secondary"
+          size="lg"
         >
           Edit profile
-        </Link>
+        </ButtonLink>
       </div>
 
       <nav

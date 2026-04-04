@@ -19,7 +19,7 @@ export function PeopleFilterDisclosure(props: Props) {
       open={open}
       onToggle={(e) => setOpen(e.currentTarget.open)}
     >
-      <summary className="flex cursor-pointer list-none items-start gap-2 marker:hidden p-0 outline-none ring-accent/30 focus-visible:ring-2 [&::-webkit-details-marker]:hidden">
+      <summary className="flex list-none items-start gap-2 marker:hidden p-0 outline-none ring-accent/30 focus-visible:ring-2 [&::-webkit-details-marker]:hidden">
         <span
           id={labelId}
           className="text-xs font-semibold uppercase tracking-wide text-muted leading-none"

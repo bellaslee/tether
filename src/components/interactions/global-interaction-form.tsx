@@ -10,6 +10,7 @@ import {
   type PersonOption,
 } from '@/components/people/attendee-picker';
 import { personShownName } from '@/lib/people/list-name';
+import { Button } from '@/components/ui/button';
 
 const initial: ActionResult = {};
 
@@ -144,13 +145,14 @@ export function GlobalInteractionForm({
         </div>
       </div>
 
-      <button
+      <Button
         type="submit"
+        variant="primary"
+        size="lg"
         disabled={pending || people.length === 0}
-        className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? 'Saving…' : 'Save interaction'}
-      </button>
+      </Button>
     </form>
   );
 }

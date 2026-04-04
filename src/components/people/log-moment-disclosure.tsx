@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { PersonOption } from '@/components/people/attendee-picker';
 import { PersonInteractionForm } from '@/components/people/person-interaction-form';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
+import { Button } from '@/components/ui/button';
 
 type LogMomentDisclosureProps = {
   personId: string;
@@ -24,13 +25,9 @@ export function LogMomentDisclosure({
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5"
-      >
+      <Button type="button" variant="primary" size="lg" onClick={() => setOpen(true)}>
         Log a moment
-      </button>
+      </Button>
     );
   }
 
@@ -45,13 +42,9 @@ export function LogMomentDisclosure({
           defaultInteractionTypeId={defaultInteractionTypeId}
         />
       </div>
-      <button
-        type="button"
-        onClick={() => setOpen(false)}
-        className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
-      >
+      <Button type="button" variant="ghost" size="md" onClick={() => setOpen(false)}>
         Cancel
-      </button>
+      </Button>
     </div>
   );
 }

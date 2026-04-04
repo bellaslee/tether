@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import type { AuthFormState } from "@/lib/actions/auth";
 import { signUpAction } from "@/lib/actions/auth";
+import { Button } from "@/components/ui/button";
 
 const initial: AuthFormState = {};
 
@@ -44,13 +45,9 @@ export function SignupForm() {
         />
         <p className="text-xs text-muted">At least 6 characters for local Supabase defaults.</p>
       </div>
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <Button type="submit" variant="primary" size="lg" fullWidth disabled={pending}>
         {pending ? "Creating account…" : "Create account"}
-      </button>
+      </Button>
     </form>
   );
 }

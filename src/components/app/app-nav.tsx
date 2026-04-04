@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOutAction } from "@/lib/actions/auth";
+import { Button } from "@/components/ui/button";
 import type { CrmSupabaseContext } from "@/lib/crm/context";
 
 type AppNavProps = {
@@ -39,12 +40,9 @@ export function AppNav({ context }: AppNavProps) {
             </span>
           ) : (
             <form action={signOutAction}>
-              <button
-                type="submit"
-                className="rounded-full border border-border-soft bg-white/70 px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-white"
-              >
+              <Button type="submit" variant="secondaryMuted" size="md">
                 Sign out
-              </button>
+              </Button>
             </form>
           )}
         </div>

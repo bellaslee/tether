@@ -10,6 +10,7 @@ import {
 } from "@/lib/actions/contact-methods";
 import { CONTACT_METHOD_TYPES } from "@/lib/domain/constants";
 import { formatContactType } from "@/lib/domain/labels";
+import { Button } from "@/components/ui/button";
 
 const initial: ActionResult = {};
 
@@ -78,20 +79,22 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="sm"
               disabled={pending}
-              className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
             >
               {pending ? "Saving…" : "Save"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="rounded-full border border-border-soft px-4 py-2 text-xs font-semibold"
+              variant="secondary"
+              size="sm"
               onClick={() => setEditing(false)}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </li>
@@ -114,31 +117,29 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
           {method.notes ? <p className="mt-1 text-xs text-muted">{method.notes}</p> : null}
         </div>
         <div className="flex flex-col items-end gap-2 text-xs">
-          <button
+          <Button
             type="button"
-            className="font-semibold text-accent underline-offset-4 hover:underline"
+            variant="link"
+            size="sm"
             onClick={() => setEditing(true)}
           >
             Edit
-          </button>
+          </Button>
           {!method.is_primary ? (
             <form action={setPrimaryContactMethodForm}>
               <input type="hidden" name="person_id" value={personId} />
               <input type="hidden" name="method_id" value={method.id} />
-              <button type="submit" className="font-semibold text-accent underline-offset-4 hover:underline">
+              <Button type="submit" variant="link" size="sm">
                 Make primary
-              </button>
+              </Button>
             </form>
           ) : null}
           <form action={deleteContactMethodForm}>
             <input type="hidden" name="person_id" value={personId} />
             <input type="hidden" name="method_id" value={method.id} />
-            <button
-              type="submit"
-              className="font-semibold text-muted underline-offset-4 hover:text-red-700 hover:underline"
-            >
+            <Button type="submit" variant="dangerLink" size="sm">
               Remove
-            </button>
+            </Button>
           </form>
         </div>
       </div>

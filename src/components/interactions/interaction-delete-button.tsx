@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteInteraction } from "@/lib/actions/interactions";
+import { Button } from "@/components/ui/button";
 
 type InteractionDeleteButtonProps = {
   interactionId: string;
@@ -16,8 +17,10 @@ export function InteractionDeleteButton({ interactionId, label = "Remove" }: Int
 
   return (
     <div className="space-y-1">
-      <button
+      <Button
         type="button"
+        variant="dangerLink"
+        size="sm"
         disabled={pending}
         onClick={() => {
           setError(null);
@@ -30,10 +33,9 @@ export function InteractionDeleteButton({ interactionId, label = "Remove" }: Int
             router.refresh();
           });
         }}
-        className="text-xs font-semibold text-muted underline-offset-4 transition hover:text-red-700 hover:underline disabled:opacity-50"
       >
         {pending ? "Removing…" : label}
-      </button>
+      </Button>
       {error ? (
         <p className="text-xs text-red-700" role="alert">
           {error}

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
@@ -62,14 +62,15 @@ function CategoryRow(props: {
           className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-2.5 text-sm outline-none ring-accent/30 focus:ring-2"
           aria-label={`Rename ${category.name}`}
         />
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="md"
           onClick={() => void save()}
           disabled={!canSave || pending}
-          className="shrink-0 rounded-full border border-border-soft bg-white/80 px-4 py-2.5 text-sm font-semibold transition enabled:hover:bg-white disabled:opacity-50"
         >
           {pending ? 'Saving…' : 'Save'}
-        </button>
+        </Button>
       </div>
       {error ? (
         <p className="text-sm text-red-800" role="alert">
@@ -123,12 +124,9 @@ export function ManageCategoriesPanel(props: ManageCategoriesPanelProps) {
         {categories.length === 0 ? (
           <p className="text-sm text-muted">
             No categories yet. Add one below, or{' '}
-            <Link
-              href="/people"
-              className="font-semibold text-accent underline-offset-4 hover:underline"
-            >
+            <ButtonLink href="/people" variant="link" size="sm">
               go back to People
-            </Link>
+            </ButtonLink>
             .
           </p>
         ) : (
@@ -159,14 +157,15 @@ export function ManageCategoriesPanel(props: ManageCategoriesPanelProps) {
             className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
             aria-label="New category name"
           />
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="lg"
             onClick={() => void addCategory()}
             disabled={adding}
-            className="shrink-0 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:opacity-60"
           >
             {adding ? 'Adding…' : 'Add category'}
-          </button>
+          </Button>
         </div>
         {addError ? (
           <p className="mt-3 text-sm text-red-800" role="alert">

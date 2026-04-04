@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ButtonLink } from '@/components/ui/button';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { requireCrmAccess } from '@/lib/crm/guard';
@@ -176,14 +177,15 @@ export default async function TimelinePage() {
                     {people.length > 0 ? (
                       <div className="mt-4 flex flex-wrap gap-2">
                         {people.map((person) => (
-                          <Link
+                          <ButtonLink
                             key={`${interaction.id}-${person.id}`}
                             href={`/people/${person.id}`}
-                            className="rounded-full border border-border-soft bg-white/70 px-3 py-1 text-xs font-semibold text-foreground transition hover:bg-white"
+                            variant="secondaryMuted"
+                            size="chip"
                           >
                             {personShownName(person)}
                             {person.role === 'primary' ? ' · main' : ''}
-                          </Link>
+                          </ButtonLink>
                         ))}
                       </div>
                     ) : null}

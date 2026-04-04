@@ -52,7 +52,7 @@ export function AttendeePicker({
             const checked = selected.includes(person.id);
             return (
               <li key={person.id}>
-                <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-border-soft bg-white/60 px-4 py-3 text-sm transition hover:bg-white/90">
+                <label className="flex items-center gap-3 rounded-2xl border border-border-soft bg-white/60 px-4 py-3 text-sm transition hover:bg-white/90">
                   <input
                     type="checkbox"
                     checked={checked}

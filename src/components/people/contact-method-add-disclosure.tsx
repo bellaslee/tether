@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ContactMethodAddForm } from "@/components/people/contact-method-add-form";
+import { Button } from "@/components/ui/button";
 
 type ContactMethodAddDisclosureProps = {
   personId: string;
@@ -12,26 +13,18 @@ export function ContactMethodAddDisclosure({ personId }: ContactMethodAddDisclos
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="rounded-full border border-border-soft bg-white/80 px-5 py-2.5 text-sm font-semibold transition hover:bg-white"
-      >
+      <Button type="button" variant="secondary" size="md" onClick={() => setOpen(true)}>
         Add contact method
-      </button>
+      </Button>
     );
   }
 
   return (
     <div className="space-y-4">
       <ContactMethodAddForm personId={personId} />
-      <button
-        type="button"
-        onClick={() => setOpen(false)}
-        className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
-      >
+      <Button type="button" variant="ghost" size="md" onClick={() => setOpen(false)}>
         Cancel
-      </button>
+      </Button>
     </div>
   );
 }

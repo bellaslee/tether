@@ -5,6 +5,7 @@ import type { ActionResult } from "@/lib/actions/contact-methods";
 import { createContactMethod } from "@/lib/actions/contact-methods";
 import { CONTACT_METHOD_TYPES } from "@/lib/domain/constants";
 import { formatContactType } from "@/lib/domain/labels";
+import { Button } from "@/components/ui/button";
 
 const initial: ActionResult = {};
 
@@ -70,13 +71,9 @@ export function ContactMethodAddForm({ personId }: ContactMethodAddFormProps) {
           Primary
         </label>
       </div>
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition enabled:hover:-translate-y-0.5 disabled:opacity-60"
-      >
+      <Button type="submit" variant="primary" size="md" disabled={pending}>
         {pending ? "Adding…" : "Add contact method"}
-      </button>
+      </Button>
     </form>
   );
 }
