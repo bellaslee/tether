@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import type { Tables } from '@/lib/db/database.types';
 
 const memoryCardClass =
-  'card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
+  'card-surface flex h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
 
 type FactRow = Tables<'facts'>;
 type TaskRow = Tables<'tasks'>;
@@ -70,7 +70,7 @@ export function PersonFactsMemorySection({
           ) : null}
         </div>
       </header>
-      <div className="mt-6 min-h-0 flex-1 space-y-4">
+      <div className="mt-6 flex-1 space-y-4">
         {addOpen ? (
           <ManualFactForm
             key={formKey}
@@ -176,7 +176,7 @@ export function PersonRemindersMemorySection({
           ) : null}
         </div>
       </header>
-      <div className="mt-6 min-h-0 flex-1 space-y-4">
+      <div className="mt-6 flex-1 space-y-4">
         {addOpen ? (
           <ManualReminderForm
             key={formKey}
