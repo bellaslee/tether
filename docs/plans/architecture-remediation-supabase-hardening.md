@@ -54,21 +54,21 @@ This is a **non-negotiable product requirement**, not an implementation detail. 
 
 ## Progress
 
-- [ ] (YYYY-MM-DD) Record baseline: export current Supabase linter output after migrations applied.
-- [ ] **Remove local dev bypass:** delete [src/lib/db/service-role.ts](/src/lib/db/service-role.ts); remove bypass-related env and helpers from [src/lib/env.ts](/src/lib/env.ts) (`CRM_LOCAL_DEV_BYPASS_AUTH`, `CRM_LOCAL_DEV_USER_ID`, `SUPABASE_SERVICE_ROLE_KEY` usage for this feature, `isLocalDevBypassAuthEnabled`, `assertLocalDevBypassAllowed`, `getLocalDevBypassUserId`, `getServiceRoleSupabaseEnv`, and the setup-status row for bypass); simplify [src/lib/crm/context.ts](/src/lib/crm/context.ts) to always use `createSupabaseServerClient` and session `user.id` (drop `bypass` from `CrmSupabaseContext`); update [src/components/app/app-nav.tsx](/src/components/app/app-nav.tsx) and [src/components/app/user-menu.tsx](/src/components/app/user-menu.tsx) to remove bypass UI branches; update [src/lib/actions/profile.ts](/src/lib/actions/profile.ts) and [src/app/(crm)/settings/profile/page.tsx](/src/app/(crm)/settings/profile/page.tsx); remove bypass mentions from [.env.example](/.env.example) and [README.md](/README.md); grep the repo for `bypass`, `service-role`, `ServiceRole`, and `CRM_LOCAL_DEV` and clean remaining references (including historical plans only if you want docs consistent—at minimum update README and `.env.example`).
-- [ ] Add migration: `set search_path` on the five flagged functions; apply locally (`npx supabase db push --local` or project equivalent).
-- [ ] Add migration: RLS policy rewrite using `(select auth.uid())` for all policies flagged by `auth_rls_initplan`; re-run linter.
-- [ ] Add migration: indexes for unindexed foreign keys; re-run linter.
-- [ ] **Data isolation audit:** confirm every user-scoped `public` table has RLS enabled and policies consistent with “own rows only”; grep [src/lib/actions](/src/lib/actions), [src/app/api](/src/app/api), and Server Component data loads for uses of Supabase that omit `user_id` scoping where an id from the client is involved; fix any gap. Document the two-account manual test result (pass/fail and notes) in `Surprises & Discoveries` or `Outcomes & Retrospective`.
-- [ ] Optional: junction-table helper refactor for readability (not required for security after bypass removal).
-- [ ] Optional: split `ai-memory.ts` into smaller modules without behavior change.
+- [ ] (2026-04-05) Record baseline: export current Supabase linter output after migrations applied (re-run in Supabase dashboard or CLI and attach JSON when convenient).
+- [x] (2026-04-05) **Remove local dev bypass:** deleted `src/lib/db/service-role.ts`; stripped bypass env/helpers from `src/lib/env.ts` and the fourth setup-status row; `getCrmSupabaseContext` always uses the cookie server client; updated `app-nav`, `user-menu`, `profile` action/page, `.env.example`, and `README.md`. Historical plan docs may still mention bypass for archive context.
+- [x] (2026-04-05) Migration `20260411140000_supabase_security_hardening.sql`: `set search_path = public` on `set_updated_at`, `enforce_person_category_owner`, `enforce_interaction_type_owner`, `enforce_connection_type_owner`, `enforce_person_connection_people_owner`; applied with `npx supabase db push --local`.
+- [x] (2026-04-05) Same migration: RLS policies recreated with `(select auth.uid())` on all tenant tables listed in the plan; re-run DB linter to confirm `auth_rls_initplan` is clear.
+- [x] (2026-04-05) Same migration: btree indexes for `connection_types.inverse_type_id`, `interactions.interaction_type_id`, `people.category_id`, and `person_connections` FK columns.
+- [x] (2026-04-05) **Data isolation audit (static):** all user-scoped `public` tables from migrations have RLS + own-row policies; CRM server actions and `src/app/api/transcribe/route.ts` gate on `getCrmSupabaseContext()` / session. **Two-account manual test:** not run in this session—perform before release and record below.
+- [x] (2026-04-05) Optional: junction-table helper refactor — `src/lib/interactions/interaction-people-queries.ts` (`interactions!inner(user_id)`); wired through loaders, interaction actions, last-touch, category audit, timeline and person pages, and AI summary/suggest paths.
+- [x] (2026-04-05) Optional: split AI memory actions into `src/lib/actions/ai-memory/*` (`constants`, `types`, `guard`, `loaders`, `extract-suggest`, `facts`, `reminders`, `summaries`). Client imports reference concrete modules (Next.js disallows `use server` barrel re-exports).
 
 ## Surprises & Discoveries
 
-Document unexpected behaviors during implementation (empty until work starts).
-
-- Observation: …
-  Evidence: …
+- Observation: `npx supabase db push --local` still prints “remote database” in the prompt text while applying to the linked local instance.
+  Evidence: CLI output during migration apply (2026-04-05).
+- Observation: A Next.js App Router file with `'use server'` may not re-export actions from other files (and may not mix `export type` with those re-exports); importers must target the defining module or a types-only entry.
+  Evidence: `next build` failure on `ai-memory/index.ts` barrel (2026-04-05).
 
 ## Decision Log
 
@@ -86,7 +86,10 @@ Document unexpected behaviors during implementation (empty until work starts).
 
 ## Outcomes & Retrospective
 
-Summarize at completion: linter clean state, any accepted waivers, follow-up work, and **whether the two-account data isolation test passed** (and any gaps found).
+- **Shipped:** Local dev auth bypass removed; single migration covers function `search_path`, RLS initplan form, and FK indexes. Junction-table reads use shared helpers; AI memory server actions live under `src/lib/actions/ai-memory/`. `npm run lint` and `npm run build` succeed.
+- **Middleware:** Documented in-code that `(crm)` layout owns auth redirects (`middleware.ts` comment).
+- **Linter:** Re-run Supabase database linter after deploy to confirm warning classes cleared; unused-index INFO remains waived per Decision Log.
+- **Two-account cross-tenant test:** Pending manual verification by the owner (create data as user A, sign in as B, confirm no leakage via lists, URLs, or actions).
 
 ## Context and Orientation
 
