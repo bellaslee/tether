@@ -5,6 +5,10 @@ import { ContactMethodAddDisclosure } from '@/components/people/contact-method-a
 import { ContactMethodRow } from '@/components/people/contact-method-row';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
 import { PersonDetailHeader } from '@/components/people/person-detail-header';
+import {
+  PersonLogInteractionProvider,
+  TimelineLogInteractionTrigger,
+} from '@/components/people/person-log-interaction-context';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
@@ -344,6 +348,7 @@ export default async function PersonDetailPage(props: PageProps) {
 
   return (
     <main className="crm-page">
+      <PersonLogInteractionProvider>
       <PersonDetailHeader
         afterTitle={
           <nav
@@ -484,8 +489,8 @@ export default async function PersonDetailPage(props: PageProps) {
             className="card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
             aria-labelledby="person-timeline-heading"
           >
-            <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+              <div className="min-w-0 flex-1">
                 <h2
                   id="person-timeline-heading"
                   className="font-display text-2xl tracking-tight"
@@ -497,12 +502,9 @@ export default async function PersonDetailPage(props: PageProps) {
                   shared.
                 </p>
               </div>
-              <Link
-                href="/timeline"
-                className="shrink-0 text-sm font-semibold text-accent underline-offset-4 hover:underline"
-              >
-                View global timeline
-              </Link>
+              <div className="flex shrink-0 justify-end sm:pt-1">
+                <TimelineLogInteractionTrigger />
+              </div>
             </header>
 
             {timelineRows.length === 0 ? (
@@ -511,7 +513,8 @@ export default async function PersonDetailPage(props: PageProps) {
                 <span className="font-semibold text-foreground">
                   Log interaction
                 </span>{' '}
-                at the top when you remember something, or{' '}
+                in the header or beside this section when you remember something,
+                or{' '}
                 <Link
                   href="/interactions/new"
                   className="font-semibold text-accent underline-offset-4 hover:underline"
@@ -620,6 +623,7 @@ export default async function PersonDetailPage(props: PageProps) {
           />
         </section>
       )}
+      </PersonLogInteractionProvider>
     </main>
   );
 }

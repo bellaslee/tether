@@ -125,6 +125,18 @@ export function PersonInteractionForm({
           </label>
           <FormInput id={`title-${personId}`} name="title" />
         </div>
+        <div className="sm:col-span-2">
+          <PeopleFilterDisclosure
+            initialOpen={false}
+            labelId={`person-interaction-also-there-${personId}`}
+            label="Also there"
+          >
+            <p className="mb-2 text-xs text-muted">
+              Optional — link this memory to other people in one shared entry.
+            </p>
+            <AttendeePicker people={otherPeople} excludeId={personId} />
+          </PeopleFilterDisclosure>
+        </div>
         <div className="space-y-2 sm:col-span-2">
           <label htmlFor={`note-${personId}`} className="text-sm font-semibold">
             Note
@@ -137,17 +149,6 @@ export function PersonInteractionForm({
           />
         </div>
       </div>
-
-      <PeopleFilterDisclosure
-        initialOpen={false}
-        labelId={`person-interaction-also-there-${personId}`}
-        label="Also there"
-      >
-        <p className="mb-2 text-xs text-muted">
-          Optional — link this memory to other people in one shared entry.
-        </p>
-        <AttendeePicker people={otherPeople} excludeId={personId} />
-      </PeopleFilterDisclosure>
 
       <Button type="submit" variant="primary" size="lg" disabled={pending}>
         {pending ? 'Saving…' : 'Save to timeline'}
