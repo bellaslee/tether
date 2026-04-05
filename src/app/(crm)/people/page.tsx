@@ -144,7 +144,7 @@ export default async function PeoplePage(props: {
       </header>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-        <section className="card-surface order-1 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-2 lg:w-full lg:max-w-sm lg:shrink-0">
+        <section className="card-surface order-1 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-2 lg:w-full lg:max-w-[22rem] lg:shrink-0">
           <form className="flex flex-col gap-4" method="get" action="/people">
             <div className="min-w-0 w-full">
               <FormInput

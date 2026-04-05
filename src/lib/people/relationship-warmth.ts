@@ -94,10 +94,10 @@ export function relationshipWarmthChipClassName(
   warmth: RelationshipWarmth,
 ): string {
   if (warmth === 'hot') {
-    return 'bg-rose-100 text-rose-900 border border-rose-200/80';
+    return 'border border-rose-500/40 bg-rose-500/24 text-rose-950';
   }
   if (warmth === 'warm') {
-    return 'bg-amber-100 text-amber-950 border border-amber-200/80';
+    return 'border border-orange-300/50 bg-orange-300/20 text-orange-950';
   }
   return 'bg-slate-100 text-slate-700 border border-slate-200/90';
 }
