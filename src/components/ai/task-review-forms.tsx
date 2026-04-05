@@ -23,11 +23,14 @@ export function TaskReviewForms({ task, action }: Props) {
     FormData
   >(action, {});
 
-  const snoozeExpired =
-    task.status === 'snoozed' &&
-    (!task.snoozed_until || new Date(task.snoozed_until) <= new Date());
   const showSuggested = task.status === 'suggested';
-  const showActive = task.status === 'active' || snoozeExpired;
+  const showActive =
+    task.status === 'active' || task.status === 'snoozed';
+  const snoozeStillActive =
+    task.status === 'snoozed' &&
+    !!task.snoozed_until &&
+    new Date(task.snoozed_until) > new Date();
+  const markDoneVariant = snoozeStillActive ? 'secondary' : 'primary';
 
   return (
     <div className={listRowCardClassName('space-y-2')}>
@@ -37,6 +40,18 @@ export function TaskReviewForms({ task, action }: Props) {
       ) : null}
       <p className="text-xs text-muted">
         Status: {task.status.replace('_', ' ')}
+        {snoozeStillActive && task.snoozed_until ? (
+          <>
+            {' '}
+            (until{' '}
+            {new Date(task.snoozed_until).toLocaleString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+            )
+          </>
+        ) : null}
       </p>
       <form action={formAction} className="flex flex-wrap gap-2">
         <input type="hidden" name="task_id" value={task.id} />
@@ -52,7 +67,14 @@ export function TaskReviewForms({ task, action }: Props) {
         ) : null}
         {showActive ? (
           <>
-            <Button type="submit" name="intent" value="done" size="sm" variant="primary" disabled={pending}>
+            <Button
+              type="submit"
+              name="intent"
+              value="done"
+              size="sm"
+              variant={markDoneVariant}
+              disabled={pending}
+            >
               Mark done
             </Button>
             <Button type="submit" name="intent" value="snooze" size="sm" variant="secondary" disabled={pending}>

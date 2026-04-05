@@ -14,12 +14,6 @@ type FactRow = Tables<'facts'>;
 type SummaryRow = Tables<'relationship_summaries'>;
 type TaskRow = Tables<'tasks'>;
 
-function taskVisible(row: TaskRow) {
-  if (row.status !== 'snoozed') return true;
-  if (!row.snoozed_until) return true;
-  return new Date(row.snoozed_until) <= new Date();
-}
-
 const memoryCardClass =
   'card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
 
@@ -189,8 +183,6 @@ export function PersonRemindersSection({
   hasRecentNotes,
   tasks,
 }: RemindersProps) {
-  const visibleTasks = tasks.filter(taskVisible);
-
   return (
     <section
       className={memoryCardClass}
@@ -217,7 +209,7 @@ export function PersonRemindersSection({
         </div>
       </header>
       <div className="mt-6 min-h-0 flex-1">
-        {visibleTasks.length === 0 ? (
+        {tasks.length === 0 ? (
           <p className="text-sm text-muted">
             No active suggestions. Use{' '}
             <span className="font-medium text-foreground/80">
@@ -227,7 +219,7 @@ export function PersonRemindersSection({
           </p>
         ) : (
           <ul className="space-y-3">
-            {visibleTasks.map((task) => (
+            {tasks.map((task) => (
               <li key={task.id}>
                 <TaskReviewForms task={task} action={updateCrmTask} />
               </li>
