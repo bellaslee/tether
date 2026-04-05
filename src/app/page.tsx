@@ -4,33 +4,60 @@ import { SetupStatus } from '@/components/home/setup-status';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { getSetupStatus } from '@/lib/env';
 
-const plannedAreas = [
+const flowMoments = [
   {
-    name: 'People',
-    description:
-      'Profiles, context, and the details you want to remember before reaching out.',
+    title: 'After a hangout',
+    subtitle: 'Capture',
+    body:
+      'Jot a few sentences while it is fresh: what you talked about, what mattered to them, what you promised yourself you would follow up on.',
   },
   {
-    name: 'Timeline',
-    description:
-      'A shared history of interactions, from quick texts to multi-person hangouts.',
+    title: 'In the background',
+    subtitle: 'Organize',
+    body:
+      'Your notes turn into a clear picture over time—summaries you can edit, things worth remembering, and gentle prompts so nothing important slips away.',
   },
   {
-    name: 'Tasks',
+    title: 'Before you see them',
+    subtitle: 'Recall',
+    body:
+      'Open their page and see what to ask about next, what is going on in their life, and what you wanted to say—without digging through old threads.',
+  },
+] as const;
+
+const flowPreview = {
+  rawNote:
+    '“Maya mentioned she is switching teams in March and wants to try pottery on weekends.”',
+  structured: [
+    'Career change around March',
+    'Interested in pottery / weekend hobby',
+  ],
+  brief:
+    'Ask how the new team is settling in; mention the pottery class idea if it comes up.',
+} as const;
+
+const upcomingFeatures = [
+  {
+    name: 'Reminders that make sense',
     description:
-      'Gentle follow-ups and reminders that stay grounded in real relationship context.',
+      'Follow-ups tied to real context—not generic nudges—so you reconnect with intention.',
   },
   {
-    name: 'Ask',
+    name: 'Ask your memory',
     description:
-      'Later phases will add grounded AI recall on top of editable source material.',
+      'Pose questions in plain language and get answers grounded in what you actually wrote, with room to edit and correct.',
   },
+  {
+    name: 'Smarter recall across people',
+    description:
+      'Search and surface moments across your circle when fuzzy memory is not enough.',
+  }
 ] as const;
 
 const setupSteps = [
   'Copy .env.example to .env.local.',
   'Run npx supabase start, then npx supabase status -o env to collect local credentials.',
-  'Fill in the Supabase variables and add your OpenAI API key when you are ready for AI features.',
+  'Fill in the Supabase variables and add your OpenAI API key when you are ready for memory features.',
   'Run npm run dev and open http://localhost:3000.',
 ] as const;
 
@@ -45,73 +72,156 @@ export default async function Home() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-8 sm:px-10 lg:px-12">
       <section className="card-surface overflow-hidden rounded-[2rem] border border-border-soft">
-        <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.3fr_0.9fr] lg:px-12 lg:py-12">
+        <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_1fr] lg:px-12 lg:py-12">
           <div className="space-y-6">
             <div className="inline-flex items-center rounded-full border border-border-soft bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
               Tether
             </div>
             <div className="space-y-4">
               <h1 className="max-w-3xl font-display text-5xl leading-none tracking-tight text-balance sm:text-6xl">
-                Remember people with warmth, context, and care.
+                Remember what matters about people.
               </h1>
-              <p className="max-w-2xl text-lg leading-8 text-muted">
-                The foundation is now a real Next.js and Supabase app instead of
-                a docs-only repo. This first shell keeps the tone personal,
-                shows what still needs configuration, and gives us a clean base
-                for people, timelines, notes, and grounded AI later on.
+              <p className="max-w-2xl text-lg leading-8 text-foreground/90">
+                A private system that turns your conversations into memory, so
+                you can show up better.
+              </p>
+              <p className="max-w-2xl text-base leading-7 text-muted">
+                For people who care about their relationships but feel
+                stretched—not a contact database or a sales tool. You are not bad
+                at keeping up; you are human, and your brain is full.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3 text-sm font-semibold">
-              <ButtonLink href="/login" variant="primary" size="lg">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <ButtonLink href="/signup" variant="primary" size="lg">
+                Sign up
+              </ButtonLink>
+              <ButtonLink href="/login" variant="secondaryMuted" size="lg">
                 Sign in
               </ButtonLink>
-              <ButtonLink href="/signup" variant="secondaryMuted" size="lg">
-                Create account
-              </ButtonLink>
-              <ButtonLink
-                href="https://supabase.com/docs/guides/local-development/cli/getting-started"
-                variant="secondaryMuted"
-                size="lg"
-              >
-                Local Supabase guide
-              </ButtonLink>
             </div>
+            <p className="text-sm leading-6 text-muted">
+              You will be more thoughtful without trying harder—not by tracking
+              people, but by remembering what they told you matters.
+            </p>
           </div>
 
-          <SetupStatus status={setupStatus} />
+          <div className="flex flex-col gap-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">
+              From conversation to clarity
+            </p>
+            <div className="space-y-3 rounded-[1.5rem] border border-border-soft bg-white/72 p-5 sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+                A quick note
+              </p>
+              <p className="text-sm italic leading-7 text-foreground/85">
+                {flowPreview.rawNote}
+              </p>
+            </div>
+            <div className="space-y-2 rounded-[1.5rem] border border-border-soft bg-white/72 p-5 sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+                What you keep
+              </p>
+              <ul className="space-y-2 text-sm leading-7 text-foreground/85">
+                {flowPreview.structured.map((line) => (
+                  <li key={line} className="flex gap-2">
+                    <span className="text-accent" aria-hidden="true">
+                      ·
+                    </span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[1.5rem] border border-accent-soft bg-accent-soft/40 p-5 sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+                Before you see them again
+              </p>
+              <p className="mt-2 text-sm leading-7 text-foreground/90">
+                {flowPreview.brief}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-3">
+        {flowMoments.map((block) => (
+          <article
+            key={block.title}
+            className="card-surface flex flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+              {block.subtitle}
+            </p>
+            <h2 className="mt-2 font-display text-2xl leading-tight">
+              {block.title}
+            </h2>
+            <p className="mt-4 flex-1 text-sm leading-7 text-muted">
+              {block.body}
+            </p>
+          </article>
+        ))}
+      </section>
+
+      <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
+              On the roadmap
+            </p>
+            <h2 className="mt-2 font-display text-3xl leading-tight">
+              Upcoming features
+            </h2>
+          </div>
+          <p className="max-w-xl text-sm leading-7 text-muted">
+            The core idea is simple: private memory you control, not a contact
+            database or a sales tool. Here is what we are building toward next.
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {upcomingFeatures.map((item) => (
+            <article
+              key={item.name}
+              className="rounded-[1.5rem] border border-border-soft bg-white/60 p-5"
+            >
+              <p className="text-sm font-semibold text-foreground">{item.name}</p>
+              <p className="mt-3 text-sm leading-7 text-muted">
+                {item.description}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="card-surface rounded-[1.75rem] border border-border-soft px-6 py-10 text-center sm:px-10">
+        <blockquote className="mx-auto max-w-2xl font-display text-2xl leading-snug tracking-tight text-balance sm:text-3xl">
+          It is not about remembering more people. It is about remembering
+          people better.
+        </blockquote>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <ButtonLink href="/signup" variant="primary" size="lg">
+            Sign up
+          </ButtonLink>
+          <ButtonLink href="/login" variant="secondaryMuted" size="lg">
+            Sign in
+          </ButtonLink>
         </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-        <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-          <h2 className="font-display text-3xl leading-tight">
-            What this starter already proves
-          </h2>
-          <ul className="mt-6 space-y-4 text-sm leading-7 text-muted">
-            <li>
-              Next.js App Router is running from <code>src/app</code> with
-              TypeScript and Tailwind.
-            </li>
-            <li>
-              Supabase local config and the first Phase 1 migration are checked
-              in under <code>supabase/</code>.
-            </li>
-            <li>
-              Database and OpenAI helpers live under <code>src/lib</code> with
-              server-only boundaries in place.
-            </li>
-            <li>
-              The home page stays useful even before secrets are configured, so
-              setup errors are visible instead of silent.
-            </li>
-          </ul>
-        </div>
+        <SetupStatus status={setupStatus} />
 
         <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
           <h2 className="font-display text-3xl leading-tight">
-            Local setup flow
+            Running locally
           </h2>
+          <p className="mt-3 text-sm leading-7 text-muted">
+            If you are developing Tether on your machine, wire Supabase and
+            optional keys using the checklist beside this box, then follow the
+            steps below.
+          </p>
           <ol className="mt-6 space-y-4 text-sm leading-7 text-muted">
             {setupSteps.map((step, index) => (
               <li key={step} className="flex gap-3">
@@ -122,40 +232,14 @@ export default async function Home() {
               </li>
             ))}
           </ol>
-        </div>
-      </section>
-
-      <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
-              Planned product areas
-            </p>
-            <h2 className="mt-2 font-display text-3xl leading-tight">
-              A CRM for relationships, not pipeline management
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-7 text-muted">
-            The pages below are the next obvious milestones. They are listed
-            here so the scaffold reads like the product we are actually
-            building.
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {plannedAreas.map((area) => (
-            <article
-              key={area.name}
-              className="rounded-[1.5rem] border border-border-soft bg-white/60 p-5"
+          <div className="mt-6">
+            <ButtonLink
+              href="https://supabase.com/docs/guides/local-development/cli/getting-started"
+              variant="secondaryMuted"
             >
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">
-                {area.name}
-              </p>
-              <p className="mt-3 text-sm leading-7 text-foreground/80">
-                {area.description}
-              </p>
-            </article>
-          ))}
+              Local Supabase guide
+            </ButtonLink>
+          </div>
         </div>
       </section>
     </main>
