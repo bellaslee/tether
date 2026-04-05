@@ -1,3 +1,10 @@
+type PersonNameRow = {
+  id: string;
+  full_name: string;
+  display_name: string | null;
+  preferred_name: string | null;
+};
+
 /**
  * Replace known profile name aliases in user note text with stable `[person:<uuid>]`
  * tokens before sending the note to a model. Aliases are matched longest-first.
@@ -26,12 +33,7 @@ export function placeholderizeNote(
 
 /** Build alias → person id from profile rows (server-only load). */
 export function buildAliasMapForPeople(
-  rows: Array<{
-    id: string;
-    full_name: string;
-    display_name: string | null;
-    preferred_name: string | null;
-  }>,
+  rows: PersonNameRow[],
 ): Map<string, string> {
   const map = new Map<string, string>();
   for (const row of rows) {
@@ -50,4 +52,51 @@ export function buildAliasMapForPeople(
     }
   }
   return map;
+}
+
+/** person id → label for denormalizing model output (display > preferred > full). */
+export function buildPersonIdToDisplayLabelMap(
+  rows: PersonNameRow[],
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    const label =
+      (row.display_name?.trim() ||
+        row.preferred_name?.trim() ||
+        row.full_name.trim()) ||
+      row.id;
+    map.set(row.id, label);
+  }
+  return map;
+}
+
+/**
+ * Turn `[person:<uuid>]` tokens and bare known person UUIDs in model text into display labels.
+ * Bracketed placeholders are replaced first so bare-UUID replacement does not corrupt them.
+ */
+export function replacePersonUuidReferencesInText(
+  text: string,
+  personIdToLabel: Map<string, string>,
+): string {
+  if (!text || personIdToLabel.size === 0) {
+    return text;
+  }
+
+  let result = text;
+  const entries = [...personIdToLabel.entries()];
+
+  for (const [id, label] of entries) {
+    const escapedId = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    result = result.replace(
+      new RegExp(`\\[person:${escapedId}\\]`, 'gi'),
+      label,
+    );
+  }
+
+  for (const [id, label] of entries) {
+    const escapedId = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    result = result.replace(new RegExp(escapedId, 'gi'), label);
+  }
+
+  return result;
 }

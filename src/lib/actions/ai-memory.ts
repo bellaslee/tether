@@ -6,7 +6,9 @@ import { loadPlaceholderizedInteractionNote } from '@/lib/ai/loaders/interaction
 import { tryCreateOpenAiClient } from '@/lib/ai/openai';
 import {
   buildAliasMapForPeople,
+  buildPersonIdToDisplayLabelMap,
   placeholderizeNote,
+  replacePersonUuidReferencesInText,
 } from '@/lib/ai/pii';
 import { runExtractFactsModel } from '@/lib/ai/pipelines/run-extract-facts';
 import { runRelationshipSummaryModel } from '@/lib/ai/pipelines/run-relationship-summary';
@@ -407,6 +409,7 @@ export async function generateRelationshipSummary(
     redacted_note: string | null;
   }> = [];
 
+  const idsForLabels = new Set<string>([personId]);
   if (recentIds.length > 0) {
     const { data: allLinks, error: alErr } = await ctx.client
       .from('interaction_people')
@@ -417,19 +420,25 @@ export async function generateRelationshipSummary(
       return { error: alErr.message };
     }
 
-    const allPersonIds = [...new Set((allLinks ?? []).map((x) => x.person_id))];
-    const { data: nameRows, error: nErr } = await ctx.client
-      .from('people')
-      .select('id, full_name, display_name, preferred_name')
-      .eq('user_id', ctx.userId)
-      .in('id', allPersonIds);
-
-    if (nErr) {
-      return { error: nErr.message };
+    for (const x of allLinks ?? []) {
+      idsForLabels.add(x.person_id);
     }
+  }
 
-    const aliasMap = buildAliasMapForPeople(nameRows ?? []);
+  const { data: nameRows, error: nErr } = await ctx.client
+    .from('people')
+    .select('id, full_name, display_name, preferred_name')
+    .eq('user_id', ctx.userId)
+    .in('id', [...idsForLabels]);
 
+  if (nErr) {
+    return { error: nErr.message };
+  }
+
+  const aliasMap = buildAliasMapForPeople(nameRows ?? []);
+  const personIdToDisplayLabel = buildPersonIdToDisplayLabelMap(nameRows ?? []);
+
+  if (recentIds.length > 0) {
     recentNotes = recentInteractions.map((int) => ({
       interaction_id: int.id,
       occurred_at: int.occurred_at,
@@ -456,11 +465,15 @@ export async function generateRelationshipSummary(
   }
 
   const model = defaultResponsesModel();
+  const summaryContent = replacePersonUuidReferencesInText(
+    parsed.content.trim(),
+    personIdToDisplayLabel,
+  );
   const { error: insErr } = await ctx.client.from('relationship_summaries').insert({
     user_id: ctx.userId,
     person_id: personId,
     kind,
-    content: parsed.content.trim(),
+    content: summaryContent,
     source_interaction_ids: recentNotes.map((n) => n.interaction_id),
     source_fact_ids: sourceFactIds,
     model_metadata: {

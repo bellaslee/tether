@@ -4,7 +4,9 @@ export {
 } from './forbidden-fields';
 export {
   buildAliasMapForPeople,
+  buildPersonIdToDisplayLabelMap,
   placeholderizeNote,
+  replacePersonUuidReferencesInText,
 } from './placeholderize-note';
 export {
   resolveContactPlaceholder,

@@ -22,6 +22,8 @@ export function buildRelationshipSummaryInstructions(
     'You help a personal relationship CRM. The subject person is identified only by UUID.',
     'You receive accepted facts (text only, no names required) and recent interaction snippets with [person:<uuid>] placeholders.',
     'Never include structured PII (phone, email, exact address, birth dates).',
+    "Treat the UUIDs as the person's name gramatically, as they will be converted to display names locally in the UI.",
+    "Do not use the word 'UUID' or anything related to it in the output.",
     kindInstructions(kind),
     'Output only JSON with a single "content" string field.',
   ].join('\n');
