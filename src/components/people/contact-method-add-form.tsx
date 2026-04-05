@@ -6,6 +6,9 @@ import { createContactMethod } from "@/lib/actions/contact-methods";
 import { CONTACT_METHOD_TYPES } from "@/lib/domain/constants";
 import { formatContactType } from "@/lib/domain/labels";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field-error";
+import { formControlClassName } from "@/components/ui/form-control-classes";
+import { FormInput } from "@/components/ui/form-input";
 
 const initial: ActionResult = {};
 
@@ -23,9 +26,7 @@ export function ContactMethodAddForm({ personId }: ContactMethodAddFormProps) {
     <form action={formAction} className="space-y-4 rounded-[1.5rem] border border-border-soft bg-white/50 p-5">
       <p className="text-sm font-semibold">Add a way to reach them</p>
       {state.error ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900" role="alert">
-          {state.error}
-        </p>
+        <FieldError size="compact">{state.error}</FieldError>
       ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
@@ -36,7 +37,7 @@ export function ContactMethodAddForm({ personId }: ContactMethodAddFormProps) {
             id={`cm-type-${personId}`}
             name="type"
             required
-            className="w-full rounded-xl border border-border-soft bg-white/90 px-3 py-2 text-sm outline-none ring-accent/30 focus:ring-2"
+            className={formControlClassName({ size: 'compact' })}
           >
             {CONTACT_METHOD_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -49,21 +50,21 @@ export function ContactMethodAddForm({ personId }: ContactMethodAddFormProps) {
           <label className="text-xs font-semibold uppercase tracking-wide text-muted" htmlFor={`cm-value-${personId}`}>
             Value
           </label>
-          <input
+          <FormInput
             id={`cm-value-${personId}`}
             name="value"
             required
-            className="w-full rounded-xl border border-border-soft bg-white/90 px-3 py-2 text-sm outline-none ring-accent/30 focus:ring-2"
+            fieldSize="compact"
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
           <label className="text-xs font-semibold uppercase tracking-wide text-muted" htmlFor={`cm-notes-${personId}`}>
             Notes
           </label>
-          <input
+          <FormInput
             id={`cm-notes-${personId}`}
             name="notes"
-            className="w-full rounded-xl border border-border-soft bg-white/90 px-3 py-2 text-sm outline-none ring-accent/30 focus:ring-2"
+            fieldSize="compact"
           />
         </div>
         <label className="flex items-center gap-2 text-sm">

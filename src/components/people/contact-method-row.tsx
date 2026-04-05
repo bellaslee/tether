@@ -11,6 +11,10 @@ import {
 import { CONTACT_METHOD_TYPES } from "@/lib/domain/constants";
 import { formatContactType } from "@/lib/domain/labels";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field-error";
+import { formControlClassName } from "@/components/ui/form-control-classes";
+import { FormInput } from "@/components/ui/form-input";
+import { listRowCardClassName } from "@/components/ui/list-row-card";
 
 const initial: ActionResult = {};
 
@@ -28,12 +32,10 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
 
   if (editing) {
     return (
-      <li className="rounded-2xl border border-border-soft bg-white/60 px-4 py-3 text-sm">
+      <li className={listRowCardClassName('text-sm')}>
         <form action={formAction} className="space-y-3">
           {state.error ? (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-900" role="alert">
-              {state.error}
-            </p>
+            <FieldError size="inline">{state.error}</FieldError>
           ) : null}
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
@@ -45,7 +47,7 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
                 name="type"
                 required
                 defaultValue={method.type}
-                className="w-full rounded-xl border border-border-soft bg-white/90 px-3 py-2 text-sm outline-none ring-accent/30 focus:ring-2"
+                className={formControlClassName({ size: 'compact' })}
               >
                 {CONTACT_METHOD_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -58,23 +60,23 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
               <label className="text-xs font-semibold text-muted" htmlFor={`edit-value-${method.id}`}>
                 Value
               </label>
-              <input
+              <FormInput
                 id={`edit-value-${method.id}`}
                 name="value"
                 required
                 defaultValue={method.value}
-                className="w-full rounded-xl border border-border-soft bg-white/90 px-3 py-2 text-sm outline-none ring-accent/30 focus:ring-2"
+                fieldSize="compact"
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
               <label className="text-xs font-semibold text-muted" htmlFor={`edit-notes-${method.id}`}>
                 Notes
               </label>
-              <input
+              <FormInput
                 id={`edit-notes-${method.id}`}
                 name="notes"
                 defaultValue={method.notes ?? ""}
-                className="w-full rounded-xl border border-border-soft bg-white/90 px-3 py-2 text-sm outline-none ring-accent/30 focus:ring-2"
+                fieldSize="compact"
               />
             </div>
           </div>
@@ -102,7 +104,7 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
   }
 
   return (
-    <li className="rounded-2xl border border-border-soft bg-white/60 px-4 py-3 text-sm">
+    <li className={listRowCardClassName('text-sm')}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">

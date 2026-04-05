@@ -7,6 +7,7 @@ import { formatStatus } from '@/lib/domain/labels';
 import { personShownName } from '@/lib/people/list-name';
 import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
+import { FormInput } from '@/components/ui/form-input';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -148,13 +149,12 @@ export default async function PeoplePage(props: {
         <section className="card-surface order-1 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-2 lg:w-full lg:max-w-sm lg:shrink-0">
           <form className="flex flex-col gap-4" method="get" action="/people">
             <div className="min-w-0 w-full">
-              <input
+              <FormInput
                 id="q"
                 name="q"
                 defaultValue={q}
                 placeholder="Search by name"
                 aria-label="Search by name"
-                className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
               />
             </div>
             <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-1">

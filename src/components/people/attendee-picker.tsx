@@ -2,6 +2,8 @@
 
 import { useId, useMemo, useState } from 'react';
 import { personShownName } from '@/lib/people/list-name';
+import { FormInput } from '@/components/ui/form-input';
+import { listRowCardClassName } from '@/components/ui/list-row-card';
 
 export type PersonOption = {
   id: string;
@@ -79,14 +81,13 @@ export function AttendeePicker({
             <label htmlFor={searchFieldId} className="sr-only">
               Search people by name
             </label>
-            <input
+            <FormInput
               id={searchFieldId}
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name"
               autoComplete="off"
-              className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
             />
           </div>
           {visibleOptions.length === 0 ? (
@@ -97,7 +98,11 @@ export function AttendeePicker({
                 const checked = selected.includes(person.id);
                 return (
                   <li key={person.id}>
-                    <label className="flex items-center gap-3 rounded-2xl border border-border-soft bg-white/60 px-4 py-3 text-sm transition hover:bg-white/90">
+                    <label
+                      className={listRowCardClassName(
+                        'flex cursor-pointer items-center gap-3 text-sm transition hover:bg-white/90',
+                      )}
+                    >
                       <input
                         type="checkbox"
                         checked={checked}

@@ -13,6 +13,10 @@ import {
 } from '@/components/people/attendee-picker';
 import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field-error';
+import { formControlClassName } from '@/components/ui/form-control-classes';
+import { FormInput } from '@/components/ui/form-input';
+import { FormTextarea } from '@/components/ui/form-textarea';
 
 const initial: ActionResult = {};
 
@@ -56,14 +60,7 @@ export function PersonInteractionForm({
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
-      {state.error ? (
-        <p
-          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
-          role="alert"
-        >
-          {state.error}
-        </p>
-      ) : null}
+      {state.error ? <FieldError>{state.error}</FieldError> : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
@@ -73,13 +70,12 @@ export function PersonInteractionForm({
           >
             When
           </label>
-          <input
+          <FormInput
             id={`occurred-${personId}`}
             name="occurred_at"
             type="datetime-local"
             required
             defaultValue={defaultOccurredAt}
-            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
           />
         </div>
         <div className="space-y-2">
@@ -91,7 +87,7 @@ export function PersonInteractionForm({
             name="interaction_type_id"
             required
             defaultValue={defaultInteractionTypeId}
-            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+            className={formControlClassName()}
           >
             {interactionTypes.map((t) => (
               <option key={t.id} value={t.id}>
@@ -110,7 +106,7 @@ export function PersonInteractionForm({
           <select
             id={`direction-${personId}`}
             name="direction"
-            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+            className={formControlClassName()}
           >
             <option value="">Optional</option>
             {INTERACTION_DIRECTIONS.map((d) => (
@@ -127,21 +123,17 @@ export function PersonInteractionForm({
           >
             Title
           </label>
-          <input
-            id={`title-${personId}`}
-            name="title"
-            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
-          />
+          <FormInput id={`title-${personId}`} name="title" />
         </div>
         <div className="space-y-2 sm:col-span-2">
           <label htmlFor={`note-${personId}`} className="text-sm font-semibold">
             Note
           </label>
-          <textarea
+          <FormTextarea
             id={`note-${personId}`}
             name="raw_note"
             rows={4}
-            className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+            resize="y"
           />
         </div>
       </div>

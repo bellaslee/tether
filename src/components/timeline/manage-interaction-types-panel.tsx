@@ -1,6 +1,8 @@
 'use client';
 
 import { Button, ButtonLink } from '@/components/ui/button';
+import { FormInput } from '@/components/ui/form-input';
+import { listRowCardClassName } from '@/components/ui/list-row-card';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
@@ -53,7 +55,7 @@ function TypeRow(props: {
   }
 
   return (
-    <li className="space-y-2 rounded-2xl border border-border-soft bg-white/60 px-4 py-3">
+    <li className={listRowCardClassName('space-y-2')}>
       {row.slug === 'category_change' ? (
         <p className="text-xs leading-5 text-muted">
           Used automatically when someone&apos;s category changes (one timeline
@@ -61,12 +63,12 @@ function TypeRow(props: {
         </p>
       ) : null}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-        <input
+        <FormInput
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
-          className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-2.5 text-sm outline-none ring-accent/30 focus:ring-2"
+          fieldSize="dense"
           aria-label={`Rename ${row.name}`}
         />
         <Button
@@ -153,13 +155,13 @@ export function ManageInteractionTypesPanel(
           New types show up in &quot;Log a moment&quot; forms right away.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <input
+          <FormInput
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="e.g. Video call"
             maxLength={120}
-            className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+            className="min-w-0 flex-1"
             aria-label="New interaction type name"
           />
           <Button

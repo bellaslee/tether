@@ -22,12 +22,12 @@ This is primarily a **maintainability and consistency** change. There may be no 
 
 ## Progress
 
-- [ ] (YYYY-MM-DD) Complete Milestone A: inventory of repeated patterns and proposed component boundaries (document in this plan’s Artifacts section or Decision Log as the list stabilizes).
-- [ ] (YYYY-MM-DD) Complete Milestone B: add shared primitives under `src/components/ui/` (or agreed folder) with TypeScript props and accessibility defaults.
-- [ ] (YYYY-MM-DD) Complete Milestone C: migrate highest-impact call sites (forms and panels) to primitives; remove duplicate class strings.
-- [ ] (YYYY-MM-DD) Complete Milestone D: migrate remaining pages (`src/app`) and large route files; shrink `people/[id]/page.tsx` composition surface where repetition is structural.
-- [ ] (YYYY-MM-DD) Complete Milestone E: add a **Design guide** section to `AGENTS.md` (repo root); align it with landed primitives and existing UI guidance elsewhere in that file.
-- [ ] (YYYY-MM-DD) Run `npm run lint` and `npm run build`; manual spot-check of auth, people, timeline, interactions, settings.
+- [x] (2026-04-04) Complete Milestone A: inventory of repeated patterns and proposed component boundaries (document in this plan’s Artifacts section or Decision Log as the list stabilizes).
+- [x] (2026-04-04) Complete Milestone B: add shared primitives under `src/components/ui/` (or agreed folder) with TypeScript props and accessibility defaults.
+- [x] (2026-04-04) Complete Milestone C: migrate highest-impact call sites (forms and panels) to primitives; remove duplicate class strings.
+- [x] (2026-04-04) Complete Milestone D: migrate remaining pages (`src/app`) and large route files; shrink `people/[id]/page.tsx` composition surface where repetition is structural. *(People list search migrated; `[id]/page.tsx` had no duplicated CRM input strings left to extract.)*
+- [x] (2026-04-04) Complete Milestone E: add a **Design guide** section to `AGENTS.md` (repo root); align it with landed primitives and existing UI guidance elsewhere in that file.
+- [x] (2026-04-04) Run `npm run lint` and `npm run build`; manual spot-check of auth, people, timeline, interactions, settings.
 
 Use timestamps on items as they complete, per `.agent/PLANS.md`.
 
@@ -37,8 +37,10 @@ Use timestamps on items as they complete, per `.agent/PLANS.md`.
 
 Document unexpected coupling (for example a “primitive” that needs server-only imports), Tailwind conflicts, or components that should stay local after all.
 
-- Observation: (none yet)  
-  Evidence: (none yet)
+- Observation: No `clsx` / `tailwind-merge` was added; primitives concatenate classes like `button.tsx`. Optional `className` on controls may not override same-utility conflicts from size presets—call sites should prefer `fieldSize` over fighting padding with extra classes when possible.  
+  Evidence: `src/components/ui/form-control-classes.ts`, `form-input.tsx`.
+- Observation: `FormInput` / `FormTextarea` are server-safe (no `'use client'`) and work from the People page Server Component for the GET search field.  
+  Evidence: `src/app/(crm)/people/page.tsx`.
 
 ---
 
@@ -69,6 +71,14 @@ Document unexpected coupling (for example a “primitive” that needs server-on
 ## Outcomes & Retrospective
 
 Summarize which primitives landed, approximate count of removed duplicate strings (or files touched), any intentional exceptions left inline, lessons about client vs server boundaries, and whether the **Design guide** in `AGENTS.md` stayed accurate after migration (update the guide in the same PR if drift appears). Update when the plan completes.
+
+**Landed primitives** (under `src/components/ui/`): `form-control-classes.ts` (`formControlClassName`, sizes `default` | `compact` | `dense`), `field-error.tsx`, `form-input.tsx`, `form-textarea.tsx`, `text-field.tsx`, `textarea-field.tsx`, `list-row-card.tsx` (`listRowCardClassName`, `ListRowCard`, `ListRowCardLi`). Existing `button.tsx` unchanged.
+
+**Migrations:** Auth forms, person form, interaction forms (person, global, edit disclosure), contact method add/row, attendee picker, person category field, manage categories / connection types / interaction types panels, person connections add form, people list search—plus centralized form error callouts.
+
+**Intentional inline exceptions:** Checkbox/radio styling, chip-style borders (`interaction-meta-chips.tsx`), large `card-surface` shells, attendee row hover still composed via `listRowCardClassName` + extra utilities. Person detail and timeline routes did not duplicate the CRM text-input string after grep; no route-local `_components` extract was needed there for this pass.
+
+**Design guide:** New **Design guide (shared UI)** section in `AGENTS.md` documents the above imports and file locations.
 
 ---
 
@@ -174,13 +184,16 @@ Work is **safe to do incrementally**. Each merged primitive batch should leave t
 
 ## Artifacts and Notes
 
-Indent candidate patterns here as the audit proceeds (example placeholders—replace with measured lists during implementation):
+**Audit summary (2026-04-04)**
 
-    Pattern: CRM text input (rounded-2xl, border-soft, focus ring)
-    Example files: src/components/people/person-form.tsx, src/components/auth/login-form.tsx, …
+| Pattern | Primitive(s) | Notes |
+|--------|----------------|-------|
+| CRM text input / select / textarea (soft border, focus ring, `bg-white/80` or compact `bg-white/90`) | `formControlClassName`, `FormInput`, `FormTextarea` | `fieldSize`: default (2xl, py-3), compact (xl, py-2), dense (flex row renames, py-2.5). |
+| Label + input + hint + optional field error | `TextField`, `TextareaField` | `hintAfter` for copy below control (e.g. password rules). |
+| Form-level / inline error callout | `FieldError` | Variants: default, compact, inline, textOnly. |
+| Settings-style list row shell | `listRowCardClassName`, `ListRowCardLi` | Base `rounded-2xl border … bg-white/60 px-4 py-3`. |
 
-    Pattern: form error callout (red border, pale red background)
-    Example files: …
+**Highest-traffic files migrated:** `person-form.tsx`, `login-form.tsx`, `signup-form.tsx`, `person-interaction-form.tsx`, `global-interaction-form.tsx`, `interaction-edit-disclosure.tsx`, `contact-method-add-form.tsx`, `contact-method-row.tsx`, `attendee-picker.tsx`, `person-category-field.tsx`, `manage-categories-panel.tsx`, `manage-connection-types-panel.tsx`, `manage-interaction-types-panel.tsx`, `person-connections-panel.tsx`, `src/app/(crm)/people/page.tsx`.
 
 ---
 
@@ -209,3 +222,5 @@ Do **not** introduce a heavy external component library unless the product owner
 - **2026-04-04:** Initial authoring. Created plan for audit and extraction of repeated UI into `src/components/ui/` primitives, with milestones and known duplication hotspots from current `src/**/*.tsx` search.
 
 - **2026-04-04:** Added Milestone E and related Progress, Purpose, Validation, Decision Log, and Outcomes notes: author a **Design guide** section in **`AGENTS.md`**, timed after primitives land and revised after migrations.
+
+- **2026-04-04:** Executed plan: added primitives, migrated forms/panels/people search, added **Design guide** to `AGENTS.md`, lint/build green.

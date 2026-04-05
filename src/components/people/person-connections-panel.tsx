@@ -8,6 +8,9 @@ import {
   deletePersonConnection,
 } from '@/lib/actions/person-connections';
 import { Button } from '@/components/ui/button';
+import { formControlClassName } from '@/components/ui/form-control-classes';
+import { FormTextarea } from '@/components/ui/form-textarea';
+import { listRowCardClassName } from '@/components/ui/list-row-card';
 
 export type PersonConnectionListItem = {
   id: string;
@@ -61,7 +64,11 @@ function ConnectionRow(props: {
   }
 
   return (
-    <li className="flex flex-col gap-2 rounded-2xl border border-border-soft bg-white/60 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+    <li
+      className={listRowCardClassName(
+        'flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4',
+      )}
+    >
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-foreground">
           <Link
@@ -167,7 +174,7 @@ function AddConnectionForm(props: {
           id="connection-related"
           value={relatedId}
           onChange={(e) => setRelatedId(e.target.value)}
-          className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+          className={formControlClassName()}
           required
         >
           <option value="">Select…</option>
@@ -186,7 +193,7 @@ function AddConnectionForm(props: {
           id="connection-type"
           value={typeId}
           onChange={(e) => setTypeId(e.target.value)}
-          className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+          className={formControlClassName()}
           required
         >
           {connectionTypes.map((t) => (
@@ -200,13 +207,13 @@ function AddConnectionForm(props: {
         <label htmlFor="connection-notes" className="text-sm font-semibold">
           Notes <span className="font-normal text-muted">(optional)</span>
         </label>
-        <textarea
+        <FormTextarea
           id="connection-notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
           maxLength={2000}
-          className="w-full resize-y rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+          resize="y"
         />
       </div>
       {error ? (

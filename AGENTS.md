@@ -367,6 +367,67 @@ Avoid:
 - Keep animations subtle and intentional
 - Prefer opacity, translate, and blur transitions over flashy motion styles
 
+## Design guide (shared UI)
+
+This section complements **UI and Accessibility Guidance** and **Tailwind and
+Styling Guidance** above. It tells implementers which shared pieces to use so
+forms, errors, and list rows stay visually consistent.
+
+### Product tone and language
+
+Keep the friend-first, warm, non-sales CRM voice described under **Product
+Philosophy** and **UX Guardrails**. Do not contradict those rules here.
+
+### Layout and surfaces
+
+- Primary page framing uses utilities such as `crm-page`, `card-surface`, and
+  `border-border-soft` on large rounded shells (often `rounded-[1.75rem]`).
+- Softer inline regions use translucent whites (`bg-white/80`, `bg-white/60`)
+  and generous radius (`rounded-2xl`) for controls and nested panels.
+- Prefer existing tokens from the global theme over one-off hex colors.
+
+### Forms
+
+- **Labeled fields (label + control + optional hint/error):** use
+  `TextField` or `TextareaField` from `src/components/ui/text-field.tsx` and
+  `src/components/ui/textarea-field.tsx`. They wire `htmlFor` / `id`,
+  optional `hint` / `hintAfter`, and `fieldError` with `aria-*` as needed.
+- **Bare inputs** (custom layouts, controlled fields in panels): use
+  `FormInput` or `FormTextarea` from `src/components/ui/form-input.tsx` and
+  `src/components/ui/form-textarea.tsx`. Pass `fieldSize` when the design
+  calls for compact or dense rows (`default` | `compact` | `dense`); dense is
+  for `flex-1` inline rename rows in settings-style lists.
+- **`<select>`:** apply
+  `className={formControlClassName({ size: 'default' | 'compact' })}` from
+  `src/components/ui/form-control-classes.ts` so focus rings and borders match
+  text fields.
+- **Form- or field-level errors:** use `FieldError` from
+  `src/components/ui/field-error.tsx`. Use default size for top-of-form
+  alerts; `size="compact"` or `size="inline"` in tighter contexts; `size="textOnly"`
+  when only red text is needed without a bordered callout.
+- **Primary actions:** use `Button` / `ButtonLink` from
+  `src/components/ui/button.tsx` with the existing variants.
+
+### List and settings rows
+
+- For repeated padded rows (`rounded-2xl border border-border-soft bg-white/60
+  px-4 py-3`), use `listRowCardClassName(extra?)` or `ListRowCard` /
+  `ListRowCardLi` from `src/components/ui/list-row-card.tsx`. Pass additional
+  classes for flex layouts or spacing (for example `space-y-2` on list items).
+
+### Navigation and wayfinding
+
+- Main app chrome uses `src/components/app/app-nav.tsx` (or its successor).
+- Use `next/link` (or `ButtonLink`) for internal navigation.
+
+### Where UI code lives
+
+- **Cross-route primitives:** `src/components/ui/` (this design guide).
+- **Feature modules:** `src/components/<domain>/` (people, timeline, auth,
+  etc.).
+- **Single-route-only UI:** optional `src/app/.../_components/` when something
+  is not reused outside that route tree.
+
 ## State Management
 
 - Prefer URL state, server state, or local component state

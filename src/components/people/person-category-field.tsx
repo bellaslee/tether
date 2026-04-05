@@ -7,6 +7,8 @@ import {
   type CreateCategoryResult,
 } from '@/lib/actions/person-categories';
 import { Button } from '@/components/ui/button';
+import { formControlClassName } from '@/components/ui/form-control-classes';
+import { FormInput } from '@/components/ui/form-input';
 
 export type PersonCategoryOption = { id: string; name: string };
 
@@ -99,7 +101,7 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
           value={categoryId}
           onChange={(e) => handleSelectChange(e.target.value)}
           required
-          className="w-full rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+          className={formControlClassName()}
           aria-describedby={
             panelMode ? 'category-panel-description' : undefined
           }
@@ -130,13 +132,13 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
             New category
           </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-            <input
+            <FormInput
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Neighbor"
               maxLength={120}
-              className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-2.5 text-sm outline-none ring-accent/30 focus:ring-2"
+              fieldSize="dense"
               aria-label="New category name"
             />
             <div className="flex flex-wrap gap-2">

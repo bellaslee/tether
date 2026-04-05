@@ -1,6 +1,8 @@
 'use client';
 
 import { Button, ButtonLink } from '@/components/ui/button';
+import { FormInput } from '@/components/ui/form-input';
+import { listRowCardClassName } from '@/components/ui/list-row-card';
 import {
   createConnectionType,
   updateConnectionType,
@@ -52,14 +54,14 @@ function TypeRow(props: {
   }
 
   return (
-    <li className="space-y-2 rounded-2xl border border-border-soft bg-white/60 px-4 py-3">
+    <li className={listRowCardClassName('space-y-2')}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-        <input
+        <FormInput
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
-          className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-2.5 text-sm outline-none ring-accent/30 focus:ring-2"
+          fieldSize="dense"
           aria-label={`Rename ${row.name}`}
         />
         <Button
@@ -147,13 +149,13 @@ export function ManageConnectionTypesPanel(
           New types show up when you link people on their profiles.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <input
+          <FormInput
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="e.g. Cousin"
             maxLength={120}
-            className="min-w-0 flex-1 rounded-2xl border border-border-soft bg-white/80 px-4 py-3 text-sm outline-none ring-accent/30 focus:ring-2"
+            className="min-w-0 flex-1"
             aria-label="New connection type name"
           />
           <Button
