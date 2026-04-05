@@ -8,6 +8,7 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] add relationship strength indicator (Cold, Warm, Hot)
 - [ ] sort people cards by interaction date, added date, and met the person date
 - [ ] filter by relationship strength
+- [ ] fix suggest button placeholder taking up too much space
 
 ## User settings
 
