@@ -47,7 +47,7 @@ export default async function EditPersonPage(props: PageProps) {
         <h1 className="mt-2 font-display text-4xl tracking-tight">
           Edit {personShownName(person)}
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
           Keep this feeling honest — tweak what helps you show up thoughtfully
           next time.
         </p>

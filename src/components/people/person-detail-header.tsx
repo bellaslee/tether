@@ -114,7 +114,7 @@ export function PersonDetailHeader({
   // content under <main> so the sticky containing block spans the full scroll height.
   return (
     <>
-      <div className="sticky top-0 z-40 -mx-8 w-[calc(100%+4rem)] max-w-none bg-background/95 px-8 pt-2 backdrop-blur-md sm:-mx-14 sm:w-[calc(100%+7rem)] sm:px-14 lg:-mx-16 lg:w-[calc(100%+8rem)] lg:px-16">
+      <div className="sticky top-0 z-40 -mx-6 w-[calc(100%+3rem)] max-w-none bg-background/95 px-6 pt-2 backdrop-blur-md sm:-mx-10 sm:w-[calc(100%+5rem)] sm:px-10 lg:-mx-12 lg:w-[calc(100%+6rem)] lg:px-12">
         <div className="w-full space-y-4 border-b border-border-soft pb-3">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1">{children}</div>

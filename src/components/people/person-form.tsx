@@ -34,10 +34,10 @@ export function PersonForm(props: PersonFormProps) {
   const categories = props.categories;
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="min-w-0 space-y-6">
       {state.error ? <FieldError>{state.error}</FieldError> : null}
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid min-w-0 gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <TextField
           containerClassName="sm:col-span-2"
           id="full_name"

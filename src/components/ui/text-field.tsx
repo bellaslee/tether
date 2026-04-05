@@ -33,7 +33,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ) {
     const errId = fieldError ? `${id}-error` : undefined;
     return (
-      <div className={['space-y-2', containerClassName].filter(Boolean).join(' ')}>
+      <div
+        className={['min-w-0 space-y-2', containerClassName]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <label htmlFor={id} className={labelClassName}>
           {label}
         </label>

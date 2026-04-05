@@ -86,6 +86,7 @@ summary {
   margin-inline: auto;
   display: flex;
   width: 100%;
+  min-width: 0;
   max-width: 72rem;
   flex: 1 1 0%;
   flex-direction: column;
@@ -110,6 +111,7 @@ summary {
   margin-inline: auto;
   display: flex;
   width: 100%;
+  min-width: 0;
   flex: 1 1 0%;
   flex-direction: column;
   row-gap: 2rem;

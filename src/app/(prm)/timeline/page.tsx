@@ -122,7 +122,7 @@ export default async function TimelinePage() {
         <div>
           <p className="prm-eyebrow">Across your circle</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
             Plans you are looking forward to and moments you have already shared.
             People listed together were part of the same entry — it lives once in
             the database.
@@ -266,7 +266,9 @@ function GlobalTimelineRow({
             />
           </div>
           {interaction.title ? (
-            <p className="font-display text-2xl">{interaction.title}</p>
+            <p className="font-display text-2xl [overflow-wrap:anywhere]">
+              {interaction.title}
+            </p>
           ) : null}
           {interaction.raw_note ? (
             <InteractionNotePreview

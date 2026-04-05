@@ -54,7 +54,7 @@ export default async function NewInteractionPage() {
         <h1 className="mt-2 font-display text-4xl tracking-tight">
           Log a shared moment
         </h1>
-        <p className="mt-2 text-sm leading-7 text-muted">
+        <p className="mt-2 text-sm leading-7 text-muted max-sm:leading-8">
           Optionally name who this was mainly about, then add everyone who was
           part of it under Also there. One entry keeps every timeline in sync.
         </p>

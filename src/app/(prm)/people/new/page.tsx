@@ -22,7 +22,7 @@ export default async function NewPersonPage() {
         </Link>
         <p className="prm-eyebrow mt-4">Your circle</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Add someone</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
           Capture the basics now; you can always deepen the story later with notes and moments.
         </p>
       </div>

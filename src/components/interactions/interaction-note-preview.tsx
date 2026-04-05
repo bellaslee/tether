@@ -47,8 +47,8 @@ export function InteractionNotePreview({
         id={contentId}
         className={
           expanded
-            ? 'whitespace-pre-wrap text-sm leading-7 text-foreground/90'
-            : 'whitespace-pre-wrap text-sm leading-7 text-foreground/90 line-clamp-3'
+            ? 'whitespace-pre-wrap text-sm leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]'
+            : 'whitespace-pre-wrap text-sm leading-7 text-foreground/90 line-clamp-3 max-sm:leading-8 [overflow-wrap:anywhere]'
         }
       >
         {note}

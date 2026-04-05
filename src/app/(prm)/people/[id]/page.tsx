@@ -410,8 +410,8 @@ export default async function PersonDetailPage(props: PageProps) {
             ← People
           </Link>
           <p className="prm-eyebrow mt-4">Profile</p>
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="font-display text-4xl tracking-tight">
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-3">
+            <h1 className="max-w-full font-display text-4xl tracking-tight text-balance [overflow-wrap:anywhere]">
               {person.full_name}
             </h1>
             <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
@@ -472,7 +472,7 @@ export default async function PersonDetailPage(props: PageProps) {
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                       How you met
                     </p>
-                    <p className="mt-1 leading-7 text-foreground/90">
+                    <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
                       {person.how_you_met ?? '—'}
                     </p>
                   </div>
@@ -480,7 +480,7 @@ export default async function PersonDetailPage(props: PageProps) {
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                       Relationship context
                     </p>
-                    <p className="mt-1 leading-7 text-foreground/90">
+                    <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
                       {person.relationship_context ?? '—'}
                     </p>
                   </div>
@@ -513,7 +513,7 @@ export default async function PersonDetailPage(props: PageProps) {
                 >
                   Timeline
                 </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+                <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
                   Plans you are looking forward to and moments you have already
                   shared.
                 </p>
@@ -714,7 +714,9 @@ function PersonTimelineRow({
             ) : null}
           </div>
           {interaction.title ? (
-            <p className="font-display text-2xl">{interaction.title}</p>
+            <p className="font-display text-2xl [overflow-wrap:anywhere]">
+              {interaction.title}
+            </p>
           ) : null}
           {interaction.raw_note ? (
             <InteractionNotePreview
@@ -755,11 +757,11 @@ function PersonTimelineRow({
 
 function DetailItem({ label, value }: { label: string; value: string | null }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted">
         {label}
       </p>
-      <p className="mt-1 font-medium">
+      <p className="mt-1 font-medium [overflow-wrap:anywhere]">
         {value && value.length > 0 ? value : '—'}
       </p>
     </div>

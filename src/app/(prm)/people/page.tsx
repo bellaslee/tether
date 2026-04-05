@@ -122,17 +122,17 @@ function PeopleListItem({
         className={`card-surface flex w-full gap-3 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5 ${
           stacked
             ? 'flex-col items-stretch'
-            : 'items-start justify-between'
+            : 'flex-col items-stretch sm:flex-row sm:items-start sm:justify-between'
         }`}
       >
-        <div className={stacked ? 'min-w-0' : 'min-w-0 flex-1'}>
-          <p className="font-display text-lg leading-snug tracking-tight">
+        <div className={stacked ? 'min-w-0' : 'min-w-0 sm:flex-1'}>
+          <p className="font-display text-lg leading-snug tracking-tight [overflow-wrap:anywhere]">
             {personShownName(person)}
           </p>
         </div>
         <div
-          className={`flex flex-wrap gap-1.5 text-xs text-muted ${
-            stacked ? 'justify-start' : 'shrink-0 justify-end'
+          className={`flex w-full flex-wrap gap-1.5 text-xs text-muted sm:w-auto ${
+            stacked ? 'justify-start' : 'justify-start sm:shrink-0 sm:justify-end'
           }`}
         >
           <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
@@ -347,7 +347,7 @@ export default async function PeoplePage(props: {
         <div>
           <p className="prm-eyebrow">Your circle</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">People</h1>
-          <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
+          <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
             Details you don’t want to forget. Let them know you care.
           </p>
         </div>

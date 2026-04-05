@@ -96,7 +96,7 @@ export default async function RemindersPage() {
         <div>
           <p className="prm-eyebrow">Follow through</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">Reminders</h1>
-          <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
+          <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
             Open loops from your notes and anything you added yourself—sorted
             with the neediest first.
           </p>
