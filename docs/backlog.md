@@ -16,17 +16,18 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] address supabase warnings
 - [x] calendar time selection in increments of 5 only
 - [ ] search interactions
+- [ ] keyboard shortcuts
 
 ## User settings
 
-- [ ] **Timezone** — Once there is a user settings page, let each user choose their
+- [x] **Timezone** — Once there is a user settings page, let each user choose their
   own timezone. That setting should drive calendar-day boundaries for features
   that bucket by “day” (for example, category-change timeline notes that
   collapse updates within the same local day).
 
 ## Engineering / cleanup
 
-- [ ] **Remove unused per-interaction AI actions if they stay dead** — After moving
+- [x] **Remove unused per-interaction AI actions if they stay dead** — After moving
   “Suggest facts” / “Suggest follow-ups” to the person Memory section
   (`extractFactsFromPersonRecentNotes`, `suggestTasksFromPersonRecentNotes` in
   `src/lib/actions/ai-memory.ts`), the older `extractFactsForInteraction` and
