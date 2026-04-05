@@ -13,5 +13,6 @@ export function formatMonthYear(isoDate: string): string {
   return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString(undefined, {
     month: "long",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
