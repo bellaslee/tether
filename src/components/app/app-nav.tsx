@@ -28,12 +28,6 @@ export function AppNav({ context }: AppNavProps) {
             <Link href="/timeline" className="transition hover:text-foreground">
               Timeline
             </Link>
-            <Link
-              href="/interactions/new"
-              className="transition hover:text-foreground"
-            >
-              Log interaction
-            </Link>
             <Link href="/settings" className="transition hover:text-foreground">
               Settings
             </Link>
