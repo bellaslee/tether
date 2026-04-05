@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 import { Manrope, Newsreader } from 'next/font/google';
 import { PrivacyPolicyProvider } from '@/components/app/privacy-policy-context';
 import './globals.css';
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <PrivacyPolicyProvider>{children}</PrivacyPolicyProvider>
+        <Analytics />
       </body>
     </html>
   );
