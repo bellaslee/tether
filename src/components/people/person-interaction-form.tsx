@@ -108,7 +108,7 @@ export function PersonInteractionForm({
             name="direction"
             className={formControlClassName()}
           >
-            <option value="">Optional</option>
+            <option value="">(optional)</option>
             {INTERACTION_DIRECTIONS.map((d) => (
               <option key={d} value={d}>
                 {d}
