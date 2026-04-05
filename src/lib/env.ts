@@ -1,6 +1,8 @@
 const publicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publicSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const openAiApiKey = process.env.OPENAI_API_KEY;
+const openAiModel = process.env.OPENAI_MODEL;
+const crmAiDebugPrompts = process.env.CRM_AI_DEBUG_PROMPTS;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const crmLocalDevBypassAuth = process.env.CRM_LOCAL_DEV_BYPASS_AUTH;
 const crmLocalDevUserId = process.env.CRM_LOCAL_DEV_USER_ID;
@@ -86,6 +88,10 @@ export function getPublicSupabaseEnv() {
   };
 }
 
+export function hasOpenAiApiKey() {
+  return isNonEmpty(openAiApiKey);
+}
+
 export function getOpenAiApiKey() {
   if (!isNonEmpty(openAiApiKey)) {
     throw new Error(
@@ -94,6 +100,19 @@ export function getOpenAiApiKey() {
   }
 
   return openAiApiKey;
+}
+
+/** Default model for Responses API calls; override with OPENAI_MODEL. */
+export function getOpenAiModel() {
+  const m = openAiModel?.trim();
+  return m && m.length > 0 ? m : 'gpt-4o-mini';
+}
+
+/** Development-only: log redacted AI request metadata (never logs full note text). */
+export function isAiDebugPromptsEnabled() {
+  return (
+    process.env.NODE_ENV === 'development' && isTruthyEnv(crmAiDebugPrompts)
+  );
 }
 
 export function getSetupStatus() {

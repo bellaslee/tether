@@ -23,6 +23,9 @@ import {
   type ConnectionTypeOption,
 } from '@/lib/people/connection-type-options';
 import { PersonConnectionsPanel } from '@/components/people/person-connections-panel';
+import { PersonMemorySection } from '@/components/ai/person-memory-section';
+import { InteractionAiToolbar } from '@/components/ai/interaction-ai-toolbar';
+import { hasOpenAiApiKey } from '@/lib/env';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -259,6 +262,65 @@ export default async function PersonDetailPage(props: PageProps) {
   const subjectName =
     person.display_name?.trim() || person.full_name;
 
+  const aiEnabled = hasOpenAiApiKey();
+
+  const { data: factRows, error: factsError } = await ctx.client
+    .from('facts')
+    .select('*')
+    .eq('person_id', id)
+    .eq('user_id', ctx.userId)
+    .in('review_status', ['candidate', 'accepted'])
+    .order('created_at', { ascending: false });
+
+  if (factsError) {
+    throw new Error(factsError.message);
+  }
+
+  const { data: summaryRows, error: summariesError } = await ctx.client
+    .from('relationship_summaries')
+    .select('*')
+    .eq('person_id', id)
+    .eq('user_id', ctx.userId)
+    .order('created_at', { ascending: false });
+
+  if (summariesError) {
+    throw new Error(summariesError.message);
+  }
+
+  const { data: taskRows, error: tasksError } = await ctx.client
+    .from('tasks')
+    .select('*')
+    .eq('person_id', id)
+    .eq('user_id', ctx.userId)
+    .order('created_at', { ascending: false });
+
+  if (tasksError) {
+    throw new Error(tasksError.message);
+  }
+
+  const sourceInteractionIds = new Set<string>();
+  for (const s of summaryRows ?? []) {
+    for (const sid of s.source_interaction_ids ?? []) {
+      sourceInteractionIds.add(sid);
+    }
+  }
+
+  const interactionLabels = new Map<string, string>();
+  if (sourceInteractionIds.size > 0) {
+    const { data: intMeta, error: intMetaError } = await ctx.client
+      .from('interactions')
+      .select('id, occurred_at')
+      .eq('user_id', ctx.userId)
+      .in('id', [...sourceInteractionIds]);
+
+    if (intMetaError) {
+      throw new Error(intMetaError.message);
+    }
+    for (const row of intMeta ?? []) {
+      interactionLabels.set(row.id, formatDateTime(row.occurred_at));
+    }
+  }
+
   const tabLinkBase =
     'inline-flex border-b-2 px-1 pb-3 text-sm font-semibold transition sm:text-base';
   const tabLinkActive = `${tabLinkBase} border-accent text-foreground`;
@@ -326,6 +388,7 @@ export default async function PersonDetailPage(props: PageProps) {
       </PersonDetailHeader>
 
       {tab === 'overview' ? (
+        <>
         <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
           <section
             className="card-surface min-w-0 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:sticky lg:top-6"
@@ -443,6 +506,7 @@ export default async function PersonDetailPage(props: PageProps) {
                           }
                           allPeople={allPeople ?? []}
                           interactionTypeOptions={interactionTypeOptions}
+                          aiEnabled={aiEnabled}
                         />
                       ))}
                     </ol>
@@ -473,6 +537,7 @@ export default async function PersonDetailPage(props: PageProps) {
                           }
                           allPeople={allPeople ?? []}
                           interactionTypeOptions={interactionTypeOptions}
+                          aiEnabled={aiEnabled}
                         />
                       ))}
                     </ol>
@@ -482,6 +547,15 @@ export default async function PersonDetailPage(props: PageProps) {
             )}
           </section>
         </div>
+        <PersonMemorySection
+          personId={person.id}
+          aiEnabled={aiEnabled}
+          facts={factRows ?? []}
+          summaries={summaryRows ?? []}
+          tasks={taskRows ?? []}
+          interactionLabels={interactionLabels}
+        />
+        </>
       ) : (
         <section
           className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
@@ -529,6 +603,7 @@ function PersonTimelineRow({
   participants,
   allPeople,
   interactionTypeOptions,
+  aiEnabled,
 }: {
   interaction: InteractionWithType;
   role: string;
@@ -540,6 +615,7 @@ function PersonTimelineRow({
     display_name: string | null;
   }>;
   interactionTypeOptions: InteractionTypeOption[];
+  aiEnabled: boolean;
 }) {
   const cardClass = isUpcoming
     ? 'card-surface rounded-[1.75rem] border-2 border-dashed border-accent/40 bg-accent-soft/20 p-6 sm:p-8'
@@ -574,6 +650,10 @@ function PersonTimelineRow({
           ) : null}
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+          <InteractionAiToolbar
+            interactionId={interaction.id}
+            aiEnabled={aiEnabled}
+          />
           {allPeople.length > 0 ? (
             <InteractionEditDisclosure
               interactionId={interaction.id}

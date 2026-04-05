@@ -21,6 +21,17 @@ export type InteractionDirection = 'inbound' | 'outbound' | 'mutual';
 
 export type InteractionPersonRole = 'primary' | 'attendee';
 
+export type FactReviewStatus = 'candidate' | 'accepted' | 'dismissed';
+
+export type RelationshipSummaryKind = 'profile_brief' | 'next_meeting';
+
+export type CrmTaskStatus =
+  | 'suggested'
+  | 'active'
+  | 'done'
+  | 'dismissed'
+  | 'snoozed';
+
 export interface Database {
   public: {
     Tables: {
@@ -297,6 +308,126 @@ export interface Database {
           person_id?: string;
           role?: InteractionPersonRole;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      facts: {
+        Row: {
+          id: string;
+          user_id: string;
+          person_id: string;
+          interaction_id: string | null;
+          body: string;
+          review_status: FactReviewStatus;
+          extractor_metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          person_id: string;
+          interaction_id?: string | null;
+          body: string;
+          review_status?: FactReviewStatus;
+          extractor_metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          person_id?: string;
+          interaction_id?: string | null;
+          body?: string;
+          review_status?: FactReviewStatus;
+          extractor_metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      relationship_summaries: {
+        Row: {
+          id: string;
+          user_id: string;
+          person_id: string;
+          kind: RelationshipSummaryKind;
+          content: string;
+          source_interaction_ids: string[];
+          source_fact_ids: string[];
+          model_metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          person_id: string;
+          kind: RelationshipSummaryKind;
+          content: string;
+          source_interaction_ids?: string[];
+          source_fact_ids?: string[];
+          model_metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          person_id?: string;
+          kind?: RelationshipSummaryKind;
+          content?: string;
+          source_interaction_ids?: string[];
+          source_fact_ids?: string[];
+          model_metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      tasks: {
+        Row: {
+          id: string;
+          user_id: string;
+          person_id: string | null;
+          interaction_id: string | null;
+          title: string;
+          description: string | null;
+          status: CrmTaskStatus;
+          due_at: string | null;
+          snoozed_until: string | null;
+          suggester_metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          person_id?: string | null;
+          interaction_id?: string | null;
+          title: string;
+          description?: string | null;
+          status?: CrmTaskStatus;
+          due_at?: string | null;
+          snoozed_until?: string | null;
+          suggester_metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          person_id?: string | null;
+          interaction_id?: string | null;
+          title?: string;
+          description?: string | null;
+          status?: CrmTaskStatus;
+          due_at?: string | null;
+          snoozed_until?: string | null;
+          suggester_metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };

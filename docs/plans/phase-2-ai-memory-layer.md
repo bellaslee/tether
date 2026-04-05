@@ -22,13 +22,13 @@ Users can **accept, edit, or delete** extracted facts and **keep, edit, snooze, 
 
 ## Progress
 
-- [ ] (YYYY-MM-DD) Add Phase 2 schema migration(s): `facts`, `relationship_summaries`, `tasks` (or equivalent names), with `user_id`, foreign keys, timestamps, source references, and RLS consistent with Phase 1 patterns.
-- [ ] (YYYY-MM-DD) Implement `src/lib/ai/pii/` (or similar): canonical list of **forbidden prompt fields**, **note placeholderization** for linked people (replace known names with `[person:<uuid>]` using locally loaded aliases, without sending those names to the model in structured headers), and **post-model resolution** from UUID to display-oriented labels for UI.
-- [ ] (YYYY-MM-DD) Implement OpenAI **Responses API** clients and versioned prompts under `src/lib/ai/` (no prompts embedded in large UI files), with structured outputs for extraction and task suggestion.
-- [ ] (YYYY-MM-DD) Server actions or route handlers for: run extraction on one interaction; list/review/update/delete facts; generate and refresh summaries; suggest tasks; optional “refresh summaries after new interaction” hook (manual button first; automatic refresh can be a follow-up if it risks cost loops).
-- [ ] (YYYY-MM-DD) UI on person detail and/or interaction views: fact review, summary panel, suggested tasks, source links back to interactions.
-- [ ] (YYYY-MM-DD) Wire `OPENAI_API_KEY` (and any model name env vars) in `src/lib/env.ts` and `.env.example`; document local testing.
-- [ ] (YYYY-MM-DD) Run `npm run lint` and `npm run build`; execute validation scenarios from `docs/personal-crm-user-stories.md` Phase 2 and this plan’s Validation section.
+- [x] (2026-04-04) Add Phase 2 schema migration(s): `facts`, `relationship_summaries`, `tasks` (or equivalent names), with `user_id`, foreign keys, timestamps, source references, and RLS consistent with Phase 1 patterns.
+- [x] (2026-04-04) Implement `src/lib/ai/pii/` (or similar): canonical list of **forbidden prompt fields**, **note placeholderization** for linked people (replace known names with `[person:<uuid>]` using locally loaded aliases, without sending those names to the model in structured headers), and **post-model resolution** from UUID to display-oriented labels for UI.
+- [x] (2026-04-04) Implement OpenAI **Responses API** clients and versioned prompts under `src/lib/ai/` (no prompts embedded in large UI files), with structured outputs for extraction and task suggestion.
+- [x] (2026-04-04) Server actions or route handlers for: run extraction on one interaction; list/review/update/delete facts; generate and refresh summaries; suggest tasks; optional “refresh summaries after new interaction” hook (manual button first; automatic refresh can be a follow-up if it risks cost loops).
+- [x] (2026-04-04) UI on person detail and/or interaction views: fact review, summary panel, suggested tasks, source links back to interactions.
+- [x] (2026-04-04) Wire `OPENAI_API_KEY` (and any model name env vars) in `src/lib/env.ts` and `.env.example`; document local testing.
+- [x] (2026-04-04) Run `npm run lint` and `npm run build`; execute validation scenarios from `docs/personal-crm-user-stories.md` Phase 2 and this plan’s Validation section.
 
 Use timestamps on items as they complete, per `.agent/PLANS.md`.
 
@@ -65,11 +65,21 @@ Document unexpected API limits, token costs, parsing edge cases, or RLS surprise
   **Rationale:** The model must not output or infer phone numbers and similar; the database remains source of truth.  
   **Date:** 2026-04-04 / User
 
+- **Decision:** Re-running **Suggest facts** or **Suggest follow-ups** on the same interaction **deletes prior** rows in `review_status = candidate` (facts) or `status = suggested` (tasks) for that interaction, then inserts fresh model output.  
+  **Rationale:** Avoid duplicate candidate rows; simple idempotence for manual re-runs.  
+  **Date:** 2026-04-04 / Implementation
+
+- **Decision:** **Suggest facts** and **Suggest follow-ups** are **manual** per interaction (buttons on the person timeline), not automatic on save, to control cost.  
+  **Rationale:** ExecPlan Milestone C allows either; manual default reduces surprise API spend.  
+  **Date:** 2026-04-04 / Implementation
+
 ---
 
 ## Outcomes & Retrospective
 
-Summarize what shipped versus `docs/personal-crm-user-stories.md` Phase 2, any deferred automation (for example summary refresh triggers), measured rough token cost per operation, and lessons about placeholder hygiene on note text. Update when the plan completes.
+Shipped: schema + RLS for `facts`, `relationship_summaries`, and `tasks`; PII boundary helpers under `src/lib/ai/pii/`; OpenAI Responses API pipelines with Zod structured outputs; server actions in `src/lib/actions/ai-memory.ts`; person overview UI (Memory & follow-ups + timeline AI buttons). `resolveContactPlaceholder` exists for a future “reveal contact” action but is not wired to UI yet. Summary refresh after new interactions remains manual (refresh buttons only). Token costs not measured in-repo.
+
+Update when the plan completes.
 
 ---
 
