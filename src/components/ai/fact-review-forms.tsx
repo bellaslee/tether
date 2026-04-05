@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import type { AiMemoryActionResult } from '@/lib/actions/ai-memory';
 import type { Tables } from '@/lib/db/database.types';
 import { Button } from '@/components/ui/button';
@@ -19,17 +19,45 @@ type Props = {
 };
 
 export function FactReviewForms({ fact, action }: Props) {
+  const [isEditing, setIsEditing] = useState(false);
   const [state, formAction, pending] = useActionState<
     AiMemoryActionResult,
     FormData
   >(action, {});
 
-  const statusLabel =
-    fact.review_status === 'candidate'
-      ? 'Candidate'
-      : fact.review_status === 'accepted'
-        ? 'Accepted'
-        : 'Dismissed';
+  const isAccepted = fact.review_status === 'accepted';
+  const isCandidate = fact.review_status === 'candidate';
+
+  const statusLabel = isCandidate
+    ? 'Candidate'
+    : isAccepted
+      ? 'Accepted'
+      : 'Dismissed';
+
+  const textareaKey = `${fact.id}-${fact.updated_at}`;
+
+  if (isAccepted && !isEditing) {
+    return (
+      <div className={listRowCardClassName('space-y-3')}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+            {statusLabel}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => setIsEditing(true)}
+          >
+            Edit
+          </Button>
+        </div>
+        <p className="whitespace-pre-wrap text-sm leading-7 text-foreground/90">
+          {fact.body}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={listRowCardClassName('space-y-3')}>
@@ -41,6 +69,7 @@ export function FactReviewForms({ fact, action }: Props) {
       <form action={formAction} className="space-y-2">
         <input type="hidden" name="fact_id" value={fact.id} />
         <FormTextarea
+          key={textareaKey}
           name="body"
           rows={3}
           defaultValue={fact.body}
@@ -48,20 +77,57 @@ export function FactReviewForms({ fact, action }: Props) {
           aria-label="Fact text"
         />
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" name="intent" value="save" size="sm" variant="secondary" disabled={pending}>
-            Save edit
-          </Button>
-          <Button type="submit" name="intent" value="accept" size="sm" variant="primary" disabled={pending}>
-            Accept
-          </Button>
-          <Button type="submit" name="intent" value="dismiss" size="sm" variant="secondaryMuted" disabled={pending}>
-            Dismiss
-          </Button>
-          <Button type="submit" name="intent" value="delete" size="sm" variant="ghostSubtle" disabled={pending}>
-            Delete
-          </Button>
+          {isCandidate ? (
+            <>
+              <Button
+                type="submit"
+                name="intent"
+                value="accept"
+                size="sm"
+                variant="primary"
+                disabled={pending}
+              >
+                Accept
+              </Button>
+              <Button
+                type="submit"
+                name="intent"
+                value="delete"
+                size="sm"
+                variant="ghostSubtle"
+                disabled={pending}
+              >
+                Delete
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                type="submit"
+                name="intent"
+                value="save"
+                size="sm"
+                variant="secondary"
+                disabled={pending}
+              >
+                Save
+              </Button>
+              <Button
+                type="submit"
+                name="intent"
+                value="delete"
+                size="sm"
+                variant="ghostSubtle"
+                disabled={pending}
+              >
+                Delete
+              </Button>
+            </>
+          )}
         </div>
-        {state.error ? <FieldError size="inline">{state.error}</FieldError> : null}
+        {state.error ? (
+          <FieldError size="inline">{state.error}</FieldError>
+        ) : null}
       </form>
     </div>
   );

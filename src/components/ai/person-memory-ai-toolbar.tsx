@@ -15,13 +15,6 @@ type BaseProps = {
   hasRecentNotes: boolean;
 };
 
-const notesHint = (
-  <p className="max-w-[14rem] text-xs leading-relaxed text-muted">
-    Uses up to five most recent timeline notes that include this person (newest
-    first).
-  </p>
-);
-
 export function SuggestFactsControl({
   personId,
   aiEnabled,
@@ -56,7 +49,7 @@ export function SuggestFactsControl({
   }
 
   return (
-    <div className="flex flex-col items-end gap-2 text-right">
+    <div className="flex flex-col items-end gap-1 text-right">
       <form action={formAction} className="flex flex-col items-end gap-1">
         <input type="hidden" name="person_id" value={personId} />
         <Button type="submit" size="sm" variant="secondary" disabled={pending}>
@@ -66,7 +59,6 @@ export function SuggestFactsControl({
           <FieldError size="inline">{state.error}</FieldError>
         ) : null}
       </form>
-      {notesHint}
     </div>
   );
 }

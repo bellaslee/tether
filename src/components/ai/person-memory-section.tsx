@@ -158,7 +158,11 @@ export function PersonMemorySection({
               <ul className="space-y-4">
                 {facts.map((fact) => (
                   <li key={fact.id}>
-                    <FactReviewForms fact={fact} action={updateFactReview} />
+                    <FactReviewForms
+                      key={`${fact.id}-${fact.updated_at}`}
+                      fact={fact}
+                      action={updateFactReview}
+                    />
                   </li>
                 ))}
               </ul>
