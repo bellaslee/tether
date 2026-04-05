@@ -14,13 +14,13 @@ This plan does **not** require changing application code unless you discover a g
 
 ## Progress
 
-- [ ] Create (or designate) a Supabase **hosted** project in the correct region; note project ref, database password, API URL, anon key, and (for admin tasks only) service role key from the Supabase dashboard.
-- [ ] Link the local repo to that project with the Supabase CLI and push all migrations (`supabase db push` or equivalent) so remote schema matches `supabase/migrations/`.
-- [ ] Configure Supabase **Auth** `Site URL` and **Redirect URLs** for the production Vercel URL (and preview URLs if you use preview deployments). You need this before **sign-up on the live app** to obtain **PROD_USER_ID**; if you use only the Supabase dashboard to create a user, you can do that earlier, but redirects still must be correct before you rely on the deployed UI.
+- [x] Create (or designate) a Supabase **hosted** project in the correct region; note project ref, database password, API URL, anon key, and (for admin tasks only) service role key from the Supabase dashboard. _(Project **Tether**, ref `drqtrhasxjcrtstdpjox`, region East US.)_
+- [x] Link the local repo to that project with the Supabase CLI and push all migrations (`supabase db push` or equivalent) so remote schema matches `supabase/migrations/`.
+- [ ] Configure Supabase **Auth** `Site URL` and **Redirect URLs** for the production Vercel URL (and preview URLs if you use preview deployments). You need this before **sign-up on the live app** to obtain **PROD_USER_ID**; if you use only the Supabase dashboard to create a user, you can do that earlier, but redirects still must be correct before you rely on the deployed UI. _(Canonical prod URL: **https://tether-kappa.vercel.app** — use **Concrete steps** §4.)_
 - [x] Create a Vercel project from this Git repository; set framework to Next.js; confirm install command `npm install` and build command `npm run build` (Vercel defaults are usually correct).
-- [ ] Add all required and optional environment variables in Vercel (Production and Preview as appropriate); redeploy.
-- [ ] **Seed production with dev data:** capture local `auth.users` id (**LOCAL_USER_ID**), create the production account and capture **PROD_USER_ID**, dump **local** `public` schema data only (`npx supabase db dump --local --data-only --schema public`), remap **LOCAL_USER_ID** → **PROD_USER_ID** in the dump, apply with `psql` to hosted Postgres; confirm lists on `/people` and `/timeline` after sign-in.
-- [ ] Run `npm run lint` and `npm run build` locally with a `.env.production.local` or exported vars mirroring Vercel to catch issues before pushing.
+- [x] Add all required and optional environment variables in Vercel (Production and Preview as appropriate); redeploy. _(Production has `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Preview: add via dashboard **All preview branches** or per-branch — current Vercel CLI required a non–production-branch name for `preview`.)_ Optional: `OPENAI_API_KEY`, Upstash vars, etc.
+- [x] **Seed production with dev data:** capture local `auth.users` id (**LOCAL_USER_ID**), create the production account and capture **PROD_USER_ID**, dump **local** `public` schema data only (`npx supabase db dump --local --data-only --schema public`), remap **LOCAL_USER_ID** → **PROD_USER_ID** in the dump, apply with `psql` to hosted Postgres; confirm lists on `/people` and `/timeline` after sign-in. _(Done 2026-04-05: remapped `e6db547d-…` → prod user, wiped conflicting prod rows for that user, `supabase db query --linked -f .tmp/dev-public-data-remapped.sql`.)_
+- [x] Run `npm run lint` and `npm run build` locally with a `.env.production.local` or exported vars mirroring Vercel to catch issues before pushing.
 - [ ] Smoke-test production: sign-in, CRUD on people and interactions, optional AI path if `OPENAI_API_KEY` is set.
 - [ ] Optional: run the **two-account isolation** checks described in [docs/plans/architecture-remediation-supabase-hardening.md](/docs/plans/architecture-remediation-supabase-hardening.md) against the hosted database and app.
 
@@ -28,8 +28,8 @@ This plan does **not** require changing application code unless you discover a g
 
 Document unexpected behaviors during your deployment (CLI prompts, Vercel build cache, auth redirect loops, etc.) with a short note and, when useful, the exact error string.
 
-- Observation: (none yet)
-  Evidence: (none yet)
+- Observation: `vercel env add … preview` (CLI v50.x) returned `action_required` / `git_branch_required` unless a specific Git branch is passed; using `main` failed with “Cannot set Production Branch … for a Preview Environment Variable.” Only `main` exists on the repo so far — use the Vercel dashboard to attach Supabase vars to **all preview deployments** when feature branches exist.
+  Evidence: CLI JSON `reason: "git_branch_required"` and `branch_not_found` / production-branch error on `preview main`.
 
 ## Decision Log
 
@@ -48,6 +48,10 @@ Document unexpected behaviors during your deployment (CLI prompts, Vercel build 
 ## Outcomes & Retrospective
 
 Summarize here once production is live: final URLs, which Supabase project ref is production, any preview-deployment policy, and lessons (for example auth URL pitfalls or env var naming).
+
+- **Production URL (alias):** https://tether-kappa.vercel.app  
+- **Supabase project ref:** `drqtrhasxjcrtstdpjox`  
+- **Migrations:** applied to hosted DB via `npx supabase db push` (2026-04-05).
 
 ## Context and Orientation
 
@@ -148,7 +152,7 @@ All commands assume the **repository root** as the working directory unless note
 
         psql "<HOSTED_POSTGRES_URI>" -v ON_ERROR_STOP=1 -f .tmp/dev-public-data.sql
 
-4. **Set Auth URLs** in the Supabase dashboard (no CLI required): **Authentication → URL configuration** → Site URL and Redirect URLs as described above.
+4. **Set Auth URLs** in the Supabase dashboard (no CLI required): **Authentication → URL configuration**. For this deployment, set **Site URL** to `https://tether-kappa.vercel.app` and add that origin (and `https://tether-kappa.vercel.app/**` if your Supabase plan supports wildcards) to **Redirect URLs** so email/password and any OAuth callbacks are allowed.
 
 5. **Vercel:** import Git repository, configure env vars, deploy. From a machine with the Vercel CLI (optional), linking can be done with `npx vercel link` and env with `npx vercel env pull` for local testing—follow Vercel’s current CLI help for your version.
 

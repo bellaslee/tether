@@ -1,7 +1,6 @@
 import { SiteFooter } from '@/components/app/site-footer';
 import { ButtonLink } from '@/components/ui/button';
 import { redirect } from 'next/navigation';
-import { SetupStatus } from '@/components/home/setup-status';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { getSetupStatus } from '@/lib/env';
 
@@ -55,20 +54,11 @@ const upcomingFeatures = [
   }
 ] as const;
 
-const setupSteps = [
-  'Copy .env.example to .env.local.',
-  'Run npx supabase start, then npx supabase status -o env to collect local credentials.',
-  'Fill in the Supabase variables and add your OpenAI API key when you are ready for memory features.',
-  'Run npm run dev and open http://localhost:3000.',
-] as const;
-
 export default async function Home() {
   const ctx = await getCrmSupabaseContext();
   if (ctx) {
     redirect('/people');
   }
-
-  const setupStatus = getSetupStatus();
 
   return (
     <>
@@ -215,39 +205,6 @@ export default async function Home() {
           <ButtonLink href="/login" variant="secondaryMuted" size="lg">
             Sign in
           </ButtonLink>
-        </div>
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-        <SetupStatus status={setupStatus} />
-
-        <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-          <h2 className="font-display text-3xl leading-tight">
-            Running locally
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-muted">
-            If you are developing Tether on your machine, wire Supabase and
-            optional keys using the checklist beside this box, then follow the
-            steps below.
-          </p>
-          <ol className="mt-6 space-y-4 text-sm leading-7 text-muted">
-            {setupSteps.map((step, index) => (
-              <li key={step} className="flex gap-3">
-                <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
-                  {index + 1}
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-6">
-            <ButtonLink
-              href="https://supabase.com/docs/guides/local-development/cli/getting-started"
-              variant="secondaryMuted"
-            >
-              Local Supabase guide
-            </ButtonLink>
-          </div>
         </div>
       </section>
     </main>
