@@ -9,17 +9,18 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] ability to sort people cards by interaction date, added date, and met the person date. This should appear under the description for the people home page.
 - [x] ability to filter by relationship strength
 - [ ] fix suggest button placeholder taking up too much space
+- [ ] one combined participant control with an explicit “mark as main” on one row for the interaction edit UI
 
 ## User settings
 
-- **Timezone** — Once there is a user settings page, let each user choose their
+- [ ] **Timezone** — Once there is a user settings page, let each user choose their
   own timezone. That setting should drive calendar-day boundaries for features
   that bucket by “day” (for example, category-change timeline notes that
   collapse updates within the same local day).
 
 ## Engineering / cleanup
 
-- **Remove unused per-interaction AI actions if they stay dead** — After moving
+- [ ] **Remove unused per-interaction AI actions if they stay dead** — After moving
   “Suggest facts” / “Suggest follow-ups” to the person Memory section
   (`extractFactsFromPersonRecentNotes`, `suggestTasksFromPersonRecentNotes` in
   `src/lib/actions/ai-memory.ts`), the older `extractFactsForInteraction` and
