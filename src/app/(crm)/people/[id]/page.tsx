@@ -71,8 +71,13 @@ export async function generateMetadata(props: {
 export default async function PersonDetailPage(props: PageProps) {
   const { id } = await props.params;
   const searchParams = await props.searchParams;
+  const tabParam = first(searchParams.tab);
   const tab =
-    first(searchParams.tab) === 'details' ? 'details' : 'overview';
+    tabParam === 'details'
+      ? 'details'
+      : tabParam === 'memory'
+        ? 'memory'
+        : 'overview';
 
   const ctx = await requireCrmAccess();
 
@@ -267,60 +272,69 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const aiEnabled = hasOpenAiApiKey();
 
-  const { data: factRows, error: factsError } = await ctx.client
-    .from('facts')
-    .select('*')
-    .eq('person_id', id)
-    .eq('user_id', ctx.userId)
-    .in('review_status', ['candidate', 'accepted'])
-    .order('created_at', { ascending: false });
-
-  if (factsError) {
-    throw new Error(factsError.message);
-  }
-
-  const { data: summaryRows, error: summariesError } = await ctx.client
-    .from('relationship_summaries')
-    .select('*')
-    .eq('person_id', id)
-    .eq('user_id', ctx.userId)
-    .order('created_at', { ascending: false });
-
-  if (summariesError) {
-    throw new Error(summariesError.message);
-  }
-
-  const { data: taskRows, error: tasksError } = await ctx.client
-    .from('tasks')
-    .select('*')
-    .eq('person_id', id)
-    .eq('user_id', ctx.userId)
-    .order('created_at', { ascending: false });
-
-  if (tasksError) {
-    throw new Error(tasksError.message);
-  }
-
-  const sourceInteractionIds = new Set<string>();
-  for (const s of summaryRows ?? []) {
-    for (const sid of s.source_interaction_ids ?? []) {
-      sourceInteractionIds.add(sid);
-    }
-  }
-
+  let factRows: Tables<'facts'>[] = [];
+  let summaryRows: Tables<'relationship_summaries'>[] = [];
+  let taskRows: Tables<'tasks'>[] = [];
   const interactionLabels = new Map<string, string>();
-  if (sourceInteractionIds.size > 0) {
-    const { data: intMeta, error: intMetaError } = await ctx.client
-      .from('interactions')
-      .select('id, occurred_at')
-      .eq('user_id', ctx.userId)
-      .in('id', [...sourceInteractionIds]);
 
-    if (intMetaError) {
-      throw new Error(intMetaError.message);
+  if (tab === 'memory') {
+    const { data: factsData, error: factsError } = await ctx.client
+      .from('facts')
+      .select('*')
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .in('review_status', ['candidate', 'accepted'])
+      .order('created_at', { ascending: false });
+
+    if (factsError) {
+      throw new Error(factsError.message);
     }
-    for (const row of intMeta ?? []) {
-      interactionLabels.set(row.id, formatDateTime(row.occurred_at));
+    factRows = factsData ?? [];
+
+    const { data: summariesData, error: summariesError } = await ctx.client
+      .from('relationship_summaries')
+      .select('*')
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .order('created_at', { ascending: false });
+
+    if (summariesError) {
+      throw new Error(summariesError.message);
+    }
+    summaryRows = summariesData ?? [];
+
+    const { data: tasksData, error: tasksError } = await ctx.client
+      .from('tasks')
+      .select('*')
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .order('created_at', { ascending: false });
+
+    if (tasksError) {
+      throw new Error(tasksError.message);
+    }
+    taskRows = tasksData ?? [];
+
+    const sourceInteractionIds = new Set<string>();
+    for (const s of summaryRows) {
+      for (const sid of s.source_interaction_ids ?? []) {
+        sourceInteractionIds.add(sid);
+      }
+    }
+
+    if (sourceInteractionIds.size > 0) {
+      const { data: intMeta, error: intMetaError } = await ctx.client
+        .from('interactions')
+        .select('id, occurred_at')
+        .eq('user_id', ctx.userId)
+        .in('id', [...sourceInteractionIds]);
+
+      if (intMetaError) {
+        throw new Error(intMetaError.message);
+      }
+      for (const row of intMeta ?? []) {
+        interactionLabels.set(row.id, formatDateTime(row.occurred_at));
+      }
     }
   }
 
@@ -334,7 +348,7 @@ export default async function PersonDetailPage(props: PageProps) {
       <PersonDetailHeader
         afterTitle={
           <nav
-            className="-mb-px flex w-full gap-8 border-b border-border-soft"
+            className="-mb-px flex w-full flex-wrap gap-x-8 gap-y-3 border-b border-border-soft"
             aria-label="Profile sections"
           >
             <Link
@@ -348,6 +362,12 @@ export default async function PersonDetailPage(props: PageProps) {
               className={tab === 'details' ? tabLinkActive : tabLinkInactive}
             >
               Details
+            </Link>
+            <Link
+              href={`/people/${person.id}?tab=memory`}
+              className={tab === 'memory' ? tabLinkActive : tabLinkInactive}
+            >
+              Memory &amp; follow-ups
             </Link>
           </nav>
         }
@@ -548,6 +568,8 @@ export default async function PersonDetailPage(props: PageProps) {
             )}
           </section>
         </div>
+        </>
+      ) : tab === 'memory' ? (
         <PersonMemorySection
           personId={person.id}
           aiEnabled={aiEnabled}
@@ -557,7 +579,6 @@ export default async function PersonDetailPage(props: PageProps) {
           tasks={taskRows ?? []}
           interactionLabels={interactionLabels}
         />
-        </>
       ) : (
         <section
           className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
