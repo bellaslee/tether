@@ -7,10 +7,18 @@ import { requireCrmAccess } from '@/lib/crm/guard';
 import { toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
+import { partitionTimelineByOccurrence } from '@/lib/interactions/timeline-partition';
 import { personShownName } from '@/lib/people/list-name';
 
 type InteractionWithType = Tables<'interactions'> & {
   interaction_types: { name: string } | null;
+};
+
+type PersonChip = {
+  id: string;
+  full_name: string;
+  display_name: string | null;
+  role: string;
 };
 
 export default async function TimelinePage() {
@@ -53,16 +61,9 @@ export default async function TimelinePage() {
   }
 
   const interactionList = (interactions ?? []) as InteractionWithType[];
+  const { upcoming, past } = partitionTimelineByOccurrence(interactionList);
   const interactionIds = interactionList.map((row) => row.id);
-  const peopleByInteraction = new Map<
-    string,
-    Array<{
-      id: string;
-      full_name: string;
-      display_name: string | null;
-      role: string;
-    }>
-  >();
+  const peopleByInteraction = new Map<string, PersonChip[]>();
 
   if (interactionIds.length > 0) {
     const { data: linkRows, error: linkError } = await ctx.client
@@ -114,8 +115,9 @@ export default async function TimelinePage() {
           </p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            Every row is one real moment. People listed together shared that
-            memory — it is not duplicated in the database.
+            Plans you are looking forward to and moments you have already shared.
+            People listed together were part of the same entry — it lives once in
+            the database.
           </p>
         </div>
         <ButtonLink href="/interactions/new" variant="primary" size="lg">
@@ -123,8 +125,8 @@ export default async function TimelinePage() {
         </ButtonLink>
       </header>
 
-      <ol className="space-y-5">
-        {interactionList.length === 0 ? (
+      {interactionList.length === 0 ? (
+        <ol className="space-y-5">
           <li className="card-surface rounded-[1.75rem] border border-border-soft p-8 text-sm text-muted">
             Nothing logged yet. Start from a person&apos;s page or{' '}
             <Link
@@ -135,87 +137,148 @@ export default async function TimelinePage() {
             </Link>
             .
           </li>
-        ) : (
-          interactionList.map((interaction) => {
-            const people = peopleByInteraction.get(interaction.id) ?? [];
-            const primaryPersonId =
-              people.find((p) => p.role === 'primary')?.id ?? '';
-            const attendeeIds = people
-              .filter((p) => p.role === 'attendee')
-              .map((p) => p.id);
-            return (
-              <li
-                key={interaction.id}
-                className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
+        </ol>
+      ) : (
+        <div className="space-y-10">
+          {upcoming.length > 0 ? (
+            <section aria-labelledby="timeline-upcoming-heading">
+              <h2
+                id="timeline-upcoming-heading"
+                className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
               >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-                        {formatDateTime(interaction.occurred_at)}
-                      </span>
-                      <InteractionMetaChips
-                        typeName={interaction.interaction_types?.name}
-                        direction={interaction.direction}
-                      />
-                    </div>
-                    {interaction.title ? (
-                      <p className="font-display text-2xl">
-                        {interaction.title}
-                      </p>
-                    ) : null}
-                    {interaction.raw_note ? (
-                      <p className="max-w-3xl whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-                        {interaction.raw_note}
-                      </p>
-                    ) : null}
-                    {people.length > 0 ? (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {people.map((person) => (
-                          <ButtonLink
-                            key={`${interaction.id}-${person.id}`}
-                            href={`/people/${person.id}`}
-                            variant={
-                              person.id === primaryPersonId
-                                ? 'primary'
-                                : 'secondary'
-                            }
-                            size="chip"
-                          >
-                            {personShownName(person)}
-                          </ButtonLink>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
-                    {allPeople.length > 0 ? (
-                      <InteractionEditDisclosure
-                        interactionId={interaction.id}
-                        defaultOccurredAt={toDatetimeLocalInputValue(
-                          new Date(interaction.occurred_at),
-                        )}
-                        defaultInteractionTypeId={
-                          interaction.interaction_type_id
-                        }
-                        defaultDirection={interaction.direction ?? ''}
-                        defaultTitle={interaction.title ?? ''}
-                        defaultRawNote={interaction.raw_note ?? ''}
-                        primaryPersonId={primaryPersonId}
-                        attendeeIds={attendeeIds}
-                        people={allPeople}
-                        interactionTypes={interactionTypeOptions}
-                      />
-                    ) : null}
-                    <InteractionDeleteButton interactionId={interaction.id} />
-                  </div>
-                </div>
-              </li>
-            );
-          })
-        )}
-      </ol>
+                Upcoming
+              </h2>
+              <ol className="space-y-5">
+                {upcoming.map((interaction) => (
+                  <GlobalTimelineRow
+                    key={interaction.id}
+                    interaction={interaction}
+                    isUpcoming
+                    peopleByInteraction={peopleByInteraction}
+                    allPeople={allPeople}
+                    interactionTypeOptions={interactionTypeOptions}
+                  />
+                ))}
+              </ol>
+            </section>
+          ) : null}
+          {past.length > 0 ? (
+            <section aria-labelledby="timeline-past-heading">
+              {upcoming.length > 0 ? (
+                <h2
+                  id="timeline-past-heading"
+                  className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                >
+                  Past
+                </h2>
+              ) : null}
+              <ol className="space-y-5">
+                {past.map((interaction) => (
+                  <GlobalTimelineRow
+                    key={interaction.id}
+                    interaction={interaction}
+                    isUpcoming={false}
+                    peopleByInteraction={peopleByInteraction}
+                    allPeople={allPeople}
+                    interactionTypeOptions={interactionTypeOptions}
+                  />
+                ))}
+              </ol>
+            </section>
+          ) : null}
+        </div>
+      )}
     </main>
+  );
+}
+
+function GlobalTimelineRow({
+  interaction,
+  isUpcoming,
+  peopleByInteraction,
+  allPeople,
+  interactionTypeOptions,
+}: {
+  interaction: InteractionWithType;
+  isUpcoming: boolean;
+  peopleByInteraction: Map<string, PersonChip[]>;
+  allPeople: Array<{
+    id: string;
+    full_name: string;
+    display_name: string | null;
+  }>;
+  interactionTypeOptions: InteractionTypeOption[];
+}) {
+  const people = peopleByInteraction.get(interaction.id) ?? [];
+  const primaryPersonId = people.find((p) => p.role === 'primary')?.id ?? '';
+  const attendeeIds = people
+    .filter((p) => p.role === 'attendee')
+    .map((p) => p.id);
+
+  const cardClass = isUpcoming
+    ? 'card-surface rounded-[1.75rem] border-2 border-dashed border-accent/40 bg-accent-soft/20 p-6 sm:p-8'
+    : 'card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
+
+  return (
+    <li className={cardClass}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {formatDateTime(interaction.occurred_at)}
+            </span>
+            <InteractionMetaChips
+              typeName={interaction.interaction_types?.name}
+              direction={interaction.direction}
+              showUpcoming={isUpcoming}
+            />
+          </div>
+          {interaction.title ? (
+            <p className="font-display text-2xl">{interaction.title}</p>
+          ) : null}
+          {interaction.raw_note ? (
+            <p className="max-w-3xl whitespace-pre-wrap text-sm leading-7 text-foreground/90">
+              {interaction.raw_note}
+            </p>
+          ) : null}
+          {people.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {people.map((person) => (
+                <ButtonLink
+                  key={`${interaction.id}-${person.id}`}
+                  href={`/people/${person.id}`}
+                  variant={
+                    person.id === primaryPersonId ? 'primary' : 'secondary'
+                  }
+                  size="chip"
+                >
+                  {personShownName(person)}
+                </ButtonLink>
+              ))}
+            </div>
+          ) : null}
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+          {allPeople.length > 0 ? (
+            <InteractionEditDisclosure
+              interactionId={interaction.id}
+              defaultOccurredAt={toDatetimeLocalInputValue(
+                new Date(interaction.occurred_at),
+              )}
+              defaultInteractionTypeId={interaction.interaction_type_id}
+              defaultDirection={interaction.direction ?? ''}
+              defaultTitle={interaction.title ?? ''}
+              defaultRawNote={interaction.raw_note ?? ''}
+              primaryPersonId={primaryPersonId}
+              attendeeIds={attendeeIds}
+              people={allPeople}
+              interactionTypes={interactionTypeOptions}
+            />
+          ) : null}
+          <InteractionDeleteButton interactionId={interaction.id} />
+        </div>
+      </div>
+    </li>
   );
 }
 

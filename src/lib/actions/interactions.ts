@@ -6,6 +6,10 @@ import type { InteractionDirection } from '@/lib/db/database.types';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
+import {
+  countsTowardLastTouch,
+  resolveCountsTowardLastTouchOnUpdate,
+} from '@/lib/interactions/upcoming';
 
 export type ActionResult = { error?: string; ok?: true };
 
@@ -102,7 +106,7 @@ export async function createInteractionFromPerson(
       direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
-      counts_toward_last_touch: true,
+      counts_toward_last_touch: countsTowardLastTouch(payload.occurred_at),
     })
     .select('id')
     .single();
@@ -194,7 +198,7 @@ export async function createGlobalInteraction(
       direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
-      counts_toward_last_touch: true,
+      counts_toward_last_touch: countsTowardLastTouch(payload.occurred_at),
     })
     .select('id')
     .single();
@@ -247,7 +251,7 @@ export async function updateInteraction(
 
   const { data: existing, error: existingError } = await ctx.client
     .from('interactions')
-    .select('id')
+    .select('id, occurred_at, counts_toward_last_touch')
     .eq('id', interactionId)
     .eq('user_id', ctx.userId)
     .maybeSingle();
@@ -306,6 +310,12 @@ export async function updateInteraction(
     return { error: typeGate.error };
   }
 
+  const countsToward = resolveCountsTowardLastTouchOnUpdate(
+    existing.occurred_at,
+    existing.counts_toward_last_touch,
+    payload.occurred_at,
+  );
+
   const { error: updateError } = await ctx.client
     .from('interactions')
     .update({
@@ -314,6 +324,7 @@ export async function updateInteraction(
       direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
+      counts_toward_last_touch: countsToward,
     })
     .eq('id', interactionId)
     .eq('user_id', ctx.userId);

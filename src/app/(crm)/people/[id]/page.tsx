@@ -18,6 +18,7 @@ import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
   type InteractionTypeOption,
 } from '@/lib/interactions/type-options';
+import { partitionPersonTimelineRows } from '@/lib/interactions/timeline-partition';
 import {
   defaultConnectionTypeId as pickDefaultConnectionTypeId,
   type ConnectionTypeOption,
@@ -244,6 +245,9 @@ export default async function PersonDetailPage(props: PageProps) {
     }));
   }
 
+  const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
+    partitionPersonTimelineRows(timelineRows);
+
   const defaultOccurredAt = toDatetimeLocalInputValue(
     new Date(person.created_at),
   );
@@ -423,8 +427,8 @@ export default async function PersonDetailPage(props: PageProps) {
               <div>
                 <h2 className="font-display text-2xl">Timeline</h2>
                 <p className="mt-2 text-sm text-muted">
-                  Newest first — shared entries appear once, linked to everyone
-                  involved.
+                  Upcoming plans first, then memories — shared entries appear
+                  once, linked to everyone involved.
                 </p>
               </div>
               <Link
@@ -434,84 +438,151 @@ export default async function PersonDetailPage(props: PageProps) {
                 View global timeline
               </Link>
             </div>
-            <ol className="mt-8 space-y-6">
-              {timelineRows.length === 0 ? (
-                <li className="text-sm text-muted">
-                  No interactions yet. Log a moment when you are ready.
-                </li>
-              ) : (
-                timelineRows.map(({ interaction, role }) => {
-                  const participants = participantsByInteraction.get(
-                    interaction.id,
-                  ) ?? {
-                    primaryPersonId: '',
-                    attendeeIds: [] as string[],
-                  };
-                  return (
-                    <li
-                      key={interaction.id}
-                      className="rounded-[1.5rem] border border-border-soft bg-white/60 px-5 py-4"
+            {timelineRows.length === 0 ? (
+              <p className="mt-8 text-sm text-muted">
+                No interactions yet. Log a moment when you are ready.
+              </p>
+            ) : (
+              <div className="mt-8 space-y-8">
+                {upcomingTimelineRows.length > 0 ? (
+                  <div aria-labelledby="person-timeline-upcoming-heading">
+                    <h3
+                      id="person-timeline-upcoming-heading"
+                      className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-                              {formatDateTime(interaction.occurred_at)}
-                            </span>
-                            <InteractionMetaChips
-                              typeName={interaction.interaction_types?.name}
-                              direction={interaction.direction}
-                            />
-                            {role === 'primary' ? (
-                              <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] text-accent">
-                                Primary in this memory
-                              </span>
-                            ) : null}
-                          </div>
-                          {interaction.title ? (
-                            <p className="mt-2 font-display text-xl">
-                              {interaction.title}
-                            </p>
-                          ) : null}
-                          {interaction.raw_note ? (
-                            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-                              {interaction.raw_note}
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
-                          {(allPeople ?? []).length > 0 ? (
-                            <InteractionEditDisclosure
-                              interactionId={interaction.id}
-                              defaultOccurredAt={toDatetimeLocalInputValue(
-                                new Date(interaction.occurred_at),
-                              )}
-                              defaultInteractionTypeId={
-                                interaction.interaction_type_id
-                              }
-                              defaultDirection={interaction.direction ?? ''}
-                              defaultTitle={interaction.title ?? ''}
-                              defaultRawNote={interaction.raw_note ?? ''}
-                              primaryPersonId={participants.primaryPersonId}
-                              attendeeIds={participants.attendeeIds}
-                              people={allPeople ?? []}
-                              interactionTypes={interactionTypeOptions}
-                            />
-                          ) : null}
-                          <InteractionDeleteButton
-                            interactionId={interaction.id}
-                          />
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })
-              )}
-            </ol>
+                      Upcoming
+                    </h3>
+                    <ol className="space-y-6">
+                      {upcomingTimelineRows.map(({ interaction, role }) => (
+                        <PersonTimelineRow
+                          key={interaction.id}
+                          interaction={interaction}
+                          role={role}
+                          isUpcoming
+                          participants={
+                            participantsByInteraction.get(interaction.id) ?? {
+                              primaryPersonId: '',
+                              attendeeIds: [] as string[],
+                            }
+                          }
+                          allPeople={allPeople ?? []}
+                          interactionTypeOptions={interactionTypeOptions}
+                        />
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
+                {pastTimelineRows.length > 0 ? (
+                  <div aria-labelledby="person-timeline-past-heading">
+                    {upcomingTimelineRows.length > 0 ? (
+                      <h3
+                        id="person-timeline-past-heading"
+                        className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                      >
+                        Past
+                      </h3>
+                    ) : null}
+                    <ol className="space-y-6">
+                      {pastTimelineRows.map(({ interaction, role }) => (
+                        <PersonTimelineRow
+                          key={interaction.id}
+                          interaction={interaction}
+                          role={role}
+                          isUpcoming={false}
+                          participants={
+                            participantsByInteraction.get(interaction.id) ?? {
+                              primaryPersonId: '',
+                              attendeeIds: [] as string[],
+                            }
+                          }
+                          allPeople={allPeople ?? []}
+                          interactionTypeOptions={interactionTypeOptions}
+                        />
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </section>
         </>
       )}
     </main>
+  );
+}
+
+function PersonTimelineRow({
+  interaction,
+  role,
+  isUpcoming,
+  participants,
+  allPeople,
+  interactionTypeOptions,
+}: {
+  interaction: InteractionWithType;
+  role: string;
+  isUpcoming: boolean;
+  participants: { primaryPersonId: string; attendeeIds: string[] };
+  allPeople: Array<{
+    id: string;
+    full_name: string;
+    display_name: string | null;
+  }>;
+  interactionTypeOptions: InteractionTypeOption[];
+}) {
+  const cardClass = isUpcoming
+    ? 'rounded-[1.5rem] border-2 border-dashed border-accent/40 bg-accent-soft/20 px-5 py-4'
+    : 'rounded-[1.5rem] border border-border-soft bg-white/60 px-5 py-4';
+
+  return (
+    <li className={cardClass}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {formatDateTime(interaction.occurred_at)}
+            </span>
+            <InteractionMetaChips
+              typeName={interaction.interaction_types?.name}
+              direction={interaction.direction}
+              showUpcoming={isUpcoming}
+            />
+            {role === 'primary' ? (
+              <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] text-accent">
+                Primary in this memory
+              </span>
+            ) : null}
+          </div>
+          {interaction.title ? (
+            <p className="mt-2 font-display text-xl">{interaction.title}</p>
+          ) : null}
+          {interaction.raw_note ? (
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
+              {interaction.raw_note}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+          {allPeople.length > 0 ? (
+            <InteractionEditDisclosure
+              interactionId={interaction.id}
+              defaultOccurredAt={toDatetimeLocalInputValue(
+                new Date(interaction.occurred_at),
+              )}
+              defaultInteractionTypeId={interaction.interaction_type_id}
+              defaultDirection={interaction.direction ?? ''}
+              defaultTitle={interaction.title ?? ''}
+              defaultRawNote={interaction.raw_note ?? ''}
+              primaryPersonId={participants.primaryPersonId}
+              attendeeIds={participants.attendeeIds}
+              people={allPeople}
+              interactionTypes={interactionTypeOptions}
+            />
+          ) : null}
+          <InteractionDeleteButton interactionId={interaction.id} />
+        </div>
+      </div>
+    </li>
   );
 }
 

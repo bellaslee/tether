@@ -23,11 +23,13 @@ export async function refreshLastInteractionAtForPersonIds(
     let lastAt: string | null = null;
 
     if (interactionIds.length > 0) {
+      const nowIso = new Date().toISOString();
       const { data: latest, error: latestError } = await client
         .from("interactions")
         .select("occurred_at")
         .eq("user_id", userId)
         .eq("counts_toward_last_touch", true)
+        .lte("occurred_at", nowIso)
         .in("id", interactionIds)
         .order("occurred_at", { ascending: false })
         .limit(1)
