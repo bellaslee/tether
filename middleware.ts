@@ -2,6 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/db/database.types";
 
+/** True when the request may carry a Supabase SSR session (chunked cookies use `.0`, `.1`, …). */
+function requestMayHaveSupabaseSession(request: NextRequest): boolean {
+  return request.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("auth-token"));
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -9,6 +16,10 @@ export async function middleware(request: NextRequest) {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
+    return supabaseResponse;
+  }
+
+  if (!requestMayHaveSupabaseSession(request)) {
     return supabaseResponse;
   }
 
@@ -35,9 +46,20 @@ export async function middleware(request: NextRequest) {
 }
 
 /** Refreshes the Supabase session cookie. PRM routes under `src/app/(prm)` enforce
- *  sign-in via `requirePrmAccess()` in the layout, not here. */
+ *  sign-in via `requirePrmAccess()` in the layout, not here.
+ *
+ *  When you add a new authenticated page or API that relies on refreshed cookies,
+ *  add its path pattern here so session refresh still runs. */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/",
+    "/login",
+    "/signup",
+    "/people/:path*",
+    "/timeline/:path*",
+    "/reminders/:path*",
+    "/interactions/:path*",
+    "/settings/:path*",
+    "/api/transcribe",
   ],
 };

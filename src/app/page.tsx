@@ -2,7 +2,6 @@ import { SiteFooter } from '@/components/app/site-footer';
 import { ButtonLink } from '@/components/ui/button';
 import { redirect } from 'next/navigation';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
-import { getSetupStatus } from '@/lib/env';
 
 const flowMoments = [
   {
