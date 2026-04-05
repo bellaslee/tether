@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { after } from 'next/server';
 import type { InteractionDirection } from '@/lib/db/database.types';
 import { runAutoMemorySuggestForInteraction } from '@/lib/actions/ai-memory';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
@@ -388,11 +387,14 @@ export async function updateInteraction(
   revalidatePath('/timeline');
   touchIds.forEach((pid) => revalidatePath(`/people/${pid}`));
 
-  after(() => {
-    void runAutoMemorySuggestForInteraction(interactionId).catch(() => {
+  const noteTrimmed = payload.raw_note?.trim() ?? '';
+  if (noteTrimmed && hasOpenAiApiKey()) {
+    try {
+      await runAutoMemorySuggestForInteraction(interactionId);
+    } catch {
       /* Best-effort AI; interaction is already saved. */
-    });
-  });
+    }
+  }
 
   return { ok: true };
 }

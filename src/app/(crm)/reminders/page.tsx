@@ -155,7 +155,11 @@ export default async function RemindersPage() {
                   ) : (
                     <p className="mb-2 text-xs text-muted">General</p>
                   )}
-                  <TaskReviewForms task={task} action={updateCrmTask} />
+                  <TaskReviewForms
+                    key={`${task.id}-${task.updated_at}`}
+                    task={task}
+                    action={updateCrmTask}
+                  />
                 </li>
               );
             })}

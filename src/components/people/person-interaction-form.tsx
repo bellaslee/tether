@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { createInteractionFromPerson } from '@/lib/actions/interactions';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
-import { toDatetimeLocalInputValue } from '@/lib/datetime';
+import { toNewInteractionDatetimeLocalInputValue } from '@/lib/datetime';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
   AttendeePicker,
@@ -51,7 +51,7 @@ export function PersonInteractionForm({
         'occurred_at',
       ) as HTMLInputElement | null;
       if (occurred) {
-        occurred.value = toDatetimeLocalInputValue();
+        occurred.value = toNewInteractionDatetimeLocalInputValue();
       }
       router.refresh();
       onSuccess?.();

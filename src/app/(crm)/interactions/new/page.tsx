@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { GlobalInteractionForm } from '@/components/interactions/global-interaction-form';
 import { requireCrmAccess } from '@/lib/crm/guard';
-import { toDatetimeLocalInputValue } from '@/lib/datetime';
+import { toNewInteractionDatetimeLocalInputValue } from '@/lib/datetime';
 import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
   type InteractionTypeOption,
@@ -37,7 +37,7 @@ export default async function NewInteractionPage() {
     interactionTypeOptions,
   );
 
-  const defaultOccurredAt = toDatetimeLocalInputValue();
+  const defaultOccurredAt = toNewInteractionDatetimeLocalInputValue();
 
   return (
     <main className="crm-form-shell max-w-3xl">

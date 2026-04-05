@@ -15,7 +15,11 @@ import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { requireCrmAccess } from '@/lib/crm/guard';
 import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
 import { formatStatus } from '@/lib/domain/labels';
-import { formatMonthYear, toDatetimeLocalInputValue } from '@/lib/datetime';
+import {
+  formatMonthYear,
+  toDatetimeLocalInputValue,
+  toNewInteractionDatetimeLocalInputValue,
+} from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
@@ -258,7 +262,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
     partitionPersonTimelineRows(timelineRows);
 
-  const defaultOccurredAt = toDatetimeLocalInputValue(
+  const defaultOccurredAt = toNewInteractionDatetimeLocalInputValue(
     new Date(person.created_at),
   );
   const otherPeople = (allPeople ?? []).filter((p) => p.id !== person.id);

@@ -3,6 +3,25 @@ export function toDatetimeLocalInputValue(date = new Date()) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+/**
+ * Default `datetime-local` for new interactions: calendar day from `baseDate`
+ * (default: today), local time 12:00.
+ */
+export function toNewInteractionDatetimeLocalInputValue(
+  baseDate: Date = new Date(),
+) {
+  const atNoon = new Date(
+    baseDate.getFullYear(),
+    baseDate.getMonth(),
+    baseDate.getDate(),
+    12,
+    0,
+    0,
+    0,
+  );
+  return toDatetimeLocalInputValue(atNoon);
+}
+
 /** First-of-month `YYYY-MM-DD` or ISO date string → e.g. "March 2024". */
 export function formatMonthYear(isoDate: string): string {
   const day = isoDate.slice(0, 10);

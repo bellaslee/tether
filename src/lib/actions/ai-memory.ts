@@ -14,7 +14,10 @@ import {
   type TaskSig,
 } from '@/lib/ai/memory-similarity';
 import { computeMemoryAiInputHash } from '@/lib/ai/memory-ai-input-hash';
-import { loadPlaceholderizedInteractionNote } from '@/lib/ai/loaders/interaction-for-ai';
+import {
+  loadDeclinedMemoryForInteraction,
+  loadPlaceholderizedInteractionNote,
+} from '@/lib/ai/loaders/interaction-for-ai';
 import { tryCreateOpenAiClient } from '@/lib/ai/openai';
 import {
   buildAliasMapForPeople,
@@ -162,6 +165,15 @@ export async function extractFactsForInteraction(
     return { error: loaded.error };
   }
 
+  const declined = await loadDeclinedMemoryForInteraction(
+    ctx.client,
+    ctx.userId,
+    interactionId,
+  );
+  if ('error' in declined) {
+    return { error: declined.error };
+  }
+
   const openai = tryCreateOpenAiClient();
   if (!openai) {
     return { error: aiDisabledMessage() };
@@ -187,6 +199,7 @@ export async function extractFactsForInteraction(
       interactionId,
       allowedPersonIds: loaded.linkedPersonIds,
       redactedNote: loaded.redactedNote,
+      userDeclinedFacts: declined.ok.declinedFactBodies,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Extraction failed.';
@@ -267,6 +280,15 @@ export async function suggestTasksForInteraction(
     return { error: loaded.error };
   }
 
+  const declined = await loadDeclinedMemoryForInteraction(
+    ctx.client,
+    ctx.userId,
+    interactionId,
+  );
+  if ('error' in declined) {
+    return { error: declined.error };
+  }
+
   const openai = tryCreateOpenAiClient();
   if (!openai) {
     return { error: aiDisabledMessage() };
@@ -294,6 +316,7 @@ export async function suggestTasksForInteraction(
       interactionId,
       allowedPersonIds: loaded.linkedPersonIds,
       redactedNote: loaded.redactedNote,
+      userDeclinedReminders: declined.ok.declinedReminders,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Task suggestions failed.';
@@ -838,6 +861,26 @@ export async function updateCrmTask(
       .delete()
       .eq('id', taskId)
       .eq('user_id', ctx.userId);
+    if (error) {
+      return { error: error.message };
+    }
+    revalidate();
+    return { ok: true };
+  }
+
+  if (intent === 'save') {
+    const title = String(formData.get('title') ?? '').trim();
+    const descriptionRaw = String(formData.get('description') ?? '').trim();
+    const description = descriptionRaw || null;
+    if (!title) {
+      return { error: 'Reminder title cannot be empty.' };
+    }
+    const { error } = await ctx.client
+      .from('tasks')
+      .update({ title, description })
+      .eq('id', taskId)
+      .eq('user_id', ctx.userId)
+      .in('status', ['suggested', 'active', 'snoozed', 'done']);
     if (error) {
       return { error: error.message };
     }

@@ -1,4 +1,4 @@
-export const EXTRACT_FACTS_PROMPT_VERSION = 1;
+export const EXTRACT_FACTS_PROMPT_VERSION = 2;
 
 export function buildExtractFactsInstructions() {
   return [
@@ -13,6 +13,7 @@ export function buildExtractFactsInstructions() {
     'Do not invent contact details, identifiers, or missing specifics. If a fact would require guessing a phone number, email, address, date, or name, omit it.',
     'Do not restate the note as a summary. Extract distinct candidate facts only.',
     'Avoid duplicate, overlapping, or overly generic facts. If two facts say nearly the same thing, keep the more specific one.',
+    'The input JSON may include user_declined_facts: short statements the user already declined for this same interaction. Do not output new facts that repeat, paraphrase, or re-derive the same information as any entry in that list, even if the note still mentions it.',
     'If the text is ambiguous about who a fact refers to, omit it.',
     'If the text is ambiguous or weakly suggestive, omit it rather than hedging.',
     'Output only valid structured JSON matching the schema and nothing else.',
@@ -39,6 +40,7 @@ export function buildExtractFactsUserPayload(input: {
   interactionId: string;
   allowedPersonIds: string[];
   redactedNote: string;
+  userDeclinedFacts: string[];
 }) {
   return [
     'Input JSON:',
@@ -47,6 +49,7 @@ export function buildExtractFactsUserPayload(input: {
         interaction_id: input.interactionId,
         linked_person_ids: input.allowedPersonIds,
         note_text_with_person_placeholders: input.redactedNote,
+        user_declined_facts: input.userDeclinedFacts,
       },
       null,
       2,

@@ -18,12 +18,14 @@ export async function runSuggestTasksModel(args: {
   interactionId: string;
   allowedPersonIds: string[];
   redactedNote: string;
+  userDeclinedReminders?: Array<{ title: string; description: string | null }>;
 }): Promise<SuggestTasksResult> {
   const instructions = buildSuggestTasksInstructions();
   const userContent = buildSuggestTasksUserPayload({
     interactionId: args.interactionId,
     allowedPersonIds: args.allowedPersonIds,
     redactedNote: args.redactedNote,
+    userDeclinedReminders: args.userDeclinedReminders ?? [],
   });
 
   logAiRequestDebug('suggest_tasks', {

@@ -48,7 +48,8 @@ export function PersonFactsMemorySection({
             Facts
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Review and accept what you want to keep on this profile.
+            Accept what you want to keep, or decline candidates you do not want
+            suggested again from the same note.
           </p>
         </div>
         <div className="min-w-0 shrink-0">
@@ -130,7 +131,8 @@ export function PersonRemindersMemorySection({
             Open loops &amp; reminders
           </h2>
           <p className="mt-1 text-sm text-muted">
-            Follow-up ideas grounded in your notes—delete or snooze anytime.
+            Follow-up ideas from your notes—decline what you do not want, snooze
+            anytime, or edit to remove one permanently.
           </p>
         </div>
         <div className="min-w-0 shrink-0">
@@ -166,7 +168,11 @@ export function PersonRemindersMemorySection({
           <ul className="space-y-3">
             {tasks.map((task) => (
               <li key={task.id}>
-                <TaskReviewForms task={task} action={updateCrmTask} />
+                <TaskReviewForms
+                  key={`${task.id}-${task.updated_at}`}
+                  task={task}
+                  action={updateCrmTask}
+                />
               </li>
             ))}
           </ul>

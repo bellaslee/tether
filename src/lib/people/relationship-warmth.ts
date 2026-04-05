@@ -8,7 +8,7 @@ const TENURE_BLEND_MAX_DAYS = 1095;
 const HOT_DAYS_NEW = 14;
 const HOT_DAYS_OLD = 30;
 const WARM_DAYS_NEW = 30;
-const WARM_DAYS_OLD = 60;
+const WARM_DAYS_OLD = 90;
 
 function clamp01(value: number): number {
   if (value <= 0) {

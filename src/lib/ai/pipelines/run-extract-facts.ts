@@ -18,12 +18,14 @@ export async function runExtractFactsModel(args: {
   interactionId: string;
   allowedPersonIds: string[];
   redactedNote: string;
+  userDeclinedFacts?: string[];
 }): Promise<ExtractFactsResult> {
   const instructions = buildExtractFactsInstructions();
   const userContent = buildExtractFactsUserPayload({
     interactionId: args.interactionId,
     allowedPersonIds: args.allowedPersonIds,
     redactedNote: args.redactedNote,
+    userDeclinedFacts: args.userDeclinedFacts ?? [],
   });
 
   logAiRequestDebug('extract_facts', {

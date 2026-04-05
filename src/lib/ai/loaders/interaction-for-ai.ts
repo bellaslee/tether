@@ -79,6 +79,58 @@ export async function loadPlaceholderizedInteractionNote(
   };
 }
 
+export type DeclinedMemoryForInteraction = {
+  declinedFactBodies: string[];
+  declinedReminders: Array<{ title: string; description: string | null }>;
+};
+
+/** Facts and reminders the user declined for this interaction; pass to extract/suggest prompts. */
+export async function loadDeclinedMemoryForInteraction(
+  client: SupabaseClient<Database>,
+  userId: string,
+  interactionId: string,
+): Promise<{ ok: DeclinedMemoryForInteraction } | { error: string }> {
+  const { data: factRows, error: fErr } = await client
+    .from('facts')
+    .select('body')
+    .eq('user_id', userId)
+    .eq('interaction_id', interactionId)
+    .eq('review_status', 'dismissed');
+
+  if (fErr) {
+    return { error: fErr.message };
+  }
+
+  const { data: taskRows, error: tErr } = await client
+    .from('tasks')
+    .select('title, description')
+    .eq('user_id', userId)
+    .eq('interaction_id', interactionId)
+    .eq('status', 'dismissed');
+
+  if (tErr) {
+    return { error: tErr.message };
+  }
+
+  const declinedFactBodies = (factRows ?? [])
+    .map((r) => r.body.trim())
+    .filter((b) => b.length > 0);
+
+  const declinedReminders = (taskRows ?? [])
+    .map((r) => ({
+      title: r.title.trim(),
+      description: r.description?.trim() ?? null,
+    }))
+    .filter((r) => r.title.length > 0);
+
+  return {
+    ok: {
+      declinedFactBodies,
+      declinedReminders,
+    },
+  };
+}
+
 const RECENT_NOTE_INTERACTION_LIMIT = 5;
 
 export async function loadPlaceholderizedRecentNotesForPerson(

@@ -110,13 +110,14 @@ export function FactReviewForms({ fact, action }: Props) {
                 Accept
               </Button>
               <Button
-                type="button"
+                type="submit"
+                name="intent"
+                value="dismiss"
                 size="sm"
                 variant="ghostSubtle"
                 disabled={pending}
-                onClick={submitDelete}
               >
-                Delete
+                Decline
               </Button>
             </>
           ) : (
