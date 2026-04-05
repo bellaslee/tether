@@ -372,7 +372,7 @@ export default async function PersonDetailPage(props: PageProps) {
         }
         editHref={`/people/${person.id}/edit`}
         personId={person.id}
-        otherPeople={otherPeople}
+        allPeople={allPeople ?? []}
         defaultOccurredAt={defaultOccurredAt}
         interactionTypes={interactionTypeOptions}
         defaultInteractionTypeId={defaultInteractionTypeId}

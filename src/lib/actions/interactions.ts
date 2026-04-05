@@ -181,7 +181,7 @@ export async function createGlobalInteraction(
   if (allIds.length === 0) {
     return {
       error:
-        "Link at least one person — use 'Also there', or choose a main person.",
+        'Link at least one person — add them under People (and optionally mark a main person).',
     };
   }
 
@@ -313,7 +313,7 @@ export async function updateInteraction(
   if (allIds.length === 0) {
     return {
       error:
-        "Link at least one person — use 'Also there', or choose a main person.",
+        'Link at least one person — add them under People (and optionally mark a main person).',
     };
   }
 

@@ -14,7 +14,7 @@ type PersonDetailHeaderProps = {
   afterTitle?: React.ReactNode;
   editHref: string;
   personId: string;
-  otherPeople: PersonOption[];
+  allPeople: PersonOption[];
   defaultOccurredAt: string;
   interactionTypes: InteractionTypeOption[];
   defaultInteractionTypeId: string;
@@ -25,7 +25,7 @@ export function PersonDetailHeader({
   afterTitle,
   editHref,
   personId,
-  otherPeople,
+  allPeople,
   defaultOccurredAt,
   interactionTypes,
   defaultInteractionTypeId,
@@ -87,14 +87,14 @@ export function PersonDetailHeader({
                 </Button>
               </div>
               <p className="mt-2 text-sm leading-7 text-muted">
-                Saved to their timeline and yours. Add co-attendees with the{' '}
-                <span className="font-medium text-foreground">Also there</span>{' '}
-                field so one entry stays in sync for everyone.
+                Saved to their timeline and yours. Add anyone else under{' '}
+                <span className="font-medium text-foreground">People</span> so
+                one entry stays in sync for everyone.
               </p>
               <div className="mt-6">
                 <PersonInteractionForm
                   personId={personId}
-                  otherPeople={otherPeople}
+                  allPeople={allPeople}
                   defaultOccurredAt={defaultOccurredAt}
                   interactionTypes={interactionTypes}
                   defaultInteractionTypeId={defaultInteractionTypeId}

@@ -1,16 +1,14 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState } from 'react';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { createGlobalInteraction } from '@/lib/actions/interactions';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
-  AttendeePicker,
+  InteractionParticipantPicker,
   type PersonOption,
 } from '@/components/people/attendee-picker';
-import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
-import { personShownName } from '@/lib/people/list-name';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 import { formControlClassName } from '@/components/ui/form-control-classes';
@@ -36,45 +34,29 @@ export function GlobalInteractionForm({
     createGlobalInteraction,
     initial,
   );
-  const [primaryId, setPrimaryId] = useState('');
 
   return (
     <form action={formAction} className="space-y-6">
       {state.error ? <FieldError>{state.error}</FieldError> : null}
 
       <div className="space-y-2">
-        <label htmlFor="primary_person_id" className="text-sm font-semibold">
-          Main person{' '}
-          <span className="font-normal text-muted">(optional)</span>
-        </label>
-        <p className="text-xs text-muted">
-          If it was mainly about one person, choose them here. Otherwise leave
-          this empty and select everyone under Also there.
+        <p id="global-interaction-people-label" className="text-sm font-semibold">
+          People
         </p>
-        <select
-          id="primary_person_id"
-          name="primary_person_id"
-          value={primaryId}
-          onChange={(event) => setPrimaryId(event.target.value)}
-          className={formControlClassName()}
-          autoFocus
-        >
-          <option value="">No main person</option>
-          {people.map((person) => (
-            <option key={person.id} value={person.id}>
-              {personShownName(person)}
-            </option>
-          ))}
-        </select>
+        <p className="text-xs text-muted">
+          Select who was part of this moment. Use{' '}
+          <span className="font-medium text-foreground">Mark as main</span> if it
+          was mostly about one person (optional).
+        </p>
+        <div role="group" aria-labelledby="global-interaction-people-label">
+          <InteractionParticipantPicker
+            people={people}
+            initialPrimaryId=""
+            initialAttendeeIds={[]}
+            autoRevealList={false}
+          />
+        </div>
       </div>
-
-      <PeopleFilterDisclosure
-        initialOpen={false}
-        labelId="global-interaction-also-there"
-        label="Also there"
-      >
-        <AttendeePicker people={people} excludeId={primaryId} />
-      </PeopleFilterDisclosure>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
@@ -87,6 +69,7 @@ export function GlobalInteractionForm({
             type="datetime-local"
             required
             defaultValue={defaultOccurredAt}
+            autoFocus
           />
         </div>
         <div className="space-y-2">

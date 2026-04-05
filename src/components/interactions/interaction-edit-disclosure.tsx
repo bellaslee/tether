@@ -1,23 +1,15 @@
 'use client';
 
-import {
-  useActionState,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { updateInteraction } from '@/lib/actions/interactions';
 import {
-  AttendeePicker,
+  InteractionParticipantPicker,
   type PersonOption,
 } from '@/components/people/attendee-picker';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
-import { personShownName } from '@/lib/people/list-name';
-import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 import { formControlClassName } from '@/components/ui/form-control-classes';
@@ -110,24 +102,15 @@ function InteractionEditForm({
     primaryPersonId && people.some((p) => p.id === primaryPersonId)
       ? primaryPersonId
       : '';
-  const [primaryId, setPrimaryId] = useState(resolvedPrimary);
-  const [boostIds, setBoostIds] = useState<string[]>([]);
-  const [pickerEpoch, setPickerEpoch] = useState(0);
 
-  const mergedAttendeeInitial = useMemo(
-    () => [...new Set([...attendeeIds, ...boostIds])],
-    [attendeeIds, boostIds],
+  const pickerKey = useMemo(
+    () =>
+      `${interactionId}|${resolvedPrimary}|${[...attendeeIds].sort().join(',')}`,
+    [interactionId, resolvedPrimary, attendeeIds],
   );
 
-  function handlePrimaryChange(next: string) {
-    if (!next && primaryId) {
-      setBoostIds((prev) => [...new Set([...prev, primaryId])]);
-    } else {
-      setBoostIds([]);
-    }
-    setPickerEpoch((e) => e + 1);
-    setPrimaryId(next);
-  }
+  const autoRevealList =
+    Boolean(resolvedPrimary) || attendeeIds.filter(Boolean).length > 0;
 
   const [state, formAction, pending] = useActionState(
     updateInteraction.bind(null, interactionId),
@@ -152,44 +135,30 @@ function InteractionEditForm({
       {state.error ? <FieldError>{state.error}</FieldError> : null}
 
       <div className="space-y-2">
-        <label htmlFor={`primary-${interactionId}`} className="text-sm font-semibold">
-          Main person{' '}
-          <span className="font-normal text-muted">(optional)</span>
-        </label>
-        <p className="text-xs text-muted">
-          Leave empty if no one was the focus — everyone can be under Also
-          there.
-        </p>
-        <select
-          id={`primary-${interactionId}`}
-          name="primary_person_id"
-          value={primaryId}
-          onChange={(event) => handlePrimaryChange(event.target.value)}
-          className={formControlClassName()}
-          autoFocus
+        <p
+          id={`interaction-edit-people-${interactionId}`}
+          className="text-sm font-semibold"
         >
-          <option value="">No main person</option>
-          {people.map((person) => (
-            <option key={person.id} value={person.id}>
-              {personShownName(person)}
-            </option>
-          ))}
-        </select>
+          People
+        </p>
+        <p className="text-xs text-muted">
+          Tap a row to include someone. Use{' '}
+          <span className="font-medium text-foreground">Mark as main</span> if
+          the moment was mostly about one person (optional).
+        </p>
+        <div
+          role="group"
+          aria-labelledby={`interaction-edit-people-${interactionId}`}
+        >
+          <InteractionParticipantPicker
+            key={pickerKey}
+            people={people}
+            initialPrimaryId={resolvedPrimary}
+            initialAttendeeIds={attendeeIds}
+            autoRevealList={autoRevealList}
+          />
+        </div>
       </div>
-
-      <PeopleFilterDisclosure
-        key={`also-there-${interactionId}-${attendeeIds.slice().sort().join('|')}`}
-        initialOpen={attendeeIds.length > 0}
-        labelId={`interaction-edit-also-there-${interactionId}`}
-        label="Also there"
-      >
-        <AttendeePicker
-          key={`${interactionId}-${pickerEpoch}`}
-          people={people}
-          excludeId={primaryId}
-          initialSelectedIds={mergedAttendeeInitial}
-        />
-      </PeopleFilterDisclosure>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">

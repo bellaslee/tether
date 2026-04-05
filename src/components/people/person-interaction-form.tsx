@@ -8,10 +8,9 @@ import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { toNewInteractionDatetimeLocalInputValue } from '@/lib/datetime';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
-  AttendeePicker,
+  InteractionParticipantPicker,
   type PersonOption,
 } from '@/components/people/attendee-picker';
-import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 import { formControlClassName } from '@/components/ui/form-control-classes';
@@ -22,7 +21,7 @@ const initial: ActionResult = {};
 
 type PersonInteractionFormProps = {
   personId: string;
-  otherPeople: PersonOption[];
+  allPeople: PersonOption[];
   defaultOccurredAt: string;
   interactionTypes: InteractionTypeOption[];
   defaultInteractionTypeId: string;
@@ -31,7 +30,7 @@ type PersonInteractionFormProps = {
 
 export function PersonInteractionForm({
   personId,
-  otherPeople,
+  allPeople,
   defaultOccurredAt,
   interactionTypes,
   defaultInteractionTypeId,
@@ -126,17 +125,30 @@ export function PersonInteractionForm({
           </label>
           <FormInput id={`title-${personId}`} name="title" />
         </div>
-        <div className="sm:col-span-2">
-          <PeopleFilterDisclosure
-            initialOpen={false}
-            labelId={`person-interaction-also-there-${personId}`}
-            label="Also there"
+        <div className="space-y-2 sm:col-span-2">
+          <p
+            id={`person-interaction-people-${personId}`}
+            className="text-sm font-semibold"
           >
-            <p className="mb-2 text-xs text-muted">
-              Optional — link this memory to other people in one shared entry.
-            </p>
-            <AttendeePicker people={otherPeople} excludeId={personId} />
-          </PeopleFilterDisclosure>
+            People
+          </p>
+          <p className="text-xs text-muted">
+            They are the main person for this entry. Add anyone else who shared
+            the moment.
+          </p>
+          <div
+            role="group"
+            aria-labelledby={`person-interaction-people-${personId}`}
+          >
+            <InteractionParticipantPicker
+              key={personId}
+              people={allPeople}
+              fixedPrimaryId={personId}
+              initialPrimaryId={personId}
+              initialAttendeeIds={[]}
+              autoRevealList
+            />
+          </div>
         </div>
         <div className="space-y-2 sm:col-span-2">
           <label htmlFor={`note-${personId}`} className="text-sm font-semibold">

@@ -74,8 +74,13 @@ export default async function Home() {
       <section className="card-surface overflow-hidden rounded-[2rem] border border-border-soft">
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_1fr] lg:px-12 lg:py-12">
           <div className="space-y-6">
-            <div className="inline-flex items-center rounded-full border border-border-soft bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-              Tether
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center rounded-full border border-border-soft bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
+                Tether
+              </div>
+              <div className="inline-flex items-center rounded-full border border-accent-soft bg-accent-soft/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/80">
+                Open beta
+              </div>
             </div>
             <div className="space-y-4">
               <h1 className="max-w-3xl font-display text-5xl leading-none tracking-tight text-balance sm:text-6xl">
