@@ -19,8 +19,7 @@ see [AGENTS.md](./AGENTS.md).
 
 ## What’s in the repo today
 
-- **Auth:** login and signup (`/login`, `/signup`); optional local dev auth
-  bypass (documented in `.env.example`).
+- **Auth:** login and signup (`/login`, `/signup`).
 - **People:** list, detail, create, edit; categories; how-you-met; connection
   types and person-to-person links.
 - **Interactions:** quick capture and timeline views (including by type).
@@ -73,7 +72,7 @@ live under the `(crm)` route group (e.g. `/people`, `/timeline`).
    ```
 
 Open [http://localhost:3000](http://localhost:3000). Create an account via
-`/signup` (or use the documented dev bypass if you are only working locally).
+`/signup` or sign in at `/login`.
 
 ## Validation
 

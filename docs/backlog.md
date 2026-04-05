@@ -12,8 +12,8 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] voice to text
 - [ ] dark mode
 - [x] allow user to select view: list by category or grid
-- [ ] code review to address inefficiencies
-- [ ] address supabase warnings
+- [x] code review to address inefficiencies
+- [x] address supabase warnings
 - [x] calendar time selection in increments of 5 only
 - [ ] search interactions
 
