@@ -12,6 +12,7 @@ function kindInstructions(kind: RelationshipSummaryKind) {
   return [
     'Write a practical next-meeting brief: what to ask about, open threads, and anything worth remembering for the next conversation.',
     'Stay grounded in the supplied facts and recent notes. Do not invent contact information.',
+    'The brief should be a numbered list of five suggested conversation topics, each on a new line.',
   ].join('\n');
 }
 
