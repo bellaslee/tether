@@ -47,11 +47,11 @@ function extensionForMime(mime: string): string {
 function voicePaddingClass(size: FormControlSize): string {
   switch (size) {
     case 'compact':
-      return 'pb-9 pr-11';
+      return 'pb-9 pr-48';
     case 'dense':
-      return 'pb-9 pr-11';
+      return 'pb-9 pr-48';
     default:
-      return 'pb-10 pr-12';
+      return 'pb-10 pr-56';
   }
 }
 
@@ -70,6 +70,26 @@ function MicIcon({ className = '' }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z"
+      />
+    </svg>
+  );
+}
+
+function StopIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z"
       />
     </svg>
   );
@@ -242,42 +262,64 @@ function VoiceMicControl({
   }, [phase, startRecording, stopRecording]);
 
   const iconSize = fieldSize === 'default' ? 'h-5 w-5' : 'h-4 w-4';
-  const btnSize = fieldSize === 'default' ? 'p-2' : 'p-1.5';
+  const spinnerSize =
+    fieldSize === 'default' ? 'h-5 w-5' : 'h-4 w-4';
+  const idleBtnPadding = fieldSize === 'default' ? 'p-2' : 'p-1.5';
 
   return (
     <>
-      <div className="pointer-events-none absolute bottom-2 right-2 flex items-center gap-1">
+      <div className="pointer-events-none absolute bottom-2 right-2 flex items-center justify-end">
         {phase === 'transcribing' ? (
-          <span
-            className="pointer-events-none inline-block h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-accent"
-            aria-hidden
-          />
-        ) : null}
-        <button
-          type="button"
-          onClick={onMicClick}
-          disabled={phase === 'transcribing'}
-          aria-pressed={phase === 'recording'}
-          aria-label={
-            phase === 'recording'
-              ? 'Stop recording and transcribe'
-              : phase === 'transcribing'
-                ? 'Transcribing'
+          <div
+            className={[
+              'pointer-events-auto rounded-full border border-border-soft bg-white/90 shadow-sm',
+              idleBtnPadding,
+            ].join(' ')}
+            role="status"
+            aria-label="Transcribing"
+          >
+            <span
+              className={[
+                'block animate-spin rounded-full border-2 border-muted border-t-accent',
+                spinnerSize,
+              ].join(' ')}
+              aria-hidden
+            />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onMicClick}
+            aria-pressed={phase === 'recording'}
+            aria-label={
+              phase === 'recording'
+                ? 'Stop recording and transcribe'
                 : 'Start voice input'
-          }
-          title={
-            phase === 'recording'
-              ? 'Stop and transcribe'
-              : 'Speak to add text (tap again to stop)'
-          }
-          className={[
-            'pointer-events-auto rounded-full border border-border-soft bg-white/90 text-foreground shadow-sm transition hover:bg-white disabled:opacity-50',
-            btnSize,
-            phase === 'recording' ? 'ring-2 ring-red-400/80' : '',
-          ].join(' ')}
-        >
-          <MicIcon className={iconSize} />
-        </button>
+            }
+            title={
+              phase === 'recording'
+                ? 'Stop and transcribe'
+                : 'Speak to add text'
+            }
+            className={[
+              'pointer-events-auto flex shrink-0 items-center border border-border-soft bg-white/90 text-foreground shadow-sm transition hover:bg-white',
+              phase === 'recording'
+                ? 'max-w-[calc(100vw-2rem)] gap-2 rounded-2xl py-2 pl-3 pr-2 ring-2 ring-red-400/80 sm:max-w-none'
+                : ['rounded-full', idleBtnPadding].join(' '),
+            ].join(' ')}
+          >
+            {phase === 'recording' ? (
+              <>
+                <span className="min-w-0 text-left text-[11px] leading-snug text-muted sm:text-xs">
+                  Listening... press stop to transcribe
+                </span>
+                <StopIcon className={[iconSize, 'shrink-0'].join(' ')} />
+              </>
+            ) : (
+              <MicIcon className={iconSize} />
+            )}
+          </button>
+        )}
       </div>
       {voiceError ? (
         <p
