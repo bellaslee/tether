@@ -22,6 +22,7 @@ type PersonInteractionFormProps = {
   defaultOccurredAt: string;
   interactionTypes: InteractionTypeOption[];
   defaultInteractionTypeId: string;
+  onSuccess?: () => void;
 };
 
 export function PersonInteractionForm({
@@ -30,6 +31,7 @@ export function PersonInteractionForm({
   defaultOccurredAt,
   interactionTypes,
   defaultInteractionTypeId,
+  onSuccess,
 }: PersonInteractionFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -48,8 +50,9 @@ export function PersonInteractionForm({
         occurred.value = toDatetimeLocalInputValue();
       }
       router.refresh();
+      onSuccess?.();
     }
-  }, [state.ok, router]);
+  }, [state.ok, router, onSuccess]);
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">

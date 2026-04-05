@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
 import { ContactMethodRow } from '@/components/people/contact-method-row';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
-import { LogMomentDisclosure } from '@/components/people/log-moment-disclosure';
+import { PersonTimelineLogPanel } from '@/components/people/person-timeline-log-panel';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
@@ -405,45 +405,32 @@ export default async function PersonDetailPage(props: PageProps) {
         </>
       ) : (
         <>
-          <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-            <h2 className="font-display text-2xl">Log a moment</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-              Quick memory-keeping: one entry can include other people without
-              duplicating the story.
-            </p>
-            <div className="mt-6">
-              <LogMomentDisclosure
-                personId={person.id}
-                otherPeople={otherPeople}
-                defaultOccurredAt={defaultOccurredAt}
-                interactionTypes={interactionTypeOptions}
-                defaultInteractionTypeId={defaultInteractionTypeId}
-              />
-            </div>
-          </section>
+          <div className="space-y-10">
+            <PersonTimelineLogPanel
+              personId={person.id}
+              otherPeople={otherPeople}
+              defaultOccurredAt={defaultOccurredAt}
+              interactionTypes={interactionTypeOptions}
+              defaultInteractionTypeId={defaultInteractionTypeId}
+            />
 
-          <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="font-display text-2xl">Timeline</h2>
-                <p className="mt-2 text-sm text-muted">
-                  Upcoming plans first, then memories — shared entries appear
-                  once, linked to everyone involved.
-                </p>
-              </div>
-              <Link
-                href="/timeline"
-                className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
-              >
-                View global timeline
-              </Link>
-            </div>
             {timelineRows.length === 0 ? (
-              <p className="mt-8 text-sm text-muted">
-                No interactions yet. Log a moment when you are ready.
-              </p>
+              <ol className="space-y-5">
+                <li className="card-surface rounded-[1.75rem] border border-border-soft p-8 text-sm text-muted">
+                  Nothing logged yet. Use{' '}
+                  <span className="font-semibold text-foreground">Log interaction</span>{' '}
+                  above when you remember something, or{' '}
+                  <Link
+                    href="/interactions/new"
+                    className="font-semibold text-accent underline-offset-4 hover:underline"
+                  >
+                    add a multi-person moment
+                  </Link>
+                  .
+                </li>
+              </ol>
             ) : (
-              <div className="mt-8 space-y-8">
+              <div className="space-y-10">
                 {upcomingTimelineRows.length > 0 ? (
                   <div aria-labelledby="person-timeline-upcoming-heading">
                     <h3
@@ -504,7 +491,7 @@ export default async function PersonDetailPage(props: PageProps) {
                 ) : null}
               </div>
             )}
-          </section>
+          </div>
         </>
       )}
     </main>
