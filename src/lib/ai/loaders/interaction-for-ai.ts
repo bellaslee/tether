@@ -2,7 +2,11 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/database.types";
-import { buildAliasMapForPeople, placeholderizeNote } from '@/lib/ai/pii';
+import {
+  buildAliasMapForPeople,
+  buildPersonIdToDisplayLabelMap,
+  placeholderizeNote,
+} from '@/lib/ai/pii';
 
 export async function loadPlaceholderizedInteractionNote(
   client: SupabaseClient<Database>,
@@ -13,6 +17,7 @@ export async function loadPlaceholderizedInteractionNote(
       rawNote: string;
       redactedNote: string;
       linkedPersonIds: string[];
+      personIdToDisplayLabel: Map<string, string>;
     }
   | { error: string }
 > {
@@ -63,9 +68,15 @@ export async function loadPlaceholderizedInteractionNote(
   }
 
   const aliasMap = buildAliasMapForPeople(peopleRows);
+  const personIdToDisplayLabel = buildPersonIdToDisplayLabelMap(peopleRows);
   const redactedNote = placeholderizeNote(rawNote, aliasMap);
 
-  return { rawNote, redactedNote, linkedPersonIds };
+  return {
+    rawNote,
+    redactedNote,
+    linkedPersonIds,
+    personIdToDisplayLabel,
+  };
 }
 
 const RECENT_NOTE_INTERACTION_LIMIT = 5;
@@ -80,6 +91,7 @@ export async function loadPlaceholderizedRecentNotesForPerson(
       linkedPersonIds: string[];
       primaryInteractionId: string;
       bundledInteractionIds: string[];
+      personIdToDisplayLabel: Map<string, string>;
     }
   | { error: string }
 > {
@@ -155,6 +167,7 @@ export async function loadPlaceholderizedRecentNotesForPerson(
   }
 
   const aliasMap = buildAliasMapForPeople(peopleRows);
+  const personIdToDisplayLabel = buildPersonIdToDisplayLabelMap(peopleRows);
   const segments = bundle.map((row) => {
     const raw = row.raw_note!.trim();
     const redacted = placeholderizeNote(raw, aliasMap);
@@ -170,5 +183,6 @@ export async function loadPlaceholderizedRecentNotesForPerson(
     linkedPersonIds,
     primaryInteractionId,
     bundledInteractionIds,
+    personIdToDisplayLabel,
   };
 }

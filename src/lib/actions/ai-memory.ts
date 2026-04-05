@@ -1,7 +1,18 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { CrmTaskStatus, FactReviewStatus, RelationshipSummaryKind } from '@/lib/db/database.types';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type {
+  CrmTaskStatus,
+  Database,
+  FactReviewStatus,
+  RelationshipSummaryKind,
+} from '@/lib/db/database.types';
+import {
+  filterDedupedFacts,
+  filterDedupedSuggestedTasks,
+  type TaskSig,
+} from '@/lib/ai/memory-similarity';
 import {
   loadPlaceholderizedInteractionNote,
   loadPlaceholderizedRecentNotesForPerson,
@@ -34,6 +45,90 @@ function isUuid(value: string): boolean {
 
 function aiDisabledMessage() {
   return 'Add OPENAI_API_KEY to your environment to use AI features.';
+}
+
+type DbClient = SupabaseClient<Database>;
+
+const TASK_DEDUP_STATUSES = ['suggested', 'active', 'snoozed'] as const;
+
+async function loadExistingFactBodiesByPerson(
+  client: DbClient,
+  userId: string,
+  personIds: string[],
+): Promise<{ ok: Map<string, string[]> } | { error: string }> {
+  if (personIds.length === 0) {
+    return { ok: new Map() };
+  }
+
+  const { data, error } = await client
+    .from('facts')
+    .select('person_id, body')
+    .eq('user_id', userId)
+    .in('person_id', personIds)
+    .in('review_status', ['candidate', 'accepted']);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const map = new Map<string, string[]>();
+  for (const row of data ?? []) {
+    const list = map.get(row.person_id) ?? [];
+    list.push(row.body);
+    map.set(row.person_id, list);
+  }
+  return { ok: map };
+}
+
+async function loadExistingTaskSigsForDedup(
+  client: DbClient,
+  userId: string,
+  linkedPersonIds: string[],
+  includeNullPerson: boolean,
+): Promise<{ ok: TaskSig[] } | { error: string }> {
+  const out: TaskSig[] = [];
+
+  if (linkedPersonIds.length > 0) {
+    const { data, error } = await client
+      .from('tasks')
+      .select('person_id, title, description')
+      .eq('user_id', userId)
+      .in('status', [...TASK_DEDUP_STATUSES])
+      .in('person_id', linkedPersonIds);
+
+    if (error) {
+      return { error: error.message };
+    }
+    for (const row of data ?? []) {
+      out.push({
+        person_id: row.person_id,
+        title: row.title,
+        description: row.description,
+      });
+    }
+  }
+
+  if (includeNullPerson) {
+    const { data, error } = await client
+      .from('tasks')
+      .select('person_id, title, description')
+      .eq('user_id', userId)
+      .in('status', [...TASK_DEDUP_STATUSES])
+      .is('person_id', null);
+
+    if (error) {
+      return { error: error.message };
+    }
+    for (const row of data ?? []) {
+      out.push({
+        person_id: row.person_id,
+        title: row.title,
+        description: row.description,
+      });
+    }
+  }
+
+  return { ok: out };
 }
 
 export async function extractFactsForInteraction(
@@ -95,13 +190,14 @@ export async function extractFactsForInteraction(
   }
 
   const model = defaultResponsesModel();
+  const labelMap = loaded.personIdToDisplayLabel;
   const rows = parsed.facts
     .filter((f) => allowed.has(f.person_id))
     .map((f) => ({
       user_id: ctx.userId,
       person_id: f.person_id,
       interaction_id: interactionId,
-      body: f.body.trim(),
+      body: replacePersonUuidReferencesInText(f.body.trim(), labelMap),
       review_status: 'candidate' as const,
       extractor_metadata: {
         model,
@@ -110,11 +206,25 @@ export async function extractFactsForInteraction(
       },
     }));
 
-  if (rows.length === 0) {
+  const existingFacts = await loadExistingFactBodiesByPerson(
+    ctx.client,
+    ctx.userId,
+    loaded.linkedPersonIds,
+  );
+  if ('error' in existingFacts) {
+    return { error: existingFacts.error };
+  }
+  const rowsToInsert = filterDedupedFacts(rows, existingFacts.ok);
+
+  if (rowsToInsert.length === 0) {
+    revalidatePath('/timeline');
+    for (const pid of loaded.linkedPersonIds) {
+      revalidatePath(`/people/${pid}`);
+    }
     return { ok: true };
   }
 
-  const { error: insErr } = await ctx.client.from('facts').insert(rows);
+  const { error: insErr } = await ctx.client.from('facts').insert(rowsToInsert);
   if (insErr) {
     return { error: insErr.message };
   }
@@ -185,14 +295,18 @@ export async function suggestTasksForInteraction(
   }
 
   const model = defaultResponsesModel();
+  const labelMap = loaded.personIdToDisplayLabel;
   const rows = parsed.tasks.map((t) => {
     const pid = t.person_id && allowed.has(t.person_id) ? t.person_id : null;
+    const desc = t.description?.trim() || null;
     return {
       user_id: ctx.userId,
       person_id: pid,
       interaction_id: interactionId,
-      title: t.title.trim(),
-      description: t.description?.trim() || null,
+      title: replacePersonUuidReferencesInText(t.title.trim(), labelMap),
+      description: desc
+        ? replacePersonUuidReferencesInText(desc, labelMap)
+        : null,
       status: 'suggested' as const,
       suggester_metadata: {
         model,
@@ -202,18 +316,35 @@ export async function suggestTasksForInteraction(
     };
   });
 
-  if (rows.length === 0) {
+  const includeNullPerson = rows.some((r) => r.person_id === null);
+  const existingTasks = await loadExistingTaskSigsForDedup(
+    ctx.client,
+    ctx.userId,
+    loaded.linkedPersonIds,
+    includeNullPerson,
+  );
+  if ('error' in existingTasks) {
+    return { error: existingTasks.error };
+  }
+  const rowsToInsert = filterDedupedSuggestedTasks(rows, existingTasks.ok);
+
+  if (rowsToInsert.length === 0) {
+    revalidatePath('/timeline');
+    const touch = new Set<string>(loaded.linkedPersonIds);
+    for (const pid of touch) {
+      revalidatePath(`/people/${pid}`);
+    }
     return { ok: true };
   }
 
-  const { error: insErr } = await ctx.client.from('tasks').insert(rows);
+  const { error: insErr } = await ctx.client.from('tasks').insert(rowsToInsert);
   if (insErr) {
     return { error: insErr.message };
   }
 
   revalidatePath('/timeline');
   const touch = new Set<string>(loaded.linkedPersonIds);
-  for (const r of rows) {
+  for (const r of rowsToInsert) {
     if (r.person_id) touch.add(r.person_id);
   }
   for (const pid of touch) {
@@ -295,13 +426,14 @@ export async function extractFactsFromPersonRecentNotes(
   }
 
   const model = defaultResponsesModel();
+  const labelMap = loaded.personIdToDisplayLabel;
   const rows = parsed.facts
     .filter((f) => allowed.has(f.person_id))
     .map((f) => ({
       user_id: ctx.userId,
       person_id: f.person_id,
       interaction_id: loaded.primaryInteractionId,
-      body: f.body.trim(),
+      body: replacePersonUuidReferencesInText(f.body.trim(), labelMap),
       review_status: 'candidate' as const,
       extractor_metadata: {
         model,
@@ -310,11 +442,25 @@ export async function extractFactsFromPersonRecentNotes(
       },
     }));
 
-  if (rows.length === 0) {
+  const existingFacts = await loadExistingFactBodiesByPerson(
+    ctx.client,
+    ctx.userId,
+    [...loaded.linkedPersonIds],
+  );
+  if ('error' in existingFacts) {
+    return { error: existingFacts.error };
+  }
+  const rowsToInsert = filterDedupedFacts(rows, existingFacts.ok);
+
+  if (rowsToInsert.length === 0) {
+    revalidatePath('/timeline');
+    for (const pid of loaded.linkedPersonIds) {
+      revalidatePath(`/people/${pid}`);
+    }
     return { ok: true };
   }
 
-  const { error: insErr } = await ctx.client.from('facts').insert(rows);
+  const { error: insErr } = await ctx.client.from('facts').insert(rowsToInsert);
   if (insErr) {
     return { error: insErr.message };
   }
@@ -386,14 +532,18 @@ export async function suggestTasksFromPersonRecentNotes(
   }
 
   const model = defaultResponsesModel();
+  const labelMap = loaded.personIdToDisplayLabel;
   const rows = parsed.tasks.map((t) => {
     const pid = t.person_id && allowed.has(t.person_id) ? t.person_id : null;
+    const desc = t.description?.trim() || null;
     return {
       user_id: ctx.userId,
       person_id: pid,
       interaction_id: loaded.primaryInteractionId,
-      title: t.title.trim(),
-      description: t.description?.trim() || null,
+      title: replacePersonUuidReferencesInText(t.title.trim(), labelMap),
+      description: desc
+        ? replacePersonUuidReferencesInText(desc, labelMap)
+        : null,
       status: 'suggested' as const,
       suggester_metadata: {
         model,
@@ -403,18 +553,35 @@ export async function suggestTasksFromPersonRecentNotes(
     };
   });
 
-  if (rows.length === 0) {
+  const includeNullPerson = rows.some((r) => r.person_id === null);
+  const existingTasks = await loadExistingTaskSigsForDedup(
+    ctx.client,
+    ctx.userId,
+    loaded.linkedPersonIds,
+    includeNullPerson,
+  );
+  if ('error' in existingTasks) {
+    return { error: existingTasks.error };
+  }
+  const rowsToInsert = filterDedupedSuggestedTasks(rows, existingTasks.ok);
+
+  if (rowsToInsert.length === 0) {
+    revalidatePath('/timeline');
+    const touch = new Set<string>(loaded.linkedPersonIds);
+    for (const pid of touch) {
+      revalidatePath(`/people/${pid}`);
+    }
     return { ok: true };
   }
 
-  const { error: insErr } = await ctx.client.from('tasks').insert(rows);
+  const { error: insErr } = await ctx.client.from('tasks').insert(rowsToInsert);
   if (insErr) {
     return { error: insErr.message };
   }
 
   revalidatePath('/timeline');
   const touch = new Set<string>(loaded.linkedPersonIds);
-  for (const r of rows) {
+  for (const r of rowsToInsert) {
     if (r.person_id) touch.add(r.person_id);
   }
   for (const pid of touch) {

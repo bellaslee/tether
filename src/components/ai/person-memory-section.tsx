@@ -183,7 +183,7 @@ export function PersonMemorySection({
                 Open loops &amp; reminders
               </h3>
               <p className="mt-1 text-sm text-muted">
-                Follow-up ideas grounded in your notes—dismiss or snooze anytime.
+                Follow-up ideas grounded in your notes—delete or snooze anytime.
               </p>
             </div>
             <div className="shrink-0">

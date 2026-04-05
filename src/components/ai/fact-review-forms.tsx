@@ -18,6 +18,15 @@ type Props = {
   ) => Promise<AiMemoryActionResult>;
 };
 
+function formatFactCreatedLine(iso: string) {
+  const d = new Date(iso).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  return `Added ${d}`;
+}
+
 export function FactReviewForms({ fact, action }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [state, formAction, pending] = useActionState<
@@ -28,11 +37,15 @@ export function FactReviewForms({ fact, action }: Props) {
   const isAccepted = fact.review_status === 'accepted';
   const isCandidate = fact.review_status === 'candidate';
 
-  const statusLabel = isCandidate
-    ? 'Candidate'
-    : isAccepted
-      ? 'Accepted'
+  const headerPrimary = isAccepted
+    ? formatFactCreatedLine(fact.created_at)
+    : isCandidate
+      ? 'Candidate'
       : 'Dismissed';
+
+  const headerClassName = isAccepted
+    ? 'text-xs text-muted'
+    : 'text-xs font-semibold uppercase tracking-wide text-muted';
 
   const textareaKey = `${fact.id}-${fact.updated_at}`;
 
@@ -40,9 +53,7 @@ export function FactReviewForms({ fact, action }: Props) {
     return (
       <div className={listRowCardClassName('space-y-3')}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {statusLabel}
-          </span>
+          <span className={headerClassName}>{headerPrimary}</span>
           <Button
             type="button"
             size="sm"
@@ -62,9 +73,7 @@ export function FactReviewForms({ fact, action }: Props) {
   return (
     <div className={listRowCardClassName('space-y-3')}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-          {statusLabel}
-        </span>
+        <span className={headerClassName}>{headerPrimary}</span>
       </div>
       <form action={formAction} className="space-y-2">
         <input type="hidden" name="fact_id" value={fact.id} />

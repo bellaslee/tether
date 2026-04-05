@@ -48,9 +48,6 @@ export function TaskReviewForms({ task, action }: Props) {
             <Button type="submit" name="intent" value="snooze" size="sm" variant="secondary" disabled={pending}>
               Snooze 7d
             </Button>
-            <Button type="submit" name="intent" value="dismiss" size="sm" variant="secondaryMuted" disabled={pending}>
-              Dismiss
-            </Button>
           </>
         ) : null}
         {showActive ? (
@@ -60,9 +57,6 @@ export function TaskReviewForms({ task, action }: Props) {
             </Button>
             <Button type="submit" name="intent" value="snooze" size="sm" variant="secondary" disabled={pending}>
               Snooze 7d
-            </Button>
-            <Button type="submit" name="intent" value="dismiss" size="sm" variant="secondaryMuted" disabled={pending}>
-              Dismiss
             </Button>
           </>
         ) : null}
