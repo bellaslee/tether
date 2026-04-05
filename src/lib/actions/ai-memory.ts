@@ -281,6 +281,8 @@ export async function suggestTasksForInteraction(
     return { error: delErr.message };
   }
 
+  revalidatePath('/reminders');
+
   let parsed;
   try {
     parsed = await runSuggestTasksModel({
@@ -330,6 +332,7 @@ export async function suggestTasksForInteraction(
 
   if (rowsToInsert.length === 0) {
     revalidatePath('/timeline');
+    revalidatePath('/reminders');
     const touch = new Set<string>(loaded.linkedPersonIds);
     for (const pid of touch) {
       revalidatePath(`/people/${pid}`);
@@ -343,6 +346,7 @@ export async function suggestTasksForInteraction(
   }
 
   revalidatePath('/timeline');
+  revalidatePath('/reminders');
   const touch = new Set<string>(loaded.linkedPersonIds);
   for (const r of rowsToInsert) {
     if (r.person_id) touch.add(r.person_id);
@@ -567,6 +571,7 @@ export async function suggestTasksFromPersonRecentNotes(
 
   if (rowsToInsert.length === 0) {
     revalidatePath('/timeline');
+    revalidatePath('/reminders');
     const touch = new Set<string>(loaded.linkedPersonIds);
     for (const pid of touch) {
       revalidatePath(`/people/${pid}`);
@@ -580,6 +585,7 @@ export async function suggestTasksFromPersonRecentNotes(
   }
 
   revalidatePath('/timeline');
+  revalidatePath('/reminders');
   const touch = new Set<string>(loaded.linkedPersonIds);
   for (const r of rowsToInsert) {
     if (r.person_id) touch.add(r.person_id);
@@ -780,6 +786,7 @@ export async function createManualReminder(
   }
 
   revalidatePath(`/people/${personId}`);
+  revalidatePath('/reminders');
   return { ok: true };
 }
 
@@ -989,6 +996,7 @@ export async function updateCrmTask(
       revalidatePath(`/people/${existing.person_id}`);
     }
     revalidatePath('/timeline');
+    revalidatePath('/reminders');
   };
 
   if (intent === 'delete') {
