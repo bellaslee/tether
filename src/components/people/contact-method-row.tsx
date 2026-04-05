@@ -4,13 +4,14 @@ import { useActionState, useState } from "react";
 import type { Tables } from "@/lib/db/database.types";
 import type { ActionResult } from "@/lib/actions/contact-methods";
 import {
-  deleteContactMethodForm,
+  deleteContactMethod,
   setPrimaryContactMethodForm,
   updateContactMethod,
 } from "@/lib/actions/contact-methods";
 import { CONTACT_METHOD_TYPES } from "@/lib/domain/constants";
 import { formatContactType } from "@/lib/domain/labels";
 import { Button } from "@/components/ui/button";
+import { ConfirmLightbox } from "@/components/ui/confirm-lightbox";
 import { FieldError } from "@/components/ui/field-error";
 import { formControlClassName } from "@/components/ui/form-control-classes";
 import { FormInput } from "@/components/ui/form-input";
@@ -25,6 +26,8 @@ type ContactMethodRowProps = {
 
 export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
   const [editing, setEditing] = useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
   const [state, formAction, pending] = useActionState(
     updateContactMethod.bind(null, personId, method.id),
     initial,
@@ -136,15 +139,37 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
               </Button>
             </form>
           ) : null}
-          <form action={deleteContactMethodForm}>
-            <input type="hidden" name="person_id" value={personId} />
-            <input type="hidden" name="method_id" value={method.id} />
-            <Button type="submit" variant="dangerLink" size="sm">
-              Remove
-            </Button>
-          </form>
+          <Button
+            type="button"
+            variant="dangerLink"
+            size="sm"
+            onClick={() => {
+              setRemoveError(null);
+              setConfirmRemoveOpen(true);
+            }}
+          >
+            Remove
+          </Button>
         </div>
       </div>
+      <ConfirmLightbox
+        open={confirmRemoveOpen}
+        onClose={() => {
+          setConfirmRemoveOpen(false);
+          setRemoveError(null);
+        }}
+        title="Remove this contact method?"
+        description="It will disappear from this profile. You can add it again anytime."
+        confirmLabel="Remove"
+        error={removeError}
+        onConfirm={async () => {
+          const result = await deleteContactMethod(personId, method.id);
+          if (result.error) {
+            setRemoveError(result.error);
+            return false;
+          }
+        }}
+      />
     </li>
   );
 }

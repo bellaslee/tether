@@ -1,18 +1,22 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { deleteInteraction } from "@/lib/actions/interactions";
-import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { deleteInteraction } from '@/lib/actions/interactions';
+import { Button } from '@/components/ui/button';
+import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';
 
 type InteractionDeleteButtonProps = {
   interactionId: string;
   label?: string;
 };
 
-export function InteractionDeleteButton({ interactionId, label = "Remove" }: InteractionDeleteButtonProps) {
+export function InteractionDeleteButton({
+  interactionId,
+  label = 'Remove',
+}: InteractionDeleteButtonProps) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -21,26 +25,32 @@ export function InteractionDeleteButton({ interactionId, label = "Remove" }: Int
         type="button"
         variant="dangerLink"
         size="sm"
-        disabled={pending}
         onClick={() => {
           setError(null);
-          startTransition(async () => {
-            const result = await deleteInteraction(interactionId);
-            if (result.error) {
-              setError(result.error);
-              return;
-            }
-            router.refresh();
-          });
+          setConfirmOpen(true);
         }}
       >
-        {pending ? "Removing…" : label}
+        {label}
       </Button>
-      {error ? (
-        <p className="text-xs text-red-700" role="alert">
-          {error}
-        </p>
-      ) : null}
+      <ConfirmLightbox
+        open={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false);
+          setError(null);
+        }}
+        title="Remove this from the timeline?"
+        description="This interaction will be deleted for everyone it was shared with. This can't be undone."
+        confirmLabel="Remove"
+        error={error}
+        onConfirm={async () => {
+          const result = await deleteInteraction(interactionId);
+          if (result.error) {
+            setError(result.error);
+            return false;
+          }
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

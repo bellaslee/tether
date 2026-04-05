@@ -1,9 +1,10 @@
 'use client';
 
-import { useActionState } from 'react';
+import { startTransition, useActionState, useState } from 'react';
 import type { AiMemoryActionResult } from '@/lib/actions/ai-memory';
 import type { Tables } from '@/lib/db/database.types';
 import { Button } from '@/components/ui/button';
+import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';
 import { FieldError } from '@/components/ui/field-error';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
 
@@ -22,6 +23,7 @@ export function TaskReviewForms({ task, action }: Props) {
     AiMemoryActionResult,
     FormData
   >(action, {});
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const showSuggested = task.status === 'suggested';
   const showActive =
@@ -82,10 +84,31 @@ export function TaskReviewForms({ task, action }: Props) {
             </Button>
           </>
         ) : null}
-        <Button type="submit" name="intent" value="delete" size="sm" variant="ghostSubtle" disabled={pending}>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghostSubtle"
+          disabled={pending}
+          onClick={() => setConfirmDeleteOpen(true)}
+        >
           Delete
         </Button>
       </form>
+      <ConfirmLightbox
+        open={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        title="Delete this reminder?"
+        description="It will be removed from open loops. You can suggest new follow-ups from notes anytime."
+        confirmLabel="Delete"
+        onConfirm={() => {
+          const fd = new FormData();
+          fd.set('task_id', task.id);
+          fd.set('intent', 'delete');
+          startTransition(() => {
+            void formAction(fd);
+          });
+        }}
+      />
       {state.error ? <FieldError size="inline">{state.error}</FieldError> : null}
     </div>
   );

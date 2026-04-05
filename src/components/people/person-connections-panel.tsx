@@ -8,6 +8,7 @@ import {
   deletePersonConnection,
 } from '@/lib/actions/person-connections';
 import { Button } from '@/components/ui/button';
+import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';
 import { formControlClassName } from '@/components/ui/form-control-classes';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
@@ -45,23 +46,8 @@ function ConnectionRow(props: {
   onRemoved: () => void;
 }) {
   const { row, onRemoved } = props;
-  const [pending, setPending] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  async function remove() {
-    setError(null);
-    setPending(true);
-    try {
-      const result = await deletePersonConnection(row.id);
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-      onRemoved();
-    } finally {
-      setPending(false);
-    }
-  }
 
   return (
     <li
@@ -89,18 +75,34 @@ function ConnectionRow(props: {
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => void remove()}
-          disabled={pending}
+          onClick={() => {
+            setError(null);
+            setConfirmOpen(true);
+          }}
           className="text-red-800 hover:bg-red-50"
         >
-          {pending ? 'Removing…' : 'Remove'}
+          Remove
         </Button>
-        {error ? (
-          <p className="max-w-[12rem] text-right text-xs text-red-800" role="alert">
-            {error}
-          </p>
-        ) : null}
       </div>
+      <ConfirmLightbox
+        open={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false);
+          setError(null);
+        }}
+        title="Remove this connection?"
+        description="This link will be removed. You can connect these people again later."
+        confirmLabel="Remove"
+        error={error}
+        onConfirm={async () => {
+          const result = await deletePersonConnection(row.id);
+          if (!result.ok) {
+            setError(result.error);
+            return false;
+          }
+          onRemoved();
+        }}
+      />
     </li>
   );
 }

@@ -1,9 +1,10 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { startTransition, useActionState, useCallback, useState } from 'react';
 import type { AiMemoryActionResult } from '@/lib/actions/ai-memory';
 import type { Tables } from '@/lib/db/database.types';
 import { Button } from '@/components/ui/button';
+import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import { FieldError } from '@/components/ui/field-error';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
@@ -29,6 +30,7 @@ function formatFactCreatedLine(iso: string) {
 
 export function FactReviewForms({ fact, action }: Props) {
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [state, formAction, pending] = useActionState<
     AiMemoryActionResult,
     FormData
@@ -48,6 +50,15 @@ export function FactReviewForms({ fact, action }: Props) {
     : 'text-xs font-semibold uppercase tracking-wide text-muted';
 
   const textareaKey = `${fact.id}-${fact.updated_at}`;
+
+  const submitDelete = useCallback(() => {
+    const fd = new FormData();
+    fd.set('fact_id', fact.id);
+    fd.set('intent', 'delete');
+    startTransition(() => {
+      void formAction(fd);
+    });
+  }, [fact.id, formAction]);
 
   if (isAccepted && !isEditing) {
     return (
@@ -99,12 +110,11 @@ export function FactReviewForms({ fact, action }: Props) {
                 Accept
               </Button>
               <Button
-                type="submit"
-                name="intent"
-                value="delete"
+                type="button"
                 size="sm"
                 variant="ghostSubtle"
                 disabled={pending}
+                onClick={submitDelete}
               >
                 Delete
               </Button>
@@ -122,12 +132,11 @@ export function FactReviewForms({ fact, action }: Props) {
                 Save
               </Button>
               <Button
-                type="submit"
-                name="intent"
-                value="delete"
+                type="button"
                 size="sm"
                 variant="ghostSubtle"
                 disabled={pending}
+                onClick={() => setConfirmDeleteOpen(true)}
               >
                 Delete
               </Button>
@@ -138,6 +147,16 @@ export function FactReviewForms({ fact, action }: Props) {
           <FieldError size="inline">{state.error}</FieldError>
         ) : null}
       </form>
+      {!isCandidate ? (
+        <ConfirmLightbox
+          open={confirmDeleteOpen}
+          onClose={() => setConfirmDeleteOpen(false)}
+          title="Delete this fact?"
+          description="It will be removed from this profile. This can't be undone."
+          confirmLabel="Delete"
+          onConfirm={submitDelete}
+        />
+      ) : null}
     </div>
   );
 }
