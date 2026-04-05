@@ -86,9 +86,9 @@ export default async function Home() {
                 you can show up better.
               </p>
               <p className="max-w-2xl text-base leading-7 text-muted">
-                For people who care about their relationships but feel
-                stretched—not a contact database or a sales tool. You are not bad
-                at keeping up; you are human, and your brain is full.
+                If you already journal your life, you know how much a few
+                quick notes can help. This is that habit, but for friends, so you can pick
+                up where you really left off.
               </p>
             </div>
 
@@ -101,8 +101,9 @@ export default async function Home() {
               </ButtonLink>
             </div>
             <p className="text-sm leading-6 text-muted">
-              You will be more thoughtful without trying harder—not by tracking
-              people, but by remembering what they told you matters.
+              Capture what mattered while it is fresh. Before you see them
+              again, you already have a thread to follow. Less replaying the last
+              hangout in your head, more room to be there when you arrive.
             </p>
           </div>
 
@@ -197,8 +198,8 @@ export default async function Home() {
 
       <section className="card-surface rounded-[1.75rem] border border-border-soft px-6 py-10 text-center sm:px-10">
         <blockquote className="mx-auto max-w-2xl font-display text-2xl leading-snug tracking-tight text-balance sm:text-3xl">
-          It is not about remembering more people. It is about remembering
-          people better.
+          It is not about knowing more people. It is about showing up for the
+          ones you already care about.
         </blockquote>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <ButtonLink href="/signup" variant="primary" size="lg">
