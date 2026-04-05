@@ -1,7 +1,7 @@
 'use client';
 
 import { startTransition, useActionState, useState } from 'react';
-import type { AiMemoryActionResult } from '@/lib/actions/ai-memory';
+import type { AiMemoryActionResult } from '@/lib/actions/ai-memory/types';
 import type { Tables } from '@/lib/db/database.types';
 import { Button } from '@/components/ui/button';
 import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';

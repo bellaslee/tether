@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { updateCrmTask, updateFactReview } from '@/lib/actions/ai-memory';
+import { updateFactReview } from '@/lib/actions/ai-memory/facts';
+import { updateCrmTask } from '@/lib/actions/ai-memory/reminders';
 import { FactReviewForms } from '@/components/ai/fact-review-forms';
 import {
   ManualFactForm,

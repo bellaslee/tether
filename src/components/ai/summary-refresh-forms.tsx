@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import type { AiMemoryActionResult } from '@/lib/actions/ai-memory';
+import type { AiMemoryActionResult } from '@/lib/actions/ai-memory/types';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 

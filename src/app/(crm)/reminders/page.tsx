@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { TaskReviewForms } from '@/components/ai/task-review-forms';
-import { updateCrmTask } from '@/lib/actions/ai-memory';
+import { updateCrmTask } from '@/lib/actions/ai-memory/reminders';
 import type { CrmTaskStatus, Tables } from '@/lib/db/database.types';
 import { requireCrmAccess } from '@/lib/crm/guard';
 import { personShownName } from '@/lib/people/list-name';

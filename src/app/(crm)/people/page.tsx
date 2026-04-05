@@ -350,7 +350,7 @@ export default async function PeoplePage(props: {
       </header>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-        <section className="card-surface order-1 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-2 lg:w-full lg:max-w-[22rem] lg:shrink-0">
+        <section className="card-surface order-2 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:w-full lg:max-w-[22rem] lg:shrink-0">
           <Suspense
             fallback={
               <div
@@ -371,7 +371,7 @@ export default async function PeoplePage(props: {
           </Suspense>
         </section>
 
-        <section className="order-2 min-w-0 space-y-4 lg:order-1 lg:flex-1">
+        <section className="order-1 min-w-0 flex-1 space-y-4">
           <Suspense
             fallback={
               <div

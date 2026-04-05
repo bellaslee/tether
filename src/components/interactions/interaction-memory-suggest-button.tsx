@@ -2,10 +2,8 @@
 
 import { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  runMemorySuggestForInteraction,
-  type AiMemoryActionResult,
-} from '@/lib/actions/ai-memory';
+import { runMemorySuggestForInteraction } from '@/lib/actions/ai-memory/extract-suggest';
+import type { AiMemoryActionResult } from '@/lib/actions/ai-memory/types';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 

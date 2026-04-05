@@ -7,6 +7,11 @@ import {
   buildPersonIdToDisplayLabelMap,
   placeholderizeNote,
 } from '@/lib/ai/pii';
+import {
+  fetchInteractionIdsForUserPerson,
+  fetchInteractionPeopleForUserInteraction,
+  fetchInteractionPeopleLinksForUserInteractions,
+} from '@/lib/interactions/interaction-people-queries';
 
 export async function loadPlaceholderizedInteractionNote(
   client: SupabaseClient<Database>,
@@ -46,22 +51,22 @@ export async function loadPlaceholderizedInteractionNote(
     return { error: 'Add a note to this interaction before running AI.' };
   }
 
-  const { data: links, error: linkErr } = await client
-    .from('interaction_people')
-    .select('person_id, role')
-    .eq('interaction_id', interactionId)
-    .order('created_at', { ascending: true });
-
-  if (linkErr) {
-    return { error: linkErr.message };
+  const linksRes = await fetchInteractionPeopleForUserInteraction(
+    client,
+    userId,
+    interactionId,
+  );
+  if ('error' in linksRes) {
+    return { error: linksRes.error };
   }
 
-  const linkedPersonIds = [...new Set((links ?? []).map((l) => l.person_id))];
+  const links = linksRes.ok;
+  const linkedPersonIds = [...new Set(links.map((l) => l.person_id))];
   if (linkedPersonIds.length === 0) {
     return { error: 'Link at least one person to this interaction first.' };
   }
 
-  const orderedLinks = links ?? [];
+  const orderedLinks = links;
   const primaryLink = orderedLinks.find((l) => l.role === 'primary');
   const memorySuggestionPersonIds = primaryLink
     ? [primaryLink.person_id]
@@ -161,18 +166,16 @@ export async function loadPlaceholderizedRecentNotesForPerson(
     }
   | { error: string }
 > {
-  const { data: personLinks, error: personLinkErr } = await client
-    .from('interaction_people')
-    .select('interaction_id')
-    .eq('person_id', personId);
-
-  if (personLinkErr) {
-    return { error: personLinkErr.message };
+  const personLinksRes = await fetchInteractionIdsForUserPerson(
+    client,
+    userId,
+    personId,
+  );
+  if ('error' in personLinksRes) {
+    return { error: personLinksRes.error };
   }
 
-  const interactionIds = [
-    ...new Set((personLinks ?? []).map((l) => l.interaction_id)),
-  ];
+  const interactionIds = personLinksRes.ok;
   if (interactionIds.length === 0) {
     return {
       error: 'Link this person to a timeline interaction before running AI.',
@@ -203,17 +206,17 @@ export async function loadPlaceholderizedRecentNotesForPerson(
   const bundledInteractionIds = bundle.map((row) => row.id);
   const primaryInteractionId = bundle[0].id;
 
-  const { data: bundleLinks, error: bundleLinkErr } = await client
-    .from('interaction_people')
-    .select('person_id')
-    .in('interaction_id', bundledInteractionIds);
-
-  if (bundleLinkErr) {
-    return { error: bundleLinkErr.message };
+  const bundleLinksRes = await fetchInteractionPeopleLinksForUserInteractions(
+    client,
+    userId,
+    bundledInteractionIds,
+  );
+  if ('error' in bundleLinksRes) {
+    return { error: bundleLinksRes.error };
   }
 
   const linkedPersonIds = [
-    ...new Set((bundleLinks ?? []).map((l) => l.person_id)),
+    ...new Set(bundleLinksRes.ok.map((l) => l.person_id)),
   ];
   if (linkedPersonIds.length === 0) {
     return { error: 'Could not load linked people for these interactions.' };

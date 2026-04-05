@@ -17,7 +17,7 @@ export async function updateAccountNameAction(
   formData: FormData,
 ): Promise<ProfileFormState> {
   const ctx = await getCrmSupabaseContext();
-  if (!ctx || ctx.bypass) {
+  if (!ctx) {
     return { error: "Profile is not available in this environment." };
   }
 
@@ -45,7 +45,7 @@ export async function updateAccountPasswordAction(
   formData: FormData,
 ): Promise<ProfileFormState> {
   const ctx = await getCrmSupabaseContext();
-  if (!ctx || ctx.bypass) {
+  if (!ctx) {
     return { error: "Profile is not available in this environment." };
   }
 

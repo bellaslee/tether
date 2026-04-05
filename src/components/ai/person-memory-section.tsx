@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { generateRelationshipSummary } from '@/lib/actions/ai-memory';
+import { generateRelationshipSummary } from '@/lib/actions/ai-memory/summaries';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
 import type { Tables } from '@/lib/db/database.types';
 import {

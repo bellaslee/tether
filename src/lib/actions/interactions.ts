@@ -10,6 +10,7 @@ import {
   countsTowardLastTouch,
   resolveCountsTowardLastTouchOnUpdate,
 } from '@/lib/interactions/upcoming';
+import { fetchInteractionPeopleForUserInteraction } from '@/lib/interactions/interaction-people-queries';
 
 export type ActionResult = { error?: string; ok?: true };
 
@@ -262,15 +263,15 @@ export async function updateInteraction(
     return { error: 'Interaction not found.' };
   }
 
-  const { data: oldLinks, error: oldLinksError } = await ctx.client
-    .from('interaction_people')
-    .select('person_id')
-    .eq('interaction_id', interactionId);
-
-  if (oldLinksError) {
-    return { error: oldLinksError.message };
+  const oldLinksRes = await fetchInteractionPeopleForUserInteraction(
+    ctx.client,
+    ctx.userId,
+    interactionId,
+  );
+  if ('error' in oldLinksRes) {
+    return { error: oldLinksRes.error };
   }
-  const oldPersonIds = (oldLinks ?? []).map((row) => row.person_id);
+  const oldPersonIds = oldLinksRes.ok.map((row) => row.person_id);
 
   const primaryPersonId = String(
     formData.get('primary_person_id') ?? '',
@@ -378,16 +379,16 @@ export async function deleteInteraction(
     return { error: 'You need to sign in again.' };
   }
 
-  const { data: links, error: linksError } = await ctx.client
-    .from('interaction_people')
-    .select('person_id')
-    .eq('interaction_id', interactionId);
-
-  if (linksError) {
-    return { error: linksError.message };
+  const linksRes = await fetchInteractionPeopleForUserInteraction(
+    ctx.client,
+    ctx.userId,
+    interactionId,
+  );
+  if ('error' in linksRes) {
+    return { error: linksRes.error };
   }
 
-  const personIds = (links ?? []).map((row) => row.person_id);
+  const personIds = linksRes.ok.map((row) => row.person_id);
 
   const { data: interaction, error: intError } = await ctx.client
     .from('interactions')

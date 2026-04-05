@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/database.types";
+import { fetchInteractionIdsForUserPerson } from "@/lib/interactions/interaction-people-queries";
 
 const CATEGORY_CHANGE_SLUG = "category_change";
 
@@ -73,16 +74,16 @@ export async function syncCategoryChangeTimelineEntry(
     throw new Error("Could not resolve category labels.");
   }
 
-  const { data: links, error: linksError } = await client
-    .from("interaction_people")
-    .select("interaction_id")
-    .eq("person_id", personId);
-
-  if (linksError) {
-    throw new Error(linksError.message);
+  const linksRes = await fetchInteractionIdsForUserPerson(
+    client,
+    userId,
+    personId,
+  );
+  if ("error" in linksRes) {
+    throw new Error(linksRes.error);
   }
 
-  const linkIds = (links ?? []).map((r) => r.interaction_id);
+  const linkIds = linksRes.ok;
 
   let auditRows: { id: string; occurred_at: string; title: string | null }[] =
     [];

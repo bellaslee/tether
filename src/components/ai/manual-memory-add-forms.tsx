@@ -2,11 +2,9 @@
 
 import { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  createManualFact,
-  createManualReminder,
-  type AiMemoryActionResult,
-} from '@/lib/actions/ai-memory';
+import { createManualFact } from '@/lib/actions/ai-memory/facts';
+import { createManualReminder } from '@/lib/actions/ai-memory/reminders';
+import type { AiMemoryActionResult } from '@/lib/actions/ai-memory/types';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 import { FormTextarea } from '@/components/ui/form-textarea';

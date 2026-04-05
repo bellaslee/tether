@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/database.types";
+import { fetchInteractionIdsForUserPerson } from "@/lib/interactions/interaction-people-queries";
 
 export async function refreshLastInteractionAtForPersonIds(
   client: SupabaseClient<Database>,
@@ -10,16 +11,16 @@ export async function refreshLastInteractionAtForPersonIds(
 ) {
   const unique = [...new Set(personIds.filter(Boolean))];
   for (const personId of unique) {
-    const { data: links, error: linksError } = await client
-      .from("interaction_people")
-      .select("interaction_id")
-      .eq("person_id", personId);
-
-    if (linksError) {
-      throw new Error(linksError.message);
+    const linksRes = await fetchInteractionIdsForUserPerson(
+      client,
+      userId,
+      personId,
+    );
+    if ("error" in linksRes) {
+      throw new Error(linksRes.error);
     }
 
-    const interactionIds = (links ?? []).map((row) => row.interaction_id);
+    const interactionIds = linksRes.ok;
     let lastAt: string | null = null;
 
     if (interactionIds.length > 0) {

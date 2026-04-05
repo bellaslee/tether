@@ -43,6 +43,10 @@ import {
   PersonRemindersSection,
 } from '@/components/ai/person-memory-section';
 import { hasOpenAiApiKey } from '@/lib/env';
+import {
+  fetchInteractionPeopleLinksForUserInteractions,
+  fetchInteractionRolesForUserPerson,
+} from '@/lib/interactions/interaction-people-queries';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -197,14 +201,19 @@ export default async function PersonDetailPage(props: PageProps) {
     };
   });
 
-  const { data: links } = await ctx.client
-    .from('interaction_people')
-    .select('interaction_id, role')
-    .eq('person_id', id);
+  const linksRes = await fetchInteractionRolesForUserPerson(
+    ctx.client,
+    ctx.userId,
+    id,
+  );
+  if ('error' in linksRes) {
+    throw new Error(linksRes.error);
+  }
 
-  const interactionIds = (links ?? []).map((row) => row.interaction_id);
+  const links = linksRes.ok;
+  const interactionIds = links.map((row) => row.interaction_id);
   const roleByInteraction = new Map(
-    (links ?? []).map((row) => [row.interaction_id, row.role]),
+    links.map((row) => [row.interaction_id, row.role]),
   );
 
   const participantsByInteraction = new Map<
@@ -217,20 +226,21 @@ export default async function PersonDetailPage(props: PageProps) {
     role: string;
   }> = [];
   if (interactionIds.length > 0) {
-    const { data: fullTimelineLinks, error: fullLinksError } = await ctx.client
-      .from('interaction_people')
-      .select('interaction_id, person_id, role')
-      .in('interaction_id', interactionIds);
-
-    if (fullLinksError) {
-      throw new Error(fullLinksError.message);
+    const fullLinksRes = await fetchInteractionPeopleLinksForUserInteractions(
+      ctx.client,
+      ctx.userId,
+      interactionIds,
+    );
+    if ('error' in fullLinksRes) {
+      throw new Error(fullLinksRes.error);
     }
 
+    const fullTimelineLinks = fullLinksRes.ok;
     const grouped = new Map<
       string,
       Array<{ person_id: string; role: string }>
     >();
-    for (const row of fullTimelineLinks ?? []) {
+    for (const row of fullTimelineLinks) {
       const list = grouped.get(row.interaction_id) ?? [];
       list.push({ person_id: row.person_id, role: row.role });
       grouped.set(row.interaction_id, list);

@@ -16,6 +16,7 @@ import {
   interactionMemorySuggestionsAlreadyApplied,
 } from '@/lib/interactions/memory-suggest-visibility';
 import { personShownName } from '@/lib/people/list-name';
+import { fetchInteractionPeopleLinksForUserInteractions } from '@/lib/interactions/interaction-people-queries';
 
 type InteractionWithType = Tables<'interactions'> & {
   interaction_types: { name: string } | null;
@@ -75,18 +76,17 @@ export default async function TimelinePage() {
   const memorySuggestAvailable = hasOpenAiApiKey();
 
   if (interactionIds.length > 0) {
-    const { data: linkRows, error: linkError } = await ctx.client
-      .from('interaction_people')
-      .select('interaction_id, person_id, role')
-      .in('interaction_id', interactionIds);
-
-    if (linkError) {
-      throw new Error(linkError.message);
+    const linkRes = await fetchInteractionPeopleLinksForUserInteractions(
+      ctx.client,
+      ctx.userId,
+      interactionIds,
+    );
+    if ('error' in linkRes) {
+      throw new Error(linkRes.error);
     }
 
-    const personIds = [
-      ...new Set((linkRows ?? []).map((row) => row.person_id)),
-    ];
+    const linkRows = linkRes.ok;
+    const personIds = [...new Set(linkRows.map((row) => row.person_id))];
     const { data: peopleRows, error: peopleError } = await ctx.client
       .from('people')
       .select('id, full_name, display_name')
@@ -99,7 +99,7 @@ export default async function TimelinePage() {
 
     const personById = new Map((peopleRows ?? []).map((row) => [row.id, row]));
 
-    for (const row of linkRows ?? []) {
+    for (const row of linkRows) {
       const p = personById.get(row.person_id);
       if (!p) {
         continue;
