@@ -41,7 +41,7 @@ export function PersonBriefsSection({
 
   return (
     <section
-      className={`${memoryCardClass} lg:sticky lg:top-6`}
+      className={memoryCardClass}
       aria-labelledby="person-memory-briefs-heading"
     >
       <h2

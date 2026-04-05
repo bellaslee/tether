@@ -347,7 +347,7 @@ export default async function PersonDetailPage(props: PageProps) {
       <PersonDetailHeader
         afterTitle={
           <nav
-            className="-mb-px flex w-full flex-wrap gap-x-8 gap-y-3 border-b border-border-soft"
+            className="flex w-full flex-wrap gap-x-8 gap-y-3"
             aria-label="Profile sections"
           >
             <Link
@@ -407,7 +407,7 @@ export default async function PersonDetailPage(props: PageProps) {
         <div className="flex min-w-0 flex-col gap-8">
           <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch lg:gap-8">
             <section
-              className="card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:sticky lg:top-6"
+              className="card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
               aria-label="Relationship context"
             >
               <h2 className="shrink-0 font-display text-2xl">Context</h2>

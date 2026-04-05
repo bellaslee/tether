@@ -33,36 +33,42 @@ export function PersonDetailHeader({
     setLogOpen(false);
   }, []);
 
+  // Fragment (no wrapper div): sticky must be a direct sibling of the long page
+  // content under <main> so the sticky containing block spans the full scroll height.
   return (
-    <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">{children}</div>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <ButtonLink href={editHref} variant="secondary" size="lg">
-            Edit profile
-          </ButtonLink>
-          {logOpen ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="lg"
-              onClick={() => setLogOpen(false)}
-            >
-              Cancel
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              onClick={() => setLogOpen(true)}
-            >
-              Log interaction
-            </Button>
-          )}
+    <>
+      <div className="sticky top-0 z-40 -mx-8 w-[calc(100%+4rem)] max-w-none bg-background/95 px-8 pt-2 backdrop-blur-md sm:-mx-14 sm:w-[calc(100%+7rem)] sm:px-14 lg:-mx-16 lg:w-[calc(100%+8rem)] lg:px-16">
+        <div className="w-full space-y-4 border-b border-border-soft pb-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">{children}</div>
+            <div className="flex shrink-0 flex-wrap gap-3">
+              <ButtonLink href={editHref} variant="secondary" size="lg">
+                Edit profile
+              </ButtonLink>
+              {logOpen ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => setLogOpen(false)}
+                >
+                  Cancel
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="lg"
+                  onClick={() => setLogOpen(true)}
+                >
+                  Log interaction
+                </Button>
+              )}
+            </div>
+          </div>
+          {afterTitle}
         </div>
       </div>
-      {afterTitle}
       {logOpen ? (
         <div className="card-surface max-w-3xl rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
           <h2 className="font-display text-2xl tracking-tight">
@@ -85,6 +91,6 @@ export function PersonDetailHeader({
           </div>
         </div>
       ) : null}
-    </div>
+    </>
   );
 }
