@@ -8,6 +8,8 @@ import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 
 type PersonDetailHeaderProps = {
   children: React.ReactNode;
+  /** Rendered directly under the title row (e.g. profile tabs). */
+  afterTitle?: React.ReactNode;
   editHref: string;
   personId: string;
   otherPeople: PersonOption[];
@@ -18,6 +20,7 @@ type PersonDetailHeaderProps = {
 
 export function PersonDetailHeader({
   children,
+  afterTitle,
   editHref,
   personId,
   otherPeople,
@@ -59,6 +62,7 @@ export function PersonDetailHeader({
           )}
         </div>
       </div>
+      {afterTitle}
       {logOpen ? (
         <div className="card-surface max-w-3xl rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
           <h2 className="font-display text-2xl tracking-tight">

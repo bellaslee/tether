@@ -24,9 +24,19 @@ import {
 } from '@/lib/people/connection-type-options';
 import { PersonConnectionsPanel } from '@/components/people/person-connections-panel';
 
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: SearchParams;
 };
+
+function first(param: string | string[] | undefined) {
+  if (Array.isArray(param)) {
+    return param[0];
+  }
+  return param;
+}
 
 type PersonWithCategory = Tables<'people'> & {
   person_categories: { name: string } | null;
@@ -58,6 +68,9 @@ export async function generateMetadata(props: {
 
 export default async function PersonDetailPage(props: PageProps) {
   const { id } = await props.params;
+  const searchParams = await props.searchParams;
+  const tab =
+    first(searchParams.tab) === 'details' ? 'details' : 'overview';
 
   const ctx = await requireCrmAccess();
 
@@ -246,9 +259,33 @@ export default async function PersonDetailPage(props: PageProps) {
   const subjectName =
     person.display_name?.trim() || person.full_name;
 
+  const tabLinkBase =
+    'inline-flex border-b-2 px-1 pb-3 text-sm font-semibold transition sm:text-base';
+  const tabLinkActive = `${tabLinkBase} border-accent text-foreground`;
+  const tabLinkInactive = `${tabLinkBase} border-transparent text-muted hover:text-foreground/80`;
+
   return (
     <main className="crm-page">
       <PersonDetailHeader
+        afterTitle={
+          <nav
+            className="-mb-px flex w-full gap-8 border-b border-border-soft"
+            aria-label="Profile sections"
+          >
+            <Link
+              href={`/people/${person.id}`}
+              className={tab === 'overview' ? tabLinkActive : tabLinkInactive}
+            >
+              Overview
+            </Link>
+            <Link
+              href={`/people/${person.id}?tab=details`}
+              className={tab === 'details' ? tabLinkActive : tabLinkInactive}
+            >
+              Details
+            </Link>
+          </nav>
+        }
         editHref={`/people/${person.id}/edit`}
         personId={person.id}
         otherPeople={otherPeople}
@@ -288,191 +325,199 @@ export default async function PersonDetailPage(props: PageProps) {
         </div>
       </PersonDetailHeader>
 
-      <section
-        className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:grid-rows-[1fr_1fr]"
-        aria-label="Profile context and contacts"
-      >
-        <div className="card-surface flex min-h-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-          <h2 className="shrink-0 font-display text-2xl">Context</h2>
-          <div className="mt-6 min-h-0 flex-1 overflow-y-auto">
-            <div className="grid gap-4 text-sm sm:grid-cols-2">
-              <DetailItem label="Pronouns" value={person.pronouns} />
-              <DetailItem
-                label="Birthday"
-                value={
-                  person.birthday ? formatDateOnly(person.birthday) : null
-                }
-              />
-              <DetailItem
-                label="Met"
-                value={person.met_at ? formatMonthYear(person.met_at) : null}
-              />
-              <DetailItem label="Location" value={person.location} />
-              <DetailItem label="Occupation" value={person.occupation} />
-              <DetailItem label="Company" value={person.company} />
-              <DetailItem
-                label="Last interaction"
-                value={
-                  person.last_interaction_at
-                    ? formatDateTime(person.last_interaction_at)
-                    : null
-                }
-              />
-              <div className="sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  How you met
-                </p>
-                <p className="mt-1 leading-7 text-foreground/90">
-                  {person.how_you_met ?? '—'}
-                </p>
-              </div>
-              <div className="sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  Relationship context
-                </p>
-                <p className="mt-1 leading-7 text-foreground/90">
-                  {person.relationship_context ?? '—'}
-                </p>
+      {tab === 'overview' ? (
+        <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+          <section
+            className="card-surface min-w-0 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:sticky lg:top-6"
+            aria-label="Relationship context"
+          >
+            <h2 className="font-display text-2xl">Context</h2>
+            <div className="mt-6">
+              <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                <DetailItem label="Pronouns" value={person.pronouns} />
+                <DetailItem
+                  label="Birthday"
+                  value={
+                    person.birthday ? formatDateOnly(person.birthday) : null
+                  }
+                />
+                <DetailItem
+                  label="Met"
+                  value={
+                    person.met_at ? formatMonthYear(person.met_at) : null
+                  }
+                />
+                <DetailItem label="Location" value={person.location} />
+                <DetailItem label="Occupation" value={person.occupation} />
+                <DetailItem label="Company" value={person.company} />
+                <DetailItem
+                  label="Last interaction"
+                  value={
+                    person.last_interaction_at
+                      ? formatDateTime(person.last_interaction_at)
+                      : null
+                  }
+                />
+                <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    How you met
+                  </p>
+                  <p className="mt-1 leading-7 text-foreground/90">
+                    {person.how_you_met ?? '—'}
+                  </p>
+                </div>
+                <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    Relationship context
+                  </p>
+                  <p className="mt-1 leading-7 text-foreground/90">
+                    {person.relationship_context ?? '—'}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <div className="card-surface flex min-h-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:col-start-2 lg:row-start-1">
-          <h2 className="shrink-0 font-display text-2xl">Stay in touch</h2>
-          <ul className="mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto">
-            {(contactMethods ?? []).length === 0 ? (
-              <li className="text-sm text-muted">No contact methods yet.</li>
-            ) : (
-              (contactMethods ?? []).map((method) => (
-                <ContactMethodRow
-                  key={`${method.id}-${method.updated_at}`}
-                  personId={person.id}
-                  method={method}
-                />
-              ))
-            )}
-          </ul>
-          <div className="mt-6 shrink-0">
-            <ContactMethodAddDisclosure personId={person.id} />
-          </div>
-        </div>
-
-        <PersonConnectionsPanel
-          className="min-h-0 lg:col-start-2 lg:row-start-2 lg:h-full lg:min-h-0"
-          personId={person.id}
-          subjectName={subjectName}
-          connections={connectionListItems}
-          otherPeople={otherPeopleOptions}
-          connectionTypes={connectionTypeOptions}
-          defaultConnectionTypeId={defaultConnectionTypeId}
-        />
-      </section>
-
-      <section className="space-y-6" aria-labelledby="person-timeline-heading">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="crm-eyebrow">With them</p>
-            <h2
-              id="person-timeline-heading"
-              className="mt-2 font-display text-2xl tracking-tight"
-            >
-              Timeline
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-              Plans you are looking forward to and moments you have already shared.
-              People listed together were part of the same entry — it lives once in
-              the database.
-            </p>
-          </div>
-          <Link
-            href="/timeline"
-            className="shrink-0 text-sm font-semibold text-accent underline-offset-4 hover:underline"
+          <section
+            className="card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
+            aria-labelledby="person-timeline-heading"
           >
-            View global timeline
-          </Link>
-        </header>
-
-        {timelineRows.length === 0 ? (
-          <ol className="space-y-5">
-            <li className="card-surface rounded-[1.75rem] border border-border-soft p-8 text-sm text-muted">
-              Nothing logged yet. Use{' '}
-              <span className="font-semibold text-foreground">
-                Log interaction
-              </span>{' '}
-              at the top when you remember something, or{' '}
-              <Link
-                href="/interactions/new"
-                className="font-semibold text-accent underline-offset-4 hover:underline"
-              >
-                add a multi-person moment
-              </Link>
-              .
-            </li>
-          </ol>
-        ) : (
-          <div className="space-y-10">
-            {upcomingTimelineRows.length > 0 ? (
-              <div aria-labelledby="person-timeline-upcoming-heading">
-                <h3
-                  id="person-timeline-upcoming-heading"
-                  className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2
+                  id="person-timeline-heading"
+                  className="font-display text-2xl tracking-tight"
                 >
-                  Upcoming
-                </h3>
-                <ol className="space-y-6">
-                  {upcomingTimelineRows.map(({ interaction, role }) => (
-                    <PersonTimelineRow
-                      key={interaction.id}
-                      interaction={interaction}
-                      role={role}
-                      isUpcoming
-                      participants={
-                        participantsByInteraction.get(interaction.id) ?? {
-                          primaryPersonId: '',
-                          attendeeIds: [] as string[],
-                        }
-                      }
-                      allPeople={allPeople ?? []}
-                      interactionTypeOptions={interactionTypeOptions}
-                    />
-                  ))}
-                </ol>
+                  Timeline
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+                  Plans you are looking forward to and moments you have already
+                  shared.
+                </p>
               </div>
-            ) : null}
-            {pastTimelineRows.length > 0 ? (
-              <div aria-labelledby="person-timeline-past-heading">
+              <Link
+                href="/timeline"
+                className="shrink-0 text-sm font-semibold text-accent underline-offset-4 hover:underline"
+              >
+                View global timeline
+              </Link>
+            </header>
+
+            {timelineRows.length === 0 ? (
+              <p className="rounded-2xl border border-border-soft bg-white/50 px-6 py-8 text-sm text-muted">
+                Nothing logged yet. Use{' '}
+                <span className="font-semibold text-foreground">
+                  Log interaction
+                </span>{' '}
+                at the top when you remember something, or{' '}
+                <Link
+                  href="/interactions/new"
+                  className="font-semibold text-accent underline-offset-4 hover:underline"
+                >
+                  add a multi-person moment
+                </Link>
+                .
+              </p>
+            ) : (
+              <div className="space-y-10">
                 {upcomingTimelineRows.length > 0 ? (
-                  <h3
-                    id="person-timeline-past-heading"
-                    className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
-                  >
-                    Past
-                  </h3>
+                  <div aria-labelledby="person-timeline-upcoming-heading">
+                    <h3
+                      id="person-timeline-upcoming-heading"
+                      className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                    >
+                      Upcoming
+                    </h3>
+                    <ol className="space-y-6">
+                      {upcomingTimelineRows.map(({ interaction, role }) => (
+                        <PersonTimelineRow
+                          key={interaction.id}
+                          interaction={interaction}
+                          role={role}
+                          isUpcoming
+                          participants={
+                            participantsByInteraction.get(interaction.id) ?? {
+                              primaryPersonId: '',
+                              attendeeIds: [] as string[],
+                            }
+                          }
+                          allPeople={allPeople ?? []}
+                          interactionTypeOptions={interactionTypeOptions}
+                        />
+                      ))}
+                    </ol>
+                  </div>
                 ) : null}
-                <ol className="space-y-6">
-                  {pastTimelineRows.map(({ interaction, role }) => (
-                    <PersonTimelineRow
-                      key={interaction.id}
-                      interaction={interaction}
-                      role={role}
-                      isUpcoming={false}
-                      participants={
-                        participantsByInteraction.get(interaction.id) ?? {
-                          primaryPersonId: '',
-                          attendeeIds: [] as string[],
-                        }
-                      }
-                      allPeople={allPeople ?? []}
-                      interactionTypeOptions={interactionTypeOptions}
-                    />
-                  ))}
-                </ol>
+                {pastTimelineRows.length > 0 ? (
+                  <div aria-labelledby="person-timeline-past-heading">
+                    {upcomingTimelineRows.length > 0 ? (
+                      <h3
+                        id="person-timeline-past-heading"
+                        className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                      >
+                        Past
+                      </h3>
+                    ) : null}
+                    <ol className="space-y-6">
+                      {pastTimelineRows.map(({ interaction, role }) => (
+                        <PersonTimelineRow
+                          key={interaction.id}
+                          interaction={interaction}
+                          role={role}
+                          isUpcoming={false}
+                          participants={
+                            participantsByInteraction.get(interaction.id) ?? {
+                              primaryPersonId: '',
+                              attendeeIds: [] as string[],
+                            }
+                          }
+                          allPeople={allPeople ?? []}
+                          interactionTypeOptions={interactionTypeOptions}
+                        />
+                      ))}
+                    </ol>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            )}
+          </section>
+        </div>
+      ) : (
+        <section
+          className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
+          aria-label="Contact methods and connections"
+        >
+          <div className="card-surface flex min-h-0 h-full flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
+            <h2 className="shrink-0 font-display text-2xl">Stay in touch</h2>
+            <ul className="mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto">
+              {(contactMethods ?? []).length === 0 ? (
+                <li className="text-sm text-muted">No contact methods yet.</li>
+              ) : (
+                (contactMethods ?? []).map((method) => (
+                  <ContactMethodRow
+                    key={`${method.id}-${method.updated_at}`}
+                    personId={person.id}
+                    method={method}
+                  />
+                ))
+              )}
+            </ul>
+            <div className="mt-6 shrink-0">
+              <ContactMethodAddDisclosure personId={person.id} />
+            </div>
           </div>
-        )}
-      </section>
+
+          <PersonConnectionsPanel
+            className="min-h-0 h-full"
+            personId={person.id}
+            subjectName={subjectName}
+            connections={connectionListItems}
+            otherPeople={otherPeopleOptions}
+            connectionTypes={connectionTypeOptions}
+            defaultConnectionTypeId={defaultConnectionTypeId}
+          />
+        </section>
+      )}
     </main>
   );
 }
