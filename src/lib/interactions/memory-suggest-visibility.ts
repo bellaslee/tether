@@ -2,11 +2,18 @@ import 'server-only';
 
 import { computeMemoryAiNoteDigest } from '@/lib/ai/memory-ai-input-hash';
 
+/** Non-empty trimmed note; required to show the suggest control at all. */
+export function interactionHasMemorySuggestNote(
+  rawNote: string | null | undefined,
+): boolean {
+  return (rawNote?.trim() ?? '').length > 0;
+}
+
 /**
- * Whether to show the per-interaction "Suggest" CTA. Based on trimmed note text only
- * (editing people, date, etc. without changing the note does not resurface the button).
+ * Facts & follow-ups were already suggested for this exact trimmed note
+ * (`memory_ai_input_hash` matches the current note digest).
  */
-export function interactionShowsMemorySuggestCta(
+export function interactionMemorySuggestionsAlreadyApplied(
   rawNote: string | null | undefined,
   memoryAiInputHash: string | null | undefined,
 ): boolean {
@@ -15,5 +22,5 @@ export function interactionShowsMemorySuggestCta(
     return false;
   }
   const digest = computeMemoryAiNoteDigest(noteTrimmed);
-  return memoryAiInputHash == null || memoryAiInputHash !== digest;
+  return memoryAiInputHash != null && memoryAiInputHash === digest;
 }

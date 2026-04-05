@@ -17,6 +17,9 @@ const memoryCardClass =
 type FactRow = Tables<'facts'>;
 type TaskRow = Tables<'tasks'>;
 
+const FACTS_INITIAL_VISIBLE = 5;
+const TASKS_INITIAL_VISIBLE = 3;
+
 type FactsProps = {
   personId: string;
   facts: FactRow[];
@@ -26,6 +29,7 @@ export function PersonFactsMemorySection({
   personId,
   facts,
 }: FactsProps) {
+  const [factsExpanded, setFactsExpanded] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const onSaved = useCallback(() => setAddOpen(false), []);
@@ -83,17 +87,39 @@ export function PersonFactsMemorySection({
           </p>
         ) : null}
         {facts.length > 0 ? (
-          <ul className="space-y-4">
-            {facts.map((fact) => (
-              <li key={fact.id}>
-                <FactReviewForms
-                  key={`${fact.id}-${fact.updated_at}`}
-                  fact={fact}
-                  action={updateFactReview}
-                />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul
+              id="person-memory-facts-list"
+              className="space-y-4"
+            >
+              {(factsExpanded ? facts : facts.slice(0, FACTS_INITIAL_VISIBLE)).map(
+                (fact) => (
+                  <li key={fact.id}>
+                    <FactReviewForms
+                      key={`${fact.id}-${fact.updated_at}`}
+                      fact={fact}
+                      action={updateFactReview}
+                    />
+                  </li>
+                ),
+              )}
+            </ul>
+            {facts.length > FACTS_INITIAL_VISIBLE && !factsExpanded ? (
+              <div className="pt-2">
+                <Button
+                  type="button"
+                  variant="secondaryMuted"
+                  size="sm"
+                  aria-expanded={false}
+                  aria-controls="person-memory-facts-list"
+                  onClick={() => setFactsExpanded(true)}
+                >
+                  Show {facts.length - FACTS_INITIAL_VISIBLE} more fact
+                  {facts.length - FACTS_INITIAL_VISIBLE === 1 ? '' : 's'}
+                </Button>
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
     </section>
@@ -109,6 +135,7 @@ export function PersonRemindersMemorySection({
   personId,
   tasks,
 }: RemindersProps) {
+  const [tasksExpanded, setTasksExpanded] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const onSaved = useCallback(() => setAddOpen(false), []);
@@ -165,17 +192,39 @@ export function PersonRemindersMemorySection({
           </p>
         ) : null}
         {tasks.length > 0 ? (
-          <ul className="space-y-3">
-            {tasks.map((task) => (
-              <li key={task.id}>
-                <TaskReviewForms
-                  key={`${task.id}-${task.updated_at}`}
-                  task={task}
-                  action={updateCrmTask}
-                />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul
+              id="person-memory-tasks-list"
+              className="space-y-3"
+            >
+              {(tasksExpanded ? tasks : tasks.slice(0, TASKS_INITIAL_VISIBLE)).map(
+                (task) => (
+                  <li key={task.id}>
+                    <TaskReviewForms
+                      key={`${task.id}-${task.updated_at}`}
+                      task={task}
+                      action={updateCrmTask}
+                    />
+                  </li>
+                ),
+              )}
+            </ul>
+            {tasks.length > TASKS_INITIAL_VISIBLE && !tasksExpanded ? (
+              <div className="pt-2">
+                <Button
+                  type="button"
+                  variant="secondaryMuted"
+                  size="sm"
+                  aria-expanded={false}
+                  aria-controls="person-memory-tasks-list"
+                  onClick={() => setTasksExpanded(true)}
+                >
+                  Show {tasks.length - TASKS_INITIAL_VISIBLE} more reminder
+                  {tasks.length - TASKS_INITIAL_VISIBLE === 1 ? '' : 's'}
+                </Button>
+              </div>
+            ) : null}
+          </>
         ) : null}
       </div>
     </section>

@@ -10,6 +10,7 @@ import {
   TimelineLogInteractionTrigger,
 } from '@/components/people/person-log-interaction-context';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
+import { InteractionNotePreview } from '@/components/interactions/interaction-note-preview';
 import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
@@ -26,7 +27,10 @@ import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
   type InteractionTypeOption,
 } from '@/lib/interactions/type-options';
-import { interactionShowsMemorySuggestCta } from '@/lib/interactions/memory-suggest-visibility';
+import {
+  interactionHasMemorySuggestNote,
+  interactionMemorySuggestionsAlreadyApplied,
+} from '@/lib/interactions/memory-suggest-visibility';
 import { partitionPersonTimelineRows } from '@/lib/interactions/timeline-partition';
 import {
   defaultConnectionTypeId as pickDefaultConnectionTypeId,
@@ -642,13 +646,14 @@ function PersonTimelineRow({
   const hasLinkedPeople =
     Boolean(participants.primaryPersonId) ||
     participants.attendeeIds.length > 0;
-  const showMemorySuggest =
+  const showMemorySuggestSlot =
     memorySuggestAvailable &&
     hasLinkedPeople &&
-    interactionShowsMemorySuggestCta(
-      interaction.raw_note,
-      interaction.memory_ai_input_hash,
-    );
+    interactionHasMemorySuggestNote(interaction.raw_note);
+  const memorySuggestAlreadyDone = interactionMemorySuggestionsAlreadyApplied(
+    interaction.raw_note,
+    interaction.memory_ai_input_hash,
+  );
 
   const cardClass = isUpcoming
     ? 'card-surface rounded-[1.75rem] border-2 border-dashed border-accent/40 bg-accent-soft/20 p-6 sm:p-8'
@@ -677,14 +682,19 @@ function PersonTimelineRow({
             <p className="font-display text-2xl">{interaction.title}</p>
           ) : null}
           {interaction.raw_note ? (
-            <p className="max-w-3xl whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-              {interaction.raw_note}
-            </p>
+            <InteractionNotePreview
+              key={`${interaction.id}-${interaction.updated_at}`}
+              note={interaction.raw_note}
+              interactionId={interaction.id}
+            />
           ) : null}
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
-          {showMemorySuggest ? (
-            <InteractionMemorySuggestButton interactionId={interaction.id} />
+          {showMemorySuggestSlot ? (
+            <InteractionMemorySuggestButton
+              interactionId={interaction.id}
+              alreadySuggested={memorySuggestAlreadyDone}
+            />
           ) : null}
           {allPeople.length > 0 ? (
             <InteractionEditDisclosure

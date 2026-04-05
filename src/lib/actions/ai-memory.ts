@@ -503,7 +503,7 @@ export async function runMemorySuggestForInteraction(
 
   const { data: interaction, error: intErr } = await ctx.client
     .from('interactions')
-    .select('raw_note')
+    .select('raw_note, memory_ai_input_hash')
     .eq('id', interactionId)
     .eq('user_id', ctx.userId)
     .maybeSingle();
@@ -515,6 +515,11 @@ export async function runMemorySuggestForInteraction(
   const noteTrimmed = interaction.raw_note?.trim() ?? '';
   if (!noteTrimmed) {
     return { error: 'Add a note before requesting suggestions.' };
+  }
+
+  const digest = computeMemoryAiNoteDigest(noteTrimmed);
+  if (interaction.memory_ai_input_hash === digest) {
+    return { ok: true };
   }
 
   const { data: links, error: linkErr } = await ctx.client
@@ -544,7 +549,6 @@ export async function runMemorySuggestForInteraction(
     return suggestResult;
   }
 
-  const digest = computeMemoryAiNoteDigest(noteTrimmed);
   const { error: updErr } = await ctx.client
     .from('interactions')
     .update({ memory_ai_input_hash: digest })
