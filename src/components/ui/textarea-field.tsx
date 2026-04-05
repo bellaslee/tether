@@ -3,6 +3,7 @@ import { FieldError } from '@/components/ui/field-error';
 import { FormTextarea, type FormTextareaProps } from '@/components/ui/form-textarea';
 import type { FormControlSize } from '@/components/ui/form-control-classes';
 
+/** Labeled textarea using {@link FormTextarea} (voice-to-text is on by default; pass `voiceInput={false}` to hide). */
 export type TextareaFieldProps = Omit<FormTextareaProps, 'id'> & {
   id: string;
   label: string;
