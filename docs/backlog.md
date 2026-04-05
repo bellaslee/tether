@@ -11,11 +11,11 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] one combined participant control with an explicit “mark as main” on one row for the interaction edit UI
 - [x] voice to text
 - [ ] dark mode
-- [ ] sort panel should line up with first card, not first heading
-- [ ] allow user to select view: list by category or grid
+- [x] allow user to select view: list by category or grid
 - [ ] code review to address inefficiencies
 - [ ] address supabase warnings
 - [x] calendar time selection in increments of 5 only
+- [ ] search interactions
 
 ## User settings
 
