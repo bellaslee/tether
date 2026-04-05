@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# local DB dumps (see docs/plans/deploy-vercel-supabase-prod.md)
+.tmp/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
