@@ -1,18 +1,14 @@
 import Link from 'next/link';
-import { generateRelationshipSummary, updateCrmTask, updateFactReview } from '@/lib/actions/ai-memory';
+import { generateRelationshipSummary } from '@/lib/actions/ai-memory';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
 import type { Tables } from '@/lib/db/database.types';
 import {
-  SuggestFactsControl,
-  SuggestFollowUpsControl,
-} from '@/components/ai/person-memory-ai-toolbar';
+  PersonFactsMemorySection,
+  PersonRemindersMemorySection,
+} from '@/components/ai/person-memory-card-panels';
 import { SummaryRefreshForm } from '@/components/ai/summary-refresh-forms';
-import { FactReviewForms } from '@/components/ai/fact-review-forms';
-import { TaskReviewForms } from '@/components/ai/task-review-forms';
 
-type FactRow = Tables<'facts'>;
 type SummaryRow = Tables<'relationship_summaries'>;
-type TaskRow = Tables<'tasks'>;
 
 const memoryCardClass =
   'card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
@@ -107,129 +103,8 @@ export function PersonBriefsSection({
   );
 }
 
-type FactsProps = {
-  personId: string;
-  aiEnabled: boolean;
-  hasRecentNotes: boolean;
-  facts: FactRow[];
-};
-
-export function PersonFactsSection({
-  personId,
-  aiEnabled,
-  hasRecentNotes,
-  facts,
-}: FactsProps) {
-  return (
-    <section
-      className={memoryCardClass}
-      aria-labelledby="person-memory-facts-heading"
-    >
-      <header className="flex shrink-0 flex-row items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h2
-            id="person-memory-facts-heading"
-            className="font-display text-2xl tracking-tight text-foreground"
-          >
-            Facts
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            Review and accept what you want to keep on this profile.
-          </p>
-        </div>
-        <div className="shrink-0">
-          <SuggestFactsControl
-            personId={personId}
-            aiEnabled={aiEnabled}
-            hasRecentNotes={hasRecentNotes}
-          />
-        </div>
-      </header>
-      <div className="mt-6 min-h-0 flex-1">
-        {facts.length === 0 ? (
-          <p className="text-sm text-muted">
-            Use{' '}
-            <span className="font-medium text-foreground/80">Suggest facts</span>{' '}
-            when you have timeline notes—candidates show up here for review.
-          </p>
-        ) : (
-          <ul className="space-y-4">
-            {facts.map((fact) => (
-              <li key={fact.id}>
-                <FactReviewForms
-                  key={`${fact.id}-${fact.updated_at}`}
-                  fact={fact}
-                  action={updateFactReview}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
-  );
-}
-
-type RemindersProps = {
-  personId: string;
-  aiEnabled: boolean;
-  hasRecentNotes: boolean;
-  tasks: TaskRow[];
-};
-
-export function PersonRemindersSection({
-  personId,
-  aiEnabled,
-  hasRecentNotes,
-  tasks,
-}: RemindersProps) {
-  return (
-    <section
-      className={memoryCardClass}
-      aria-labelledby="person-memory-tasks-heading"
-    >
-      <header className="flex shrink-0 flex-row items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h2
-            id="person-memory-tasks-heading"
-            className="font-display text-2xl tracking-tight text-foreground"
-          >
-            Open loops &amp; reminders
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            Follow-up ideas grounded in your notes—delete or snooze anytime.
-          </p>
-        </div>
-        <div className="shrink-0">
-          <SuggestFollowUpsControl
-            personId={personId}
-            aiEnabled={aiEnabled}
-            hasRecentNotes={hasRecentNotes}
-          />
-        </div>
-      </header>
-      <div className="mt-6 min-h-0 flex-1">
-        {tasks.length === 0 ? (
-          <p className="text-sm text-muted">
-            No active suggestions. Use{' '}
-            <span className="font-medium text-foreground/80">
-              Suggest follow-ups
-            </span>{' '}
-            when something should not slip.
-          </p>
-        ) : (
-          <ul className="space-y-3">
-            {tasks.map((task) => (
-              <li key={task.id}>
-                <TaskReviewForms task={task} action={updateCrmTask} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
-  );
-}
+export const PersonFactsSection = PersonFactsMemorySection;
+export const PersonRemindersSection = PersonRemindersMemorySection;
 
 function SourceFootnote({
   summary,

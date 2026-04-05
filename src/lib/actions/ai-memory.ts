@@ -687,6 +687,102 @@ export async function updateFactReview(
   return { ok: true };
 }
 
+export async function createManualFact(
+  _prev: AiMemoryActionResult,
+  formData: FormData,
+): Promise<AiMemoryActionResult> {
+  const personId = String(formData.get('person_id') ?? '').trim();
+  const body = String(formData.get('body') ?? '').trim();
+  if (!isUuid(personId)) {
+    return { error: 'Invalid person.' };
+  }
+  if (!body) {
+    return { error: 'Write something for this fact.' };
+  }
+
+  const ctx = await getCrmSupabaseContext();
+  if (!ctx) {
+    return { error: 'You need to sign in again.' };
+  }
+
+  const { data: person, error: pErr } = await ctx.client
+    .from('people')
+    .select('id')
+    .eq('id', personId)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (pErr || !person) {
+    return { error: 'Person not found.' };
+  }
+
+  const { error: insErr } = await ctx.client.from('facts').insert({
+    user_id: ctx.userId,
+    person_id: personId,
+    interaction_id: null,
+    body,
+    review_status: 'accepted',
+    extractor_metadata: { source: 'manual' },
+  });
+
+  if (insErr) {
+    return { error: insErr.message };
+  }
+
+  revalidatePath(`/people/${personId}`);
+  return { ok: true };
+}
+
+export async function createManualReminder(
+  _prev: AiMemoryActionResult,
+  formData: FormData,
+): Promise<AiMemoryActionResult> {
+  const personId = String(formData.get('person_id') ?? '').trim();
+  const title = String(formData.get('title') ?? '').trim();
+  const descriptionRaw = String(formData.get('description') ?? '').trim();
+  const description = descriptionRaw || null;
+
+  if (!isUuid(personId)) {
+    return { error: 'Invalid person.' };
+  }
+  if (!title) {
+    return { error: 'Give this reminder a short title.' };
+  }
+
+  const ctx = await getCrmSupabaseContext();
+  if (!ctx) {
+    return { error: 'You need to sign in again.' };
+  }
+
+  const { data: person, error: pErr } = await ctx.client
+    .from('people')
+    .select('id')
+    .eq('id', personId)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (pErr || !person) {
+    return { error: 'Person not found.' };
+  }
+
+  const { error: insErr } = await ctx.client.from('tasks').insert({
+    user_id: ctx.userId,
+    person_id: personId,
+    interaction_id: null,
+    title,
+    description,
+    status: 'active',
+    suggester_metadata: { source: 'manual' },
+  });
+
+  if (insErr) {
+    return { error: insErr.message };
+  }
+
+  revalidatePath(`/people/${personId}`);
+  return { ok: true };
+}
+
 export async function generateRelationshipSummary(
   _prev: AiMemoryActionResult,
   formData: FormData,
