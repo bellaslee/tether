@@ -1,13 +1,16 @@
 import Link from 'next/link';
-import { Button, ButtonLink } from '@/components/ui/button';
+import { Suspense } from 'react';
+import { ButtonLink } from '@/components/ui/button';
 import type { PersonStatus, Tables } from '@/lib/db/database.types';
 import { requireCrmAccess } from '@/lib/crm/guard';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
-import { formatStatus } from '@/lib/domain/labels';
 import { personShownName } from '@/lib/people/list-name';
-import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
+import {
+  computeRelationshipWarmth,
+  type RelationshipWarmth,
+} from '@/lib/people/relationship-warmth';
+import { PeopleFiltersSidebar } from '@/components/people/people-filters-sidebar';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
-import { FormInput } from '@/components/ui/form-input';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -62,6 +65,27 @@ function parseStatuses(param: string | string[] | undefined): PersonStatus[] {
   return out;
 }
 
+const RELATIONSHIP_WARMTH_FILTERS: RelationshipWarmth[] = ['hot', 'warm', 'cold'];
+
+function isWarmthFilter(value: string): value is RelationshipWarmth {
+  return RELATIONSHIP_WARMTH_FILTERS.includes(value as RelationshipWarmth);
+}
+
+function parseWarmthFilters(
+  param: string | string[] | undefined,
+): RelationshipWarmth[] {
+  const seen = new Set<RelationshipWarmth>();
+  const out: RelationshipWarmth[] = [];
+  for (const raw of searchParamToStrings(param)) {
+    const w = raw.trim().toLowerCase();
+    if (isWarmthFilter(w) && !seen.has(w)) {
+      seen.add(w);
+      out.push(w);
+    }
+  }
+  return out;
+}
+
 type PersonListRow = Pick<
   Tables<'people'>,
   | 'id'
@@ -77,6 +101,56 @@ type PersonListRow = Pick<
   person_categories: { name: string } | null;
 };
 
+type PeopleSortKey = 'name' | 'last_interaction' | 'created' | 'met';
+
+function parsePeopleSort(param: string | undefined): PeopleSortKey {
+  const s = param?.trim();
+  if (s === 'last_interaction' || s === 'created' || s === 'met') {
+    return s;
+  }
+  return 'name';
+}
+
+function comparePeopleListRows(
+  sortKey: PeopleSortKey,
+  a: PersonListRow,
+  b: PersonListRow,
+): number {
+  if (sortKey === 'name') {
+    return personShownName(a).localeCompare(personShownName(b), undefined, {
+      sensitivity: 'base',
+    });
+  }
+
+  const timestamp = (p: PersonListRow): number | null => {
+    if (sortKey === 'last_interaction') {
+      return p.last_interaction_at ? Date.parse(p.last_interaction_at) : null;
+    }
+    if (sortKey === 'created') {
+      return Date.parse(p.created_at);
+    }
+    if (sortKey === 'met') {
+      return p.met_at ? Date.parse(p.met_at) : null;
+    }
+    return null;
+  };
+
+  const av = timestamp(a);
+  const bv = timestamp(b);
+  if (av === null && bv === null) {
+    return personShownName(a).localeCompare(personShownName(b), undefined, {
+      sensitivity: 'base',
+    });
+  }
+  if (av === null) {
+    return 1;
+  }
+  if (bv === null) {
+    return -1;
+  }
+  return bv - av;
+}
+
 export default async function PeoplePage(props: {
   searchParams: SearchParams;
 }) {
@@ -88,6 +162,8 @@ export default async function PeoplePage(props: {
   const statusFromUrl = parseStatuses(searchParams.status);
   const statusValues: PersonStatus[] =
     !statusInUrl && statusFromUrl.length === 0 ? ['active'] : statusFromUrl;
+  const warmthFilter = parseWarmthFilters(searchParams.warmth);
+  const sortKey = parsePeopleSort(first(searchParams.sort));
 
   const { data: categoryOptions, error: categoriesError } = await ctx.client
     .from('person_categories')
@@ -128,6 +204,30 @@ export default async function PeoplePage(props: {
 
   const peopleList = (people ?? []) as PersonListRow[];
 
+  const warmthFiltered =
+    warmthFilter.length > 0
+      ? peopleList.filter((p) =>
+          warmthFilter.includes(
+            computeRelationshipWarmth({
+              lastInteractionAt: p.last_interaction_at,
+              metAt: p.met_at,
+              createdAt: p.created_at,
+            }),
+          ),
+        )
+      : peopleList;
+
+  const displayed = [...warmthFiltered].sort((a, b) =>
+    comparePeopleListRows(sortKey, a, b),
+  );
+
+  const categoryOptionsList = (categoryOptions ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+  }));
+  const statusFilterInitiallyOpen =
+    statusInUrl && statusFromUrl.length > 0;
+
   return (
     <main className="crm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -145,92 +245,28 @@ export default async function PeoplePage(props: {
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
         <section className="card-surface order-1 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-2 lg:w-full lg:max-w-[22rem] lg:shrink-0">
-          <form className="flex flex-col gap-4" method="get" action="/people">
-            <div className="min-w-0 w-full">
-              <FormInput
-                id="q"
-                name="q"
-                defaultValue={q}
-                placeholder="Search by name"
-                aria-label="Search by name"
+          <Suspense
+            fallback={
+              <div
+                className="min-h-[12rem] animate-pulse rounded-2xl bg-white/50"
+                aria-hidden
               />
-            </div>
-            <Button type="submit" variant="secondary" size="lg">
-              Apply
-            </Button>
-            <div className="flex flex-wrap justify-end gap-2 text-xs text-muted">
-              <Link
-                className="underline-offset-4 hover:underline"
-                href="/people"
-              >
-                Clear filters
-              </Link>
-            </div>
-            <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              <PeopleFilterDisclosure
-                key={`category-filters-${categoryIds.slice().sort().join('|')}`}
-                initialOpen={categoryIds.length > 0}
-                labelId="people-filter-categories-label"
-                label="Categories"
-              >
-                <p className="mb-2 text-xs text-muted">
-                  Leave all unchecked to show every category.
-                </p>
-                <div className="flex max-h-40 flex-col gap-2 overflow-y-auto text-sm">
-                  {(categoryOptions ?? []).length === 0 ? (
-                    <span className="text-muted">No categories yet.</span>
-                  ) : (
-                    (categoryOptions ?? []).map((c) => (
-                      <label
-                        key={c.id}
-                        className="flex items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
-                      >
-                        <input
-                          type="checkbox"
-                          name="category"
-                          value={c.id}
-                          defaultChecked={categoryIds.includes(c.id)}
-                          className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
-                        />
-                        <span>{c.name}</span>
-                      </label>
-                    ))
-                  )}
-                </div>
-              </PeopleFilterDisclosure>
-              <PeopleFilterDisclosure
-                key={`status-filters-${statusFromUrl.slice().sort().join('|')}`}
-                initialOpen={statusInUrl && statusFromUrl.length > 0}
-                labelId="people-filter-status-label"
-                label="Status"
-              >
-                <p className="mb-2 text-xs text-muted">
-                  Leave all unchecked to show every status.
-                </p>
-                <div className="flex flex-col gap-2 text-sm">
-                  {PERSON_STATUSES.map((s) => (
-                    <label
-                      key={s}
-                      className="flex items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
-                    >
-                      <input
-                        type="checkbox"
-                        name="status"
-                        value={s}
-                        defaultChecked={statusValues.includes(s)}
-                        className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
-                      />
-                      <span>{formatStatus(s)}</span>
-                    </label>
-                  ))}
-                </div>
-              </PeopleFilterDisclosure>
-            </div>
-          </form>
+            }
+          >
+            <PeopleFiltersSidebar
+              q={q}
+              categoryIds={categoryIds}
+              categoryOptions={categoryOptionsList}
+              statusValues={statusValues}
+              statusFilterInitiallyOpen={statusFilterInitiallyOpen}
+              warmthFilter={warmthFilter}
+              sortKey={sortKey}
+            />
+          </Suspense>
         </section>
 
         <section className="order-2 min-w-0 space-y-4 lg:order-1 lg:flex-1">
-          {peopleList.length === 0 ? (
+          {displayed.length === 0 ? (
             <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
               No one here yet, or nothing matches your filters.{' '}
               <Link
@@ -243,7 +279,7 @@ export default async function PeoplePage(props: {
             </div>
           ) : (
             <ul className="grid gap-3 md:grid-cols-2">
-              {peopleList.map((person) => (
+              {displayed.map((person) => (
                 <li key={person.id} className="flex min-h-0 min-w-0">
                   <Link
                     href={`/people/${person.id}`}

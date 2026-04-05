@@ -6,8 +6,8 @@ Ideas and follow-ups that are not scheduled work yet.
 
 - [x] enable timeline interaction editing
 - [x] add relationship strength indicator (Cold, Warm, Hot)
-- [ ] sort people cards by interaction date, added date, and met the person date
-- [ ] filter by relationship strength
+- [x] ability to sort people cards by interaction date, added date, and met the person date. This should appear under the description for the people home page.
+- [x] ability to filter by relationship strength
 - [ ] fix suggest button placeholder taking up too much space
 
 ## User settings
