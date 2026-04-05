@@ -1,52 +1,85 @@
-This repository contains the initialization scaffold for a personal relationship
-CRM focused on friends first and networking second.
+# Tether
+
+A personal relationship CRM focused on friends first and networking second:
+remember who people are, how you know them, what changed recently, and what to
+follow up on—without sales-CRM vibes.
 
 ## Stack
 
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- Supabase for local auth and Postgres
-- OpenAI groundwork for future Responses API features
+- **Next.js** 16 (App Router) with **React** 19
+- **TypeScript**
+- **Tailwind CSS** 4
+- **Supabase** (auth, Postgres, row-level security)
+- **OpenAI** (Responses API) for extraction, summaries, and suggested follow-ups
+- **Zod** for validation
 
-## Getting Started
+Domain logic and server actions live under `src/lib`; UI under `src/components`
+and `src/app`. For product philosophy, phase priorities, and intended layout,
+see [AGENTS.md](./AGENTS.md).
+
+## What’s in the repo today
+
+- **Auth:** login and signup (`/login`, `/signup`); optional local dev auth
+  bypass (documented in `.env.example`).
+- **People:** list, detail, create, edit; categories; how-you-met; connection
+  types and person-to-person links.
+- **Interactions:** quick capture and timeline views (including by type).
+- **Reminders:** tasks from the CRM data model (including AI-suggested items).
+- **Settings** and app shell with primary navigation.
+- **AI memory layer (Phase 2):** candidate facts, relationship summaries, and
+  suggested tasks driven by server-side pipelines in `src/lib/ai` (human review
+  and editing are part of the design).
+- **Database:** migrations under `supabase/migrations/` (Phase 1 core schema
+  plus follow-on migrations for categories, interactions, connections, and the
+  AI tables). All changes go through SQL migrations.
+
+The marketing-style home page at `/` includes setup hints; signed-in CRM routes
+live under the `(crm)` route group (e.g. `/people`, `/timeline`).
+
+## Getting started
 
 1. Install dependencies.
 
+   ```bash
    npm install
+   ```
 
 2. Start the local Supabase stack.
 
+   ```bash
    npx supabase start
+   ```
 
-3. Export the local Supabase environment values.
+3. Copy environment variables from Supabase.
 
+   ```bash
    npx supabase status -o env
+   ```
 
-4. Copy `.env.example` to `.env.local`, then paste in the local Supabase values
-   and your `OPENAI_API_KEY` when you are ready for AI-backed features.
+4. Copy `.env.example` to `.env.local` and fill in `NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `OPENAI_API_KEY` when using AI features.
+   Optional variables are described in `.env.example`.
 
-5. Apply migrations or rebuild the local database.
+5. Apply migrations (resets local DB to match the repo).
 
+   ```bash
    npx supabase db reset
+   ```
 
-6. Start the app.
+6. Run the app.
 
+   ```bash
    npm run dev
+   ```
 
-Then open http://localhost:3000.
-
-## Included in This Milestone
-
-- A warm server-rendered home page that confirms the app shell is running
-- `src/lib/db` helpers for Supabase browser and server clients
-- `src/lib/ai/openai.ts` for server-only OpenAI client creation
-- `supabase/migrations/20260404190722_phase_1_initial_schema.sql` with the Phase
-  1 schema and row-level security
+Open [http://localhost:3000](http://localhost:3000). Create an account via
+`/signup` (or use the documented dev bypass if you are only working locally).
 
 ## Validation
 
-Run the standard checks from the repository root:
+From the repository root:
 
-    npm run lint
-    npm run build
+```bash
+npm run lint
+npm run build
+```
