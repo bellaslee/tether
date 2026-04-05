@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/db/server";
 import { getPrmSupabaseContext } from "@/lib/prm/context";
+import { isValidIanaTimeZone } from "@/lib/timezones";
 
 export type ProfileFormState = {
   error?: string;
@@ -38,6 +39,34 @@ export async function updateAccountNameAction(
   revalidatePath("/settings/profile");
   revalidatePath("/people", "layout");
   return { success: "Name saved." };
+}
+
+export async function updateAccountTimezoneAction(
+  _prev: ProfileFormState,
+  formData: FormData,
+): Promise<ProfileFormState> {
+  const ctx = await getPrmSupabaseContext();
+  if (!ctx) {
+    return { error: "Profile is not available in this environment." };
+  }
+
+  const timezone = String(formData.get("timezone") ?? "").trim();
+  if (!isValidIanaTimeZone(timezone)) {
+    return { error: "Choose a valid time zone." };
+  }
+
+  const client = await createSupabaseServerClient();
+  const { error } = await client.auth.updateUser({
+    data: { timezone },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/settings/profile");
+  revalidatePath("/people", "layout");
+  return { success: "Time zone saved." };
 }
 
 export async function updateAccountPasswordAction(

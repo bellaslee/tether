@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/db/server";
+import { isValidIanaTimeZone } from "@/lib/timezones";
 
 export type AuthFormState = {
   error?: string;
@@ -15,6 +16,8 @@ export async function signUpAction(
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const privacyAccepted = formData.get("privacy_accepted");
+  const tzRaw = String(formData.get("timezone") ?? "").trim();
+  const timezone = isValidIanaTimeZone(tzRaw) ? tzRaw : "UTC";
   if (!email || !password) {
     return { error: "Email and password are required." };
   }
@@ -23,7 +26,13 @@ export async function signUpAction(
   }
 
   const client = await createSupabaseServerClient();
-  const { error } = await client.auth.signUp({ email, password });
+  const { error } = await client.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { timezone },
+    },
+  });
   if (error) {
     return { error: error.message };
   }

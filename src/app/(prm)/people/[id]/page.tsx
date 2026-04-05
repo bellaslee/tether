@@ -18,9 +18,10 @@ import { requirePrmAccess } from '@/lib/prm/guard';
 import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
 import { formatStatus } from '@/lib/domain/labels';
 import {
+  formatCalendarDateOnly,
+  formatDateTimeInTimeZone,
   formatMonthYear,
-  toDatetimeLocalInputValue,
-  toNewInteractionDatetimeLocalInputValue,
+  toNewInteractionDatetimeLocalInputValueInZone,
 } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import {
@@ -97,6 +98,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const tab = tabParam === 'details' ? 'details' : 'overview';
 
   const ctx = await requirePrmAccess();
+  const displayTimeZone = ctx.accountTimeZone ?? 'UTC';
 
   const { data: personRow, error: personError } = await ctx.client
     .from('people')
@@ -278,9 +280,12 @@ export default async function PersonDetailPage(props: PageProps) {
   const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
     partitionPersonTimelineRows(timelineRows);
 
-  const defaultOccurredAt = toNewInteractionDatetimeLocalInputValue(
-    new Date(person.created_at),
-  );
+  const defaultOccurredAt = ctx.accountTimeZone
+    ? toNewInteractionDatetimeLocalInputValueInZone(
+        ctx.accountTimeZone,
+        new Date(person.created_at),
+      )
+    : '';
   const otherPeople = (allPeople ?? []).filter((p) => p.id !== person.id);
   const otherPeopleOptions = otherPeople.map((p) => ({
     id: p.id,
@@ -353,7 +358,10 @@ export default async function PersonDetailPage(props: PageProps) {
         throw new Error(intMetaError.message);
       }
       for (const row of intMeta ?? []) {
-        interactionLabels.set(row.id, formatDateTime(row.occurred_at));
+        interactionLabels.set(
+          row.id,
+          formatDateTimeInTimeZone(row.occurred_at, displayTimeZone),
+        );
       }
     }
   }
@@ -390,6 +398,7 @@ export default async function PersonDetailPage(props: PageProps) {
         personId={person.id}
         allPeople={allPeople ?? []}
         defaultOccurredAt={defaultOccurredAt}
+        sessionTimeZone={ctx.accountTimeZone}
         interactionTypes={interactionTypeOptions}
         defaultInteractionTypeId={defaultInteractionTypeId}
       >
@@ -434,7 +443,9 @@ export default async function PersonDetailPage(props: PageProps) {
                   <DetailItem
                     label="Birthday"
                     value={
-                      person.birthday ? formatDateOnly(person.birthday) : null
+                      person.birthday
+                        ? formatCalendarDateOnly(person.birthday)
+                        : null
                     }
                   />
                   <DetailItem
@@ -450,7 +461,10 @@ export default async function PersonDetailPage(props: PageProps) {
                     label="Last interaction"
                     value={
                       person.last_interaction_at
-                        ? formatDateTime(person.last_interaction_at)
+                        ? formatDateTimeInTimeZone(
+                            person.last_interaction_at,
+                            displayTimeZone,
+                          )
                         : null
                     }
                   />
@@ -542,6 +556,8 @@ export default async function PersonDetailPage(props: PageProps) {
                           interaction={interaction}
                           role={role}
                           isUpcoming
+                          displayTimeZone={displayTimeZone}
+                          sessionTimeZone={ctx.accountTimeZone}
                           participants={
                             participantsByInteraction.get(interaction.id) ?? {
                               primaryPersonId: '',
@@ -573,6 +589,8 @@ export default async function PersonDetailPage(props: PageProps) {
                           interaction={interaction}
                           role={role}
                           isUpcoming={false}
+                          displayTimeZone={displayTimeZone}
+                          sessionTimeZone={ctx.accountTimeZone}
                           participants={
                             participantsByInteraction.get(interaction.id) ?? {
                               primaryPersonId: '',
@@ -636,6 +654,8 @@ function PersonTimelineRow({
   interaction,
   role,
   isUpcoming,
+  displayTimeZone,
+  sessionTimeZone,
   participants,
   allPeople,
   interactionTypeOptions,
@@ -644,6 +664,8 @@ function PersonTimelineRow({
   interaction: InteractionWithType;
   role: string;
   isUpcoming: boolean;
+  displayTimeZone: string;
+  sessionTimeZone: string | null;
   participants: { primaryPersonId: string; attendeeIds: string[] };
   allPeople: Array<{
     id: string;
@@ -675,7 +697,10 @@ function PersonTimelineRow({
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-              {formatDateTime(interaction.occurred_at)}
+              {formatDateTimeInTimeZone(
+                interaction.occurred_at,
+                displayTimeZone,
+              )}
             </span>
             <InteractionMetaChips
               typeName={interaction.interaction_types?.name}
@@ -709,9 +734,8 @@ function PersonTimelineRow({
           {allPeople.length > 0 ? (
             <InteractionEditDisclosure
               interactionId={interaction.id}
-              defaultOccurredAt={toDatetimeLocalInputValue(
-                new Date(interaction.occurred_at),
-              )}
+              occurredAtIso={interaction.occurred_at}
+              sessionTimeZone={sessionTimeZone}
               defaultInteractionTypeId={interaction.interaction_type_id}
               defaultDirection={interaction.direction ?? ''}
               defaultTitle={interaction.title ?? ''}
@@ -742,20 +766,3 @@ function DetailItem({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-function formatDateOnly(isoDate: string) {
-  return new Date(`${isoDate}T12:00:00`).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}

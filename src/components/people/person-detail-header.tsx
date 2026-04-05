@@ -16,6 +16,7 @@ type PersonDetailHeaderProps = {
   personId: string;
   allPeople: PersonOption[];
   defaultOccurredAt: string;
+  sessionTimeZone: string | null;
   interactionTypes: InteractionTypeOption[];
   defaultInteractionTypeId: string;
 };
@@ -27,6 +28,7 @@ export function PersonDetailHeader({
   personId,
   allPeople,
   defaultOccurredAt,
+  sessionTimeZone,
   interactionTypes,
   defaultInteractionTypeId,
 }: PersonDetailHeaderProps) {
@@ -96,6 +98,7 @@ export function PersonDetailHeader({
                   personId={personId}
                   allPeople={allPeople}
                   defaultOccurredAt={defaultOccurredAt}
+                  sessionTimeZone={sessionTimeZone}
                   interactionTypes={interactionTypes}
                   defaultInteractionTypeId={defaultInteractionTypeId}
                   onSuccess={handleSuccess}

@@ -3,7 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { InteractionDirection } from '@/lib/db/database.types';
+import { localWallTimeToUtcIso } from '@/lib/datetime';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
+import { resolvePreferredIanaTimeZone } from '@/lib/timezones';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
 import {
@@ -88,7 +90,11 @@ export async function createInteractionFromPerson(
   }
   const { ctx } = gate;
 
-  const payload = parseInteractionFields(formData);
+  const wallClockZone = resolvePreferredIanaTimeZone(
+    ctx.accountTimeZone,
+    formData,
+  );
+  const payload = parseInteractionFields(formData, wallClockZone);
   if ('error' in payload) {
     return { error: payload.error };
   }
@@ -181,7 +187,11 @@ export async function createGlobalInteraction(
   }
   const { ctx } = gate;
 
-  const payload = parseInteractionFields(formData);
+  const wallClockZone = resolvePreferredIanaTimeZone(
+    ctx.accountTimeZone,
+    formData,
+  );
+  const payload = parseInteractionFields(formData, wallClockZone);
   if ('error' in payload) {
     return { error: payload.error };
   }
@@ -303,7 +313,11 @@ export async function updateInteraction(
     return { error: gate.error };
   }
 
-  const payload = parseInteractionFields(formData);
+  const wallClockZone = resolvePreferredIanaTimeZone(
+    ctx.accountTimeZone,
+    formData,
+  );
+  const payload = parseInteractionFields(formData, wallClockZone);
   if ('error' in payload) {
     return { error: payload.error };
   }
@@ -418,7 +432,10 @@ export async function deleteInteraction(
   return { ok: true };
 }
 
-function parseInteractionFields(formData: FormData):
+function parseInteractionFields(
+  formData: FormData,
+  wallClockZone: string,
+):
   | {
       occurred_at: string;
       interaction_type_id: string;
@@ -440,7 +457,7 @@ function parseInteractionFields(formData: FormData):
     return { error: 'Choose a valid interaction type.' };
   }
 
-  const occurred_at = localDatetimeToIso(occurredLocal);
+  const occurred_at = localWallTimeToUtcIso(occurredLocal, wallClockZone);
   if (!occurred_at) {
     return { error: 'Use a valid date and time.' };
   }
@@ -465,12 +482,4 @@ function parseInteractionFields(formData: FormData):
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? '').trim();
   return text.length > 0 ? text : null;
-}
-
-function localDatetimeToIso(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString();
 }

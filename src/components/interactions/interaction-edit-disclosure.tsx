@@ -15,12 +15,17 @@ import { FieldError } from '@/components/ui/field-error';
 import { formControlClassName } from '@/components/ui/form-control-classes';
 import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
+import { WallClockTimeZoneField } from '@/components/interactions/wall-clock-time-zone-field';
+import { toDatetimeLocalInputValueInZone } from '@/lib/datetime';
+import { isValidIanaTimeZone } from '@/lib/timezones';
 
 const initial: ActionResult = {};
 
 export type InteractionEditDisclosureProps = {
   interactionId: string;
-  defaultOccurredAt: string;
+  occurredAtIso: string;
+  /** Saved profile zone; when null, the browser zone is used for the edit field. */
+  sessionTimeZone: string | null;
   defaultInteractionTypeId: string;
   defaultDirection: string;
   defaultTitle: string;
@@ -33,7 +38,8 @@ export type InteractionEditDisclosureProps = {
 
 export function InteractionEditDisclosure({
   interactionId,
-  defaultOccurredAt,
+  occurredAtIso,
+  sessionTimeZone,
   defaultInteractionTypeId,
   defaultDirection,
   defaultTitle,
@@ -62,7 +68,8 @@ export function InteractionEditDisclosure({
     <div className="w-full max-w-xl space-y-3 rounded-2xl border border-border-soft bg-white/80 p-4 sm:p-5">
       <InteractionEditForm
         interactionId={interactionId}
-        defaultOccurredAt={defaultOccurredAt}
+        occurredAtIso={occurredAtIso}
+        sessionTimeZone={sessionTimeZone}
         defaultInteractionTypeId={defaultInteractionTypeId}
         defaultDirection={defaultDirection}
         defaultTitle={defaultTitle}
@@ -85,7 +92,8 @@ type InteractionEditFormProps = InteractionEditDisclosureProps & {
 
 function InteractionEditForm({
   interactionId,
-  defaultOccurredAt,
+  occurredAtIso,
+  sessionTimeZone,
   defaultInteractionTypeId,
   defaultDirection,
   defaultTitle,
@@ -98,6 +106,18 @@ function InteractionEditForm({
   onSaved,
 }: InteractionEditFormProps) {
   const router = useRouter();
+  const browserTimeZone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [],
+  );
+  const wallZone =
+    sessionTimeZone && isValidIanaTimeZone(sessionTimeZone)
+      ? sessionTimeZone
+      : browserTimeZone;
+  const defaultOccurredAt = useMemo(
+    () => toDatetimeLocalInputValueInZone(new Date(occurredAtIso), wallZone),
+    [occurredAtIso, wallZone],
+  );
   const resolvedPrimary =
     primaryPersonId && people.some((p) => p.id === primaryPersonId)
       ? primaryPersonId
@@ -129,6 +149,7 @@ function InteractionEditForm({
 
   return (
     <form action={formAction} className="space-y-4">
+      <WallClockTimeZoneField />
       {state.error ? <FieldError>{state.error}</FieldError> : null}
 
       <div className="space-y-2">

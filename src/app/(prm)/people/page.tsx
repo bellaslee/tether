@@ -14,6 +14,7 @@ import { PeopleListPreferencesSync } from '@/components/people/people-list-prefe
 import { PeopleViewSortBar } from '@/components/people/people-view-sort-bar';
 import type { PeopleViewOption } from '@/components/people/people-view-control';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
+import { formatDateInTimeZone } from '@/lib/datetime';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -105,9 +106,11 @@ type PersonListRow = Pick<
 
 function PeopleListItem({
   person,
+  displayTimeZone,
   variant = 'row',
 }: {
   person: PersonListRow;
+  displayTimeZone: string;
   /** `stacked`: chips below name (grid). `row`: name and chips side by side (list by category). */
   variant?: 'row' | 'stacked';
 }) {
@@ -144,7 +147,10 @@ function PeopleListItem({
           {person.last_interaction_at ? (
             <span className="rounded-full border border-border-soft px-2.5 py-0.5">
               Last touch{' '}
-              {new Date(person.last_interaction_at).toLocaleDateString()}
+              {formatDateInTimeZone(
+                person.last_interaction_at,
+                displayTimeZone,
+              )}
             </span>
           ) : (
             <span className="rounded-full border border-border-soft px-2.5 py-0.5">
@@ -219,6 +225,7 @@ export default async function PeoplePage(props: {
   searchParams: SearchParams;
 }) {
   const ctx = await requirePrmAccess();
+  const displayTimeZone = ctx.accountTimeZone ?? 'UTC';
   const searchParams = await props.searchParams;
   const q = first(searchParams.q)?.trim() ?? '';
   const categoryInUrl = Object.hasOwn(searchParams, 'category');
@@ -400,6 +407,7 @@ export default async function PeoplePage(props: {
                 <PeopleListItem
                   key={person.id}
                   person={person}
+                  displayTimeZone={displayTimeZone}
                   variant="stacked"
                 />
               ))}
@@ -419,7 +427,11 @@ export default async function PeoplePage(props: {
                     </h2>
                     <ul className="grid grid-cols-1 gap-3">
                       {sectionPeople.map((person) => (
-                        <PeopleListItem key={person.id} person={person} />
+                        <PeopleListItem
+                          key={person.id}
+                          person={person}
+                          displayTimeZone={displayTimeZone}
+                        />
                       ))}
                     </ul>
                   </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo } from "react";
 import type { AuthFormState } from "@/lib/actions/auth";
 import { signUpAction } from "@/lib/actions/auth";
 import { usePrivacyPolicy } from "@/components/app/privacy-policy-context";
@@ -13,9 +13,14 @@ const initial: AuthFormState = {};
 export function SignupForm() {
   const [state, formAction, pending] = useActionState(signUpAction, initial);
   const { openPrivacyPolicy } = usePrivacyPolicy();
+  const browserTimeZone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [],
+  );
 
   return (
     <form action={formAction} className="space-y-5">
+      <input type="hidden" name="timezone" value={browserTimeZone} />
       {state.error ? <FieldError>{state.error}</FieldError> : null}
       <TextField
         id="email"

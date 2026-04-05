@@ -1,23 +1,33 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import type { ProfileFormState } from '@/lib/actions/profile';
 import {
   updateAccountNameAction,
   updateAccountPasswordAction,
+  updateAccountTimezoneAction,
 } from '@/lib/actions/profile';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 import { TextField } from '@/components/ui/text-field';
+import { formControlClassName } from '@/components/ui/form-control-classes';
 
 const nameInitial: ProfileFormState = {};
 const passwordInitial: ProfileFormState = {};
+const timezoneInitial: ProfileFormState = {};
 
 type ProfileSettingsFormsProps = {
   defaultName: string;
+  /** Persisted IANA zone, or empty when the user has not saved one yet. */
+  savedTimezone: string;
+  ianaTimeZones: readonly string[];
 };
 
-export function ProfileSettingsForms({ defaultName }: ProfileSettingsFormsProps) {
+export function ProfileSettingsForms({
+  defaultName,
+  savedTimezone,
+  ianaTimeZones,
+}: ProfileSettingsFormsProps) {
   const [nameState, nameAction, namePending] = useActionState(
     updateAccountNameAction,
     nameInitial,
@@ -26,9 +36,23 @@ export function ProfileSettingsForms({ defaultName }: ProfileSettingsFormsProps)
     updateAccountPasswordAction,
     passwordInitial,
   );
+  const [timezoneState, timezoneAction, timezonePending] = useActionState(
+    updateAccountTimezoneAction,
+    timezoneInitial,
+  );
+
+  const [browserTzReady, setBrowserTzReady] = useState(false);
+  useEffect(() => {
+    setBrowserTzReady(true);
+  }, []);
+
+  const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezoneSelectValue =
+    savedTimezone.trim().length > 0 ? savedTimezone : browserTimeZone;
 
   const nameFormKey = nameState.success ? nameState.success : 'name';
   const passwordFormKey = passwordState.success ? passwordState.success : 'pw';
+  const timezoneFormKey = timezoneState.success ? timezoneState.success : 'tz';
 
   return (
     <div className="space-y-10">
@@ -56,6 +80,56 @@ export function ProfileSettingsForms({ defaultName }: ProfileSettingsFormsProps)
             {namePending ? 'Saving…' : 'Save name'}
           </Button>
         </form>
+      </section>
+
+      <section className="card-surface rounded-2xl border border-border-soft p-6 sm:p-8">
+        <h2 className="font-display text-xl tracking-tight">Time zone</h2>
+        <p className="mt-2 text-sm leading-7 text-muted">
+          Used for dates and reminders in your local day. If you have not saved a
+          preference yet, we default to what your browser reports (
+          {browserTzReady ? browserTimeZone : '…'}).
+        </p>
+        {!browserTzReady ? (
+          <p className="mt-6 text-sm text-muted">Preparing time zone list…</p>
+        ) : (
+          <form
+            key={timezoneFormKey}
+            action={timezoneAction}
+            className="mt-6 space-y-5"
+          >
+            {timezoneState.error ? (
+              <FieldError>{timezoneState.error}</FieldError>
+            ) : null}
+            {timezoneState.success ? (
+              <p className="text-sm font-semibold text-accent">
+                {timezoneState.success}
+              </p>
+            ) : null}
+            <div className="space-y-2">
+              <label
+                htmlFor="timezone"
+                className="text-sm font-semibold text-foreground"
+              >
+                Time zone
+              </label>
+              <select
+                id="timezone"
+                name="timezone"
+                defaultValue={timezoneSelectValue}
+                className={formControlClassName({ size: 'default' })}
+              >
+                {ianaTimeZones.map((z) => (
+                  <option key={z} value={z}>
+                    {z.replace(/_/g, ' ')}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button type="submit" variant="secondary" disabled={timezonePending}>
+              {timezonePending ? 'Saving…' : 'Save time zone'}
+            </Button>
+          </form>
+        )}
       </section>
 
       <section className="card-surface rounded-2xl border border-border-soft p-6 sm:p-8">

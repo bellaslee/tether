@@ -1,8 +1,10 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useMemo } from 'react';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { createGlobalInteraction } from '@/lib/actions/interactions';
+import { WallClockTimeZoneField } from '@/components/interactions/wall-clock-time-zone-field';
+import { toNewInteractionDatetimeLocalInputValueInZone } from '@/lib/datetime';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
@@ -35,8 +37,25 @@ export function GlobalInteractionForm({
     initial,
   );
 
+  const browserTimeZone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [],
+  );
+
+  useEffect(() => {
+    if (defaultOccurredAt !== '') {
+      return;
+    }
+    const el = document.getElementById('occurred_at') as HTMLInputElement | null;
+    if (el && !el.value) {
+      el.value =
+        toNewInteractionDatetimeLocalInputValueInZone(browserTimeZone);
+    }
+  }, [defaultOccurredAt, browserTimeZone]);
+
   return (
     <form action={formAction} className="space-y-6">
+      <WallClockTimeZoneField />
       {state.error ? <FieldError>{state.error}</FieldError> : null}
 
       <div className="space-y-2">

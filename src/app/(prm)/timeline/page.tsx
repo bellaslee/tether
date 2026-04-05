@@ -6,7 +6,7 @@ import { InteractionMemorySuggestButton } from '@/components/interactions/intera
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
 import { requirePrmAccess } from '@/lib/prm/guard';
-import { toDatetimeLocalInputValue } from '@/lib/datetime';
+import { formatDateTimeInTimeZone } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { partitionTimelineByOccurrence } from '@/lib/interactions/timeline-partition';
@@ -31,6 +31,7 @@ type PersonChip = {
 
 export default async function TimelinePage() {
   const ctx = await requirePrmAccess();
+  const displayTimeZone = ctx.accountTimeZone ?? 'UTC';
 
   const { data: interactionTypeRows, error: typesError } = await ctx.client
     .from('interaction_types')
@@ -161,6 +162,8 @@ export default async function TimelinePage() {
                     key={interaction.id}
                     interaction={interaction}
                     isUpcoming
+                    displayTimeZone={displayTimeZone}
+                    sessionTimeZone={ctx.accountTimeZone}
                     peopleByInteraction={peopleByInteraction}
                     allPeople={allPeople}
                     interactionTypeOptions={interactionTypeOptions}
@@ -186,6 +189,8 @@ export default async function TimelinePage() {
                     key={interaction.id}
                     interaction={interaction}
                     isUpcoming={false}
+                    displayTimeZone={displayTimeZone}
+                    sessionTimeZone={ctx.accountTimeZone}
                     peopleByInteraction={peopleByInteraction}
                     allPeople={allPeople}
                     interactionTypeOptions={interactionTypeOptions}
@@ -204,6 +209,8 @@ export default async function TimelinePage() {
 function GlobalTimelineRow({
   interaction,
   isUpcoming,
+  displayTimeZone,
+  sessionTimeZone,
   peopleByInteraction,
   allPeople,
   interactionTypeOptions,
@@ -211,6 +218,8 @@ function GlobalTimelineRow({
 }: {
   interaction: InteractionWithType;
   isUpcoming: boolean;
+  displayTimeZone: string;
+  sessionTimeZone: string | null;
   peopleByInteraction: Map<string, PersonChip[]>;
   allPeople: Array<{
     id: string;
@@ -245,7 +254,10 @@ function GlobalTimelineRow({
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-              {formatDateTime(interaction.occurred_at)}
+              {formatDateTimeInTimeZone(
+                interaction.occurred_at,
+                displayTimeZone,
+              )}
             </span>
             <InteractionMetaChips
               typeName={interaction.interaction_types?.name}
@@ -290,9 +302,8 @@ function GlobalTimelineRow({
           {allPeople.length > 0 ? (
             <InteractionEditDisclosure
               interactionId={interaction.id}
-              defaultOccurredAt={toDatetimeLocalInputValue(
-                new Date(interaction.occurred_at),
-              )}
+              occurredAtIso={interaction.occurred_at}
+              sessionTimeZone={sessionTimeZone}
               defaultInteractionTypeId={interaction.interaction_type_id}
               defaultDirection={interaction.direction ?? ''}
               defaultTitle={interaction.title ?? ''}
@@ -310,12 +321,3 @@ function GlobalTimelineRow({
   );
 }
 
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}

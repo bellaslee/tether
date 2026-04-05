@@ -1,11 +1,13 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { createInteractionFromPerson } from '@/lib/actions/interactions';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
-import { toNewInteractionDatetimeLocalInputValue } from '@/lib/datetime';
+import { WallClockTimeZoneField } from '@/components/interactions/wall-clock-time-zone-field';
+import { toNewInteractionDatetimeLocalInputValueInZone } from '@/lib/datetime';
+import { isValidIanaTimeZone } from '@/lib/timezones';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
   InteractionParticipantPicker,
@@ -23,6 +25,8 @@ type PersonInteractionFormProps = {
   personId: string;
   allPeople: PersonOption[];
   defaultOccurredAt: string;
+  /** Profile time zone; when null, defaults use the browser zone. */
+  sessionTimeZone: string | null;
   interactionTypes: InteractionTypeOption[];
   defaultInteractionTypeId: string;
   onSuccess?: () => void;
@@ -32,6 +36,7 @@ export function PersonInteractionForm({
   personId,
   allPeople,
   defaultOccurredAt,
+  sessionTimeZone,
   interactionTypes,
   defaultInteractionTypeId,
   onSuccess,
@@ -43,6 +48,28 @@ export function PersonInteractionForm({
     initial,
   );
 
+  const browserTimeZone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [],
+  );
+  const wallClockZone =
+    sessionTimeZone && isValidIanaTimeZone(sessionTimeZone)
+      ? sessionTimeZone
+      : browserTimeZone;
+
+  useEffect(() => {
+    if (defaultOccurredAt !== '') {
+      return;
+    }
+    const occurred = document.getElementById(
+      `occurred-${personId}`,
+    ) as HTMLInputElement | null;
+    if (occurred && !occurred.value) {
+      occurred.value =
+        toNewInteractionDatetimeLocalInputValueInZone(browserTimeZone);
+    }
+  }, [defaultOccurredAt, personId, browserTimeZone]);
+
   useEffect(() => {
     if (state.ok) {
       formRef.current?.reset();
@@ -50,15 +77,17 @@ export function PersonInteractionForm({
         'occurred_at',
       ) as HTMLInputElement | null;
       if (occurred) {
-        occurred.value = toNewInteractionDatetimeLocalInputValue();
+        occurred.value =
+          toNewInteractionDatetimeLocalInputValueInZone(wallClockZone);
       }
       router.refresh();
       onSuccess?.();
     }
-  }, [state.ok, router, onSuccess]);
+  }, [state.ok, router, onSuccess, wallClockZone]);
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
+      <WallClockTimeZoneField />
       {state.error ? <FieldError>{state.error}</FieldError> : null}
 
       <div className="grid gap-4 sm:grid-cols-2">

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { ProfileSettingsForms } from '@/components/app/profile-settings-forms';
 import { requirePrmAccess } from '@/lib/prm/guard';
 import { createSupabaseServerClient } from '@/lib/db/server';
+import { listIanaTimeZones } from '@/lib/timezones';
 
 export const metadata: Metadata = {
   title: 'Profile settings · Tether',
@@ -26,6 +27,16 @@ export default async function ProfileSettingsPage() {
   const defaultName =
     typeof rawName === 'string' && rawName.trim().length > 0 ? rawName.trim() : '';
 
+  const rawTz = meta?.timezone;
+  const savedTimezone =
+    typeof rawTz === 'string' && rawTz.trim().length > 0 ? rawTz.trim() : '';
+
+  const baseZones = listIanaTimeZones();
+  const ianaTimeZones =
+    savedTimezone && !baseZones.includes(savedTimezone)
+      ? [savedTimezone, ...baseZones]
+      : baseZones;
+
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-6 py-10 sm:px-10 lg:px-12">
       <div>
@@ -40,7 +51,7 @@ export default async function ProfileSettingsPage() {
           Profile settings
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          Update how you appear and keep your password current.
+          Update how you appear, your time zone, and your password.
         </p>
       </div>
 
@@ -57,7 +68,11 @@ export default async function ProfileSettingsPage() {
         </div>
       ) : null}
 
-      <ProfileSettingsForms defaultName={defaultName} />
+      <ProfileSettingsForms
+        defaultName={defaultName}
+        savedTimezone={savedTimezone}
+        ianaTimeZones={ianaTimeZones}
+      />
     </main>
   );
 }
