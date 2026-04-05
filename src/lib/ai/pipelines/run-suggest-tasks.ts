@@ -3,6 +3,7 @@ import "server-only";
 import type OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { defaultResponsesModel } from '@/lib/ai/model';
+import { enforceLlmRateLimits, type LlmRateLimitIdentity } from '@/lib/ai/llm-rate-limit';
 import { logAiRequestDebug } from '@/lib/ai/log-debug';
 import {
   buildSuggestTasksInstructions,
@@ -15,12 +16,18 @@ import {
 
 export async function runSuggestTasksModel(args: {
   openai: OpenAI;
+  rateLimitIdentity: LlmRateLimitIdentity;
   interactionId: string;
   allowedPersonIds: string[];
   redactedNote: string;
   userDeclinedReminders?: Array<{ title: string; description: string | null }>;
   acceptedTasks?: Array<{ title: string; description: string | null }>;
 }): Promise<SuggestTasksResult> {
+  const rl = await enforceLlmRateLimits(args.rateLimitIdentity);
+  if (!rl.ok) {
+    throw new Error(rl.message);
+  }
+
   const acceptedTasks = args.acceptedTasks ?? [];
   const instructions = buildSuggestTasksInstructions();
   const userContent = buildSuggestTasksUserPayload({

@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
-import { getCrmSupabaseContext } from "@/lib/crm/context";
+import {
+  enforceLlmRateLimits,
+  getLlmRateLimitClientIpFromRequest,
+} from "@/lib/ai/llm-rate-limit";
 import { tryCreateOpenAiClient } from "@/lib/ai/openai";
 import { transcribeAudioFile } from "@/lib/ai/transcribe-audio";
+import { getCrmSupabaseContext } from "@/lib/crm/context";
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
 export async function POST(request: Request) {
-  if (!(await getCrmSupabaseContext())) {
+  const crm = await getCrmSupabaseContext();
+  if (!crm) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -36,6 +41,21 @@ export async function POST(request: Request) {
 
   if (audio.size > MAX_AUDIO_BYTES) {
     return NextResponse.json({ error: "Audio file too large" }, { status: 413 });
+  }
+
+  const rateLimit = await enforceLlmRateLimits({
+    userId: crm.userId,
+    clientIp: getLlmRateLimitClientIpFromRequest(request),
+  });
+  if (!rateLimit.ok) {
+    const retrySec = Math.max(1, Math.ceil(rateLimit.retryAfterMs / 1000));
+    return NextResponse.json(
+      { error: rateLimit.message },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retrySec) },
+      },
+    );
   }
 
   try {

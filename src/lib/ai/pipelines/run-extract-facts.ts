@@ -3,6 +3,7 @@ import "server-only";
 import type OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import { defaultResponsesModel } from '@/lib/ai/model';
+import { enforceLlmRateLimits, type LlmRateLimitIdentity } from '@/lib/ai/llm-rate-limit';
 import { logAiRequestDebug } from '@/lib/ai/log-debug';
 import {
   buildExtractFactsInstructions,
@@ -15,12 +16,18 @@ import {
 
 export async function runExtractFactsModel(args: {
   openai: OpenAI;
+  rateLimitIdentity: LlmRateLimitIdentity;
   interactionId: string;
   allowedPersonIds: string[];
   redactedNote: string;
   userDeclinedFacts?: string[];
   acceptedFacts?: string[];
 }): Promise<ExtractFactsResult> {
+  const rl = await enforceLlmRateLimits(args.rateLimitIdentity);
+  if (!rl.ok) {
+    throw new Error(rl.message);
+  }
+
   const acceptedFacts = args.acceptedFacts ?? [];
   const instructions = buildExtractFactsInstructions();
   const userContent = buildExtractFactsUserPayload({

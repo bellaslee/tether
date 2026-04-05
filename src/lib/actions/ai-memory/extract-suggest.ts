@@ -12,6 +12,7 @@ import {
 } from '@/lib/ai/memory-similarity';
 import { defaultResponsesModel } from '@/lib/ai/model';
 import { replacePersonUuidReferencesInText } from '@/lib/ai/pii';
+import { getLlmRateLimitClientIp } from '@/lib/ai/llm-rate-limit';
 import { runExtractFactsModel } from '@/lib/ai/pipelines/run-extract-facts';
 import { runSuggestTasksModel } from '@/lib/ai/pipelines/run-suggest-tasks';
 import { EXTRACT_FACTS_PROMPT_VERSION } from '@/lib/ai/prompts/extract-facts';
@@ -47,6 +48,9 @@ export async function extractFactsForInteraction(
     return { error: session.error };
   }
   const { ctx } = session;
+
+  const clientIp = await getLlmRateLimitClientIp();
+  const rateLimitIdentity = { userId: ctx.userId, clientIp };
 
   const loaded = await loadPlaceholderizedInteractionNote(
     ctx.client,
@@ -89,6 +93,7 @@ export async function extractFactsForInteraction(
   try {
     parsed = await runExtractFactsModel({
       openai,
+      rateLimitIdentity,
       interactionId,
       allowedPersonIds: loaded.memorySuggestionPersonIds,
       redactedNote: loaded.redactedNote,
@@ -168,6 +173,9 @@ export async function suggestTasksForInteraction(
   }
   const { ctx } = session;
 
+  const clientIp = await getLlmRateLimitClientIp();
+  const rateLimitIdentity = { userId: ctx.userId, clientIp };
+
   const loaded = await loadPlaceholderizedInteractionNote(
     ctx.client,
     ctx.userId,
@@ -211,6 +219,7 @@ export async function suggestTasksForInteraction(
   try {
     parsed = await runSuggestTasksModel({
       openai,
+      rateLimitIdentity,
       interactionId,
       allowedPersonIds: loaded.memorySuggestionPersonIds,
       redactedNote: loaded.redactedNote,

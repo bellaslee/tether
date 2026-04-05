@@ -4,6 +4,7 @@ import type OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import type { RelationshipSummaryKind } from '@/lib/db/database.types';
 import { defaultResponsesModel } from '@/lib/ai/model';
+import { enforceLlmRateLimits, type LlmRateLimitIdentity } from '@/lib/ai/llm-rate-limit';
 import { logAiRequestDebug } from '@/lib/ai/log-debug';
 import {
   buildRelationshipSummaryInstructions,
@@ -16,6 +17,7 @@ import {
 
 export async function runRelationshipSummaryModel(args: {
   openai: OpenAI;
+  rateLimitIdentity: LlmRateLimitIdentity;
   kind: RelationshipSummaryKind;
   subjectPersonId: string;
   categoryId: string;
@@ -27,6 +29,11 @@ export async function runRelationshipSummaryModel(args: {
     redacted_note: string | null;
   }>;
 }): Promise<SummaryContentResult> {
+  const rl = await enforceLlmRateLimits(args.rateLimitIdentity);
+  if (!rl.ok) {
+    throw new Error(rl.message);
+  }
+
   const instructions = buildRelationshipSummaryInstructions(args.kind);
   const userContent = buildRelationshipSummaryUserPayload({
     subjectPersonId: args.subjectPersonId,

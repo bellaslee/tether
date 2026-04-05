@@ -9,6 +9,7 @@ import {
   replacePersonUuidReferencesInText,
 } from '@/lib/ai/pii';
 import { defaultResponsesModel } from '@/lib/ai/model';
+import { getLlmRateLimitClientIp } from '@/lib/ai/llm-rate-limit';
 import { runRelationshipSummaryModel } from '@/lib/ai/pipelines/run-relationship-summary';
 import { RELATIONSHIP_SUMMARY_PROMPT_VERSION } from '@/lib/ai/prompts/relationship-summary';
 import {
@@ -44,6 +45,9 @@ export async function generateRelationshipSummary(
     return { error: session.error };
   }
   const { ctx } = session;
+
+  const clientIp = await getLlmRateLimitClientIp();
+  const rateLimitIdentity = { userId: ctx.userId, clientIp };
 
   const { data: person, error: pErr } = await ctx.client
     .from('people')
@@ -153,6 +157,7 @@ export async function generateRelationshipSummary(
   try {
     parsed = await runRelationshipSummaryModel({
       openai,
+      rateLimitIdentity,
       kind,
       subjectPersonId: person.id,
       categoryId: person.category_id,

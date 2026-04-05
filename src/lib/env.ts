@@ -3,6 +3,9 @@ const publicSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const openAiApiKey = process.env.OPENAI_API_KEY;
 const openAiModel = process.env.OPENAI_MODEL;
 const crmAiDebugPrompts = process.env.CRM_AI_DEBUG_PROMPTS;
+const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
+const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const crmDisableLlmRateLimit = process.env.CRM_DISABLE_LLM_RATE_LIMIT;
 
 function isNonEmpty(value: string | undefined): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -59,6 +62,18 @@ export function isAiDebugPromptsEnabled() {
   );
 }
 
+/** Upstash REST credentials for @upstash/redis (LLM rate limiting). */
+export function hasUpstashRedisForRateLimit() {
+  return (
+    isNonEmpty(upstashRedisRestUrl) && isNonEmpty(upstashRedisRestToken)
+  );
+}
+
+/** When true, skips distributed LLM rate limits (emergency / local only). */
+export function isCrmLlmRateLimitDisabled() {
+  return isTruthyEnv(crmDisableLlmRateLimit);
+}
+
 export function getSetupStatus() {
   return [
     {
@@ -81,6 +96,22 @@ export function getSetupStatus() {
         : 'Add OPENAI_API_KEY when you are ready to build AI features on top of the CRM.',
       label: 'OpenAI API key',
       ready: isNonEmpty(openAiApiKey),
+    },
+    {
+      description:
+        hasUpstashRedisForRateLimit() || isCrmLlmRateLimitDisabled()
+          ? 'Upstash Redis is configured (or LLM rate limits are explicitly disabled).'
+          : process.env.NODE_ENV !== 'production'
+            ? 'Optional locally: add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for LLM rate limits.'
+            : isNonEmpty(openAiApiKey)
+              ? 'Production AI needs Upstash Redis for per-user LLM rate limits, or set CRM_DISABLE_LLM_RATE_LIMIT=true only if you accept the risk.'
+              : 'Add Upstash credentials when you enable OpenAI in production.',
+      label: 'LLM rate limits (Upstash)',
+      ready:
+        !isNonEmpty(openAiApiKey) ||
+        hasUpstashRedisForRateLimit() ||
+        isCrmLlmRateLimitDisabled() ||
+        process.env.NODE_ENV !== 'production',
     },
   ] as const;
 }
