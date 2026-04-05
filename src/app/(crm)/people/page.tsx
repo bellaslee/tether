@@ -130,12 +130,10 @@ export default async function PeoplePage(props: {
   const peopleList = (people ?? []) as PersonListRow[];
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
+    <main className="crm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-            Your circle
-          </p>
+          <p className="crm-eyebrow">Your circle</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">People</h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
             Details you don’t want to forget. Let them know you care.

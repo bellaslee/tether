@@ -35,7 +35,7 @@ export default async function EditPersonPage(props: PageProps) {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
+    <main className="crm-form-shell max-w-4xl">
       <div>
         <Link
           href={`/people/${person.id}`}
@@ -43,7 +43,8 @@ export default async function EditPersonPage(props: PageProps) {
         >
           ← Back to profile
         </Link>
-        <h1 className="mt-4 font-display text-4xl tracking-tight">
+        <p className="crm-eyebrow mt-4">Profile</p>
+        <h1 className="mt-2 font-display text-4xl tracking-tight">
           Edit {personShownName(person)}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">

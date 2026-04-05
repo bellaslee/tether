@@ -34,6 +34,7 @@ type PersonConnectionsPanelProps = {
   otherPeople: PersonConnectionPersonOption[];
   connectionTypes: PersonConnectionTypeOption[];
   defaultConnectionTypeId: string;
+  className?: string;
 };
 
 function ConnectionRow(props: {
@@ -233,13 +234,16 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
     otherPeople,
     connectionTypes,
     defaultConnectionTypeId,
+    className = '',
   } = props;
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div
+      className={`card-surface flex min-h-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${className}`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3 shrink-0">
         <div>
           <h2 className="font-display text-2xl">Connected people</h2>
           <p className="mt-2 text-sm leading-7 text-muted">
@@ -254,7 +258,7 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
         </Link>
       </div>
 
-      <ul className="mt-6 space-y-3">
+      <ul className="mt-6 min-h-0 flex-1 space-y-3 overflow-y-auto">
         {connections.length === 0 ? (
           <li className="text-sm text-muted">No connections yet.</li>
         ) : (
@@ -269,7 +273,7 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
       </ul>
 
       {connectionTypes.length === 0 ? (
-        <p className="mt-6 text-sm text-muted">
+        <p className="mt-6 shrink-0 text-sm text-muted">
           Add at least one connection type under{' '}
           <Link
             href="/settings#connection-types"
@@ -280,11 +284,11 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
           before linking people.
         </p>
       ) : otherPeople.length === 0 ? (
-        <p className="mt-6 text-sm text-muted">
+        <p className="mt-6 shrink-0 text-sm text-muted">
           Add more people to your list to create connections between them.
         </p>
       ) : !open ? (
-        <div className="mt-6">
+        <div className="mt-6 shrink-0">
           <Button
             type="button"
             variant="secondary"
@@ -295,7 +299,7 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
           </Button>
         </div>
       ) : (
-        <div className="mt-6 rounded-2xl border border-border-soft bg-white/40 p-4 sm:p-5">
+        <div className="mt-6 shrink-0 rounded-2xl border border-border-soft bg-white/40 p-4 sm:p-5">
           <AddConnectionForm
             personId={personId}
             subjectName={subjectName}

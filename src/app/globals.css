@@ -81,6 +81,63 @@ summary {
   box-shadow: var(--shadow);
 }
 
+/** Shared CRM page shells — keep list views and form flows visually aligned. */
+.crm-page {
+  margin-inline: auto;
+  display: flex;
+  width: 100%;
+  max-width: 72rem;
+  flex: 1 1 0%;
+  flex-direction: column;
+  row-gap: 2rem;
+  padding-inline: 1.5rem;
+  padding-block: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .crm-page {
+    padding-inline: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .crm-page {
+    padding-inline: 3rem;
+  }
+}
+
+.crm-form-shell {
+  margin-inline: auto;
+  display: flex;
+  width: 100%;
+  flex: 1 1 0%;
+  flex-direction: column;
+  row-gap: 2rem;
+  padding-inline: 1.5rem;
+  padding-block: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .crm-form-shell {
+    padding-inline: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .crm-form-shell {
+    padding-inline: 3rem;
+  }
+}
+
+.crm-eyebrow {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--muted);
+}
+
 .text-balance {
   text-wrap: balance;
 }

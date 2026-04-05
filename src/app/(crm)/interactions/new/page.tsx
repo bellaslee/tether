@@ -40,7 +40,7 @@ export default async function NewInteractionPage() {
   const defaultOccurredAt = toDatetimeLocalInputValue();
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
+    <main className="crm-form-shell max-w-3xl">
       <div>
         <Link
           href="/timeline"
@@ -48,7 +48,8 @@ export default async function NewInteractionPage() {
         >
           ← Timeline
         </Link>
-        <h1 className="mt-4 font-display text-4xl tracking-tight">
+        <p className="crm-eyebrow mt-4">Shared moments</p>
+        <h1 className="mt-2 font-display text-4xl tracking-tight">
           Log a shared moment
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">

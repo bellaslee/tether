@@ -50,9 +50,7 @@ export default async function SettingsPage() {
         >
           ← People
         </Link>
-        <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-          Your workspace
-        </p>
+        <p className="crm-eyebrow mt-4">Your workspace</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Settings</h1>
         <p className="mt-2 text-sm leading-7 text-muted">
           Labels and types you use across people and the timeline. Changes apply

@@ -107,12 +107,10 @@ export default async function TimelinePage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12">
+    <main className="crm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-            Across your Circle
-          </p>
+          <p className="crm-eyebrow">Across your circle</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
             Plans you are looking forward to and moments you have already shared.
@@ -148,7 +146,7 @@ export default async function TimelinePage() {
               >
                 Upcoming
               </h2>
-              <ol className="space-y-5">
+              <ol className="space-y-6">
                 {upcoming.map((interaction) => (
                   <GlobalTimelineRow
                     key={interaction.id}
@@ -172,7 +170,7 @@ export default async function TimelinePage() {
                   Past
                 </h2>
               ) : null}
-              <ol className="space-y-5">
+              <ol className="space-y-6">
                 {past.map((interaction) => (
                   <GlobalTimelineRow
                     key={interaction.id}
