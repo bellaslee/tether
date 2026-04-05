@@ -19,19 +19,23 @@ export async function runSuggestTasksModel(args: {
   allowedPersonIds: string[];
   redactedNote: string;
   userDeclinedReminders?: Array<{ title: string; description: string | null }>;
+  acceptedTasks?: Array<{ title: string; description: string | null }>;
 }): Promise<SuggestTasksResult> {
+  const acceptedTasks = args.acceptedTasks ?? [];
   const instructions = buildSuggestTasksInstructions();
   const userContent = buildSuggestTasksUserPayload({
     interactionId: args.interactionId,
     allowedPersonIds: args.allowedPersonIds,
     redactedNote: args.redactedNote,
     userDeclinedReminders: args.userDeclinedReminders ?? [],
+    acceptedTasks,
   });
 
   logAiRequestDebug('suggest_tasks', {
     interactionId: args.interactionId,
     allowedPersonCount: args.allowedPersonIds.length,
     redactedNoteLength: args.redactedNote.length,
+    acceptedTasksCount: acceptedTasks.length,
   });
 
   const response = await args.openai.responses.parse({

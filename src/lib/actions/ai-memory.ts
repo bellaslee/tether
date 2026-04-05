@@ -58,6 +58,83 @@ const TASK_DEDUP_STATUSES: CrmTaskStatus[] = [
   'dismissed',
 ];
 
+const ACCEPTED_FACTS_CONTEXT_LIMIT = 120;
+const ACCEPTED_TASKS_CONTEXT_LIMIT = 80;
+
+async function loadAcceptedFactBodiesForPersons(
+  client: DbClient,
+  userId: string,
+  personIds: string[],
+): Promise<{ ok: string[] } | { error: string }> {
+  if (personIds.length === 0) {
+    return { ok: [] };
+  }
+
+  const { data, error } = await client
+    .from('facts')
+    .select('body')
+    .eq('user_id', userId)
+    .in('person_id', personIds)
+    .eq('review_status', 'accepted')
+    .order('updated_at', { ascending: false })
+    .limit(ACCEPTED_FACTS_CONTEXT_LIMIT);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const out: string[] = [];
+  for (const row of data ?? []) {
+    const b = row.body.trim();
+    if (b.length > 0) {
+      out.push(b);
+    }
+  }
+  return { ok: out };
+}
+
+/** Active or snoozed reminders — the schema has no separate "accepted" task status. */
+async function loadAcceptedTasksForSuggest(
+  client: DbClient,
+  userId: string,
+  personIds: string[],
+): Promise<
+  | { ok: Array<{ title: string; description: string | null }> }
+  | { error: string }
+> {
+  if (personIds.length === 0) {
+    return { ok: [] };
+  }
+
+  const { data, error } = await client
+    .from('tasks')
+    .select('title, description')
+    .eq('user_id', userId)
+    .in('person_id', personIds)
+    .in('status', ['active', 'snoozed'])
+    .order('updated_at', { ascending: false })
+    .limit(ACCEPTED_TASKS_CONTEXT_LIMIT);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const out: Array<{ title: string; description: string | null }> = [];
+  for (const row of data ?? []) {
+    const title = row.title.trim();
+    if (title.length === 0) {
+      continue;
+    }
+    out.push({
+      title,
+      description: row.description?.trim()
+        ? row.description.trim()
+        : null,
+    });
+  }
+  return { ok: out };
+}
+
 async function loadExistingFactBodiesByPerson(
   client: DbClient,
   userId: string,
@@ -165,13 +242,23 @@ export async function extractFactsForInteraction(
     return { error: loaded.error };
   }
 
-  const declined = await loadDeclinedMemoryForInteraction(
-    ctx.client,
-    ctx.userId,
-    interactionId,
-  );
+  const [declined, acceptedFactsRes] = await Promise.all([
+    loadDeclinedMemoryForInteraction(
+      ctx.client,
+      ctx.userId,
+      interactionId,
+    ),
+    loadAcceptedFactBodiesForPersons(
+      ctx.client,
+      ctx.userId,
+      loaded.memorySuggestionPersonIds,
+    ),
+  ]);
   if ('error' in declined) {
     return { error: declined.error };
+  }
+  if ('error' in acceptedFactsRes) {
+    return { error: acceptedFactsRes.error };
   }
 
   const openai = tryCreateOpenAiClient();
@@ -179,7 +266,7 @@ export async function extractFactsForInteraction(
     return { error: aiDisabledMessage() };
   }
 
-  const allowed = new Set(loaded.linkedPersonIds);
+  const allowed = new Set(loaded.memorySuggestionPersonIds);
 
   const { error: delErr } = await ctx.client
     .from('facts')
@@ -197,9 +284,10 @@ export async function extractFactsForInteraction(
     parsed = await runExtractFactsModel({
       openai,
       interactionId,
-      allowedPersonIds: loaded.linkedPersonIds,
+      allowedPersonIds: loaded.memorySuggestionPersonIds,
       redactedNote: loaded.redactedNote,
       userDeclinedFacts: declined.ok.declinedFactBodies,
+      acceptedFacts: acceptedFactsRes.ok,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Extraction failed.';
@@ -226,7 +314,7 @@ export async function extractFactsForInteraction(
   const existingFacts = await loadExistingFactBodiesByPerson(
     ctx.client,
     ctx.userId,
-    loaded.linkedPersonIds,
+    loaded.memorySuggestionPersonIds,
   );
   if ('error' in existingFacts) {
     return { error: existingFacts.error };
@@ -235,7 +323,7 @@ export async function extractFactsForInteraction(
 
   if (rowsToInsert.length === 0) {
     revalidatePath('/timeline');
-    for (const pid of loaded.linkedPersonIds) {
+    for (const pid of loaded.memorySuggestionPersonIds) {
       revalidatePath(`/people/${pid}`);
     }
     return { ok: true };
@@ -247,7 +335,7 @@ export async function extractFactsForInteraction(
   }
 
   revalidatePath('/timeline');
-  for (const pid of loaded.linkedPersonIds) {
+  for (const pid of loaded.memorySuggestionPersonIds) {
     revalidatePath(`/people/${pid}`);
   }
   return { ok: true };
@@ -280,13 +368,23 @@ export async function suggestTasksForInteraction(
     return { error: loaded.error };
   }
 
-  const declined = await loadDeclinedMemoryForInteraction(
-    ctx.client,
-    ctx.userId,
-    interactionId,
-  );
+  const [declined, acceptedTasksRes] = await Promise.all([
+    loadDeclinedMemoryForInteraction(
+      ctx.client,
+      ctx.userId,
+      interactionId,
+    ),
+    loadAcceptedTasksForSuggest(
+      ctx.client,
+      ctx.userId,
+      loaded.memorySuggestionPersonIds,
+    ),
+  ]);
   if ('error' in declined) {
     return { error: declined.error };
+  }
+  if ('error' in acceptedTasksRes) {
+    return { error: acceptedTasksRes.error };
   }
 
   const openai = tryCreateOpenAiClient();
@@ -294,7 +392,7 @@ export async function suggestTasksForInteraction(
     return { error: aiDisabledMessage() };
   }
 
-  const allowed = new Set(loaded.linkedPersonIds);
+  const allowed = new Set(loaded.memorySuggestionPersonIds);
 
   const { error: delErr } = await ctx.client
     .from('tasks')
@@ -314,9 +412,10 @@ export async function suggestTasksForInteraction(
     parsed = await runSuggestTasksModel({
       openai,
       interactionId,
-      allowedPersonIds: loaded.linkedPersonIds,
+      allowedPersonIds: loaded.memorySuggestionPersonIds,
       redactedNote: loaded.redactedNote,
       userDeclinedReminders: declined.ok.declinedReminders,
+      acceptedTasks: acceptedTasksRes.ok,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Task suggestions failed.';
@@ -349,7 +448,7 @@ export async function suggestTasksForInteraction(
   const existingTasks = await loadExistingTaskSigsForDedup(
     ctx.client,
     ctx.userId,
-    loaded.linkedPersonIds,
+    loaded.memorySuggestionPersonIds,
     includeNullPerson,
   );
   if ('error' in existingTasks) {
@@ -360,7 +459,7 @@ export async function suggestTasksForInteraction(
   if (rowsToInsert.length === 0) {
     revalidatePath('/timeline');
     revalidatePath('/reminders');
-    const touch = new Set<string>(loaded.linkedPersonIds);
+    const touch = new Set<string>(loaded.memorySuggestionPersonIds);
     for (const pid of touch) {
       revalidatePath(`/people/${pid}`);
     }
@@ -374,7 +473,7 @@ export async function suggestTasksForInteraction(
 
   revalidatePath('/timeline');
   revalidatePath('/reminders');
-  const touch = new Set<string>(loaded.linkedPersonIds);
+  const touch = new Set<string>(loaded.memorySuggestionPersonIds);
   for (const r of rowsToInsert) {
     if (r.person_id) touch.add(r.person_id);
   }

@@ -44,17 +44,6 @@ function extensionForMime(mime: string): string {
   return 'webm';
 }
 
-function voicePaddingClass(size: FormControlSize): string {
-  switch (size) {
-    case 'compact':
-      return 'pb-9 pr-48';
-    case 'dense':
-      return 'pb-9 pr-48';
-    default:
-      return 'pb-10 pr-56';
-  }
-}
-
 function MicIcon({ className = '' }: { className?: string }) {
   return (
     <svg
@@ -268,7 +257,7 @@ function VoiceMicControl({
 
   return (
     <>
-      <div className="pointer-events-none absolute bottom-2 right-2 flex items-center justify-end">
+      <div className="pointer-events-none absolute bottom-2 right-2 z-10 flex items-center justify-end">
         {phase === 'transcribing' ? (
           <div
             className={[
@@ -374,14 +363,13 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       }
     };
 
-    const padding = voiceInput ? voicePaddingClass(fieldSize) : '';
     const textarea = (
       <textarea
         ref={voiceInput ? setTextareaRef : ref}
         className={formControlClassName({
           size: fieldSize,
           resize: resize === 'y' ? 'y' : 'none',
-          className: [padding, className].filter(Boolean).join(' '),
+          className,
         })}
         onKeyDown={handleKeyDown}
         {...props}

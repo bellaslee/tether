@@ -16,7 +16,13 @@ export async function loadPlaceholderizedInteractionNote(
   | {
       rawNote: string;
       redactedNote: string;
+      /** Everyone on this interaction (for placeholders in the note). */
       linkedPersonIds: string[];
+      /**
+       * Subjects for AI-extracted facts and suggested reminders: the interaction’s
+       * primary person, or the first linked person when no primary is set.
+       */
+      memorySuggestionPersonIds: string[];
       personIdToDisplayLabel: Map<string, string>;
     }
   | { error: string }
@@ -42,8 +48,9 @@ export async function loadPlaceholderizedInteractionNote(
 
   const { data: links, error: linkErr } = await client
     .from('interaction_people')
-    .select('person_id')
-    .eq('interaction_id', interactionId);
+    .select('person_id, role')
+    .eq('interaction_id', interactionId)
+    .order('created_at', { ascending: true });
 
   if (linkErr) {
     return { error: linkErr.message };
@@ -53,6 +60,12 @@ export async function loadPlaceholderizedInteractionNote(
   if (linkedPersonIds.length === 0) {
     return { error: 'Link at least one person to this interaction first.' };
   }
+
+  const orderedLinks = links ?? [];
+  const primaryLink = orderedLinks.find((l) => l.role === 'primary');
+  const memorySuggestionPersonIds = primaryLink
+    ? [primaryLink.person_id]
+    : [orderedLinks[0].person_id];
 
   const { data: peopleRows, error: peopleErr } = await client
     .from('people')
@@ -75,6 +88,7 @@ export async function loadPlaceholderizedInteractionNote(
     rawNote,
     redactedNote,
     linkedPersonIds,
+    memorySuggestionPersonIds,
     personIdToDisplayLabel,
   };
 }
