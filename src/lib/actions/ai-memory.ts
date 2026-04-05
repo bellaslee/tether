@@ -2,7 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import type { CrmTaskStatus, FactReviewStatus, RelationshipSummaryKind } from '@/lib/db/database.types';
-import { loadPlaceholderizedInteractionNote } from '@/lib/ai/loaders/interaction-for-ai';
+import {
+  loadPlaceholderizedInteractionNote,
+  loadPlaceholderizedRecentNotesForPerson,
+} from '@/lib/ai/loaders/interaction-for-ai';
 import { tryCreateOpenAiClient } from '@/lib/ai/openai';
 import {
   buildAliasMapForPeople,
@@ -188,6 +191,194 @@ export async function suggestTasksForInteraction(
       user_id: ctx.userId,
       person_id: pid,
       interaction_id: interactionId,
+      title: t.title.trim(),
+      description: t.description?.trim() || null,
+      status: 'suggested' as const,
+      suggester_metadata: {
+        model,
+        prompt_version: SUGGEST_TASKS_PROMPT_VERSION,
+        pipeline: 'suggest_tasks',
+      },
+    };
+  });
+
+  if (rows.length === 0) {
+    return { ok: true };
+  }
+
+  const { error: insErr } = await ctx.client.from('tasks').insert(rows);
+  if (insErr) {
+    return { error: insErr.message };
+  }
+
+  revalidatePath('/timeline');
+  const touch = new Set<string>(loaded.linkedPersonIds);
+  for (const r of rows) {
+    if (r.person_id) touch.add(r.person_id);
+  }
+  for (const pid of touch) {
+    revalidatePath(`/people/${pid}`);
+  }
+  return { ok: true };
+}
+
+export async function extractFactsFromPersonRecentNotes(
+  _prev: AiMemoryActionResult,
+  formData: FormData,
+): Promise<AiMemoryActionResult> {
+  const personId = String(formData.get('person_id') ?? '').trim();
+  if (!isUuid(personId)) {
+    return { error: 'Invalid person.' };
+  }
+
+  if (!hasOpenAiApiKey()) {
+    return { error: aiDisabledMessage() };
+  }
+
+  const ctx = await getCrmSupabaseContext();
+  if (!ctx) {
+    return { error: 'You need to sign in again.' };
+  }
+
+  const loaded = await loadPlaceholderizedRecentNotesForPerson(
+    ctx.client,
+    ctx.userId,
+    personId,
+  );
+  if ('error' in loaded) {
+    return { error: loaded.error };
+  }
+
+  const openai = tryCreateOpenAiClient();
+  if (!openai) {
+    return { error: aiDisabledMessage() };
+  }
+
+  const allowed = new Set(loaded.linkedPersonIds);
+
+  const { error: delErr } = await ctx.client
+    .from('facts')
+    .delete()
+    .eq('user_id', ctx.userId)
+    .eq('person_id', personId)
+    .in('interaction_id', loaded.bundledInteractionIds)
+    .eq('review_status', 'candidate');
+
+  if (delErr) {
+    return { error: delErr.message };
+  }
+
+  let parsed;
+  try {
+    parsed = await runExtractFactsModel({
+      openai,
+      interactionId: loaded.primaryInteractionId,
+      allowedPersonIds: loaded.linkedPersonIds,
+      redactedNote: loaded.redactedNote,
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Extraction failed.';
+    return { error: msg };
+  }
+
+  const model = defaultResponsesModel();
+  const rows = parsed.facts
+    .filter((f) => allowed.has(f.person_id))
+    .map((f) => ({
+      user_id: ctx.userId,
+      person_id: f.person_id,
+      interaction_id: loaded.primaryInteractionId,
+      body: f.body.trim(),
+      review_status: 'candidate' as const,
+      extractor_metadata: {
+        model,
+        prompt_version: EXTRACT_FACTS_PROMPT_VERSION,
+        pipeline: 'extract_facts',
+      },
+    }));
+
+  if (rows.length === 0) {
+    return { ok: true };
+  }
+
+  const { error: insErr } = await ctx.client.from('facts').insert(rows);
+  if (insErr) {
+    return { error: insErr.message };
+  }
+
+  revalidatePath('/timeline');
+  for (const pid of loaded.linkedPersonIds) {
+    revalidatePath(`/people/${pid}`);
+  }
+  return { ok: true };
+}
+
+export async function suggestTasksFromPersonRecentNotes(
+  _prev: AiMemoryActionResult,
+  formData: FormData,
+): Promise<AiMemoryActionResult> {
+  const personId = String(formData.get('person_id') ?? '').trim();
+  if (!isUuid(personId)) {
+    return { error: 'Invalid person.' };
+  }
+
+  if (!hasOpenAiApiKey()) {
+    return { error: aiDisabledMessage() };
+  }
+
+  const ctx = await getCrmSupabaseContext();
+  if (!ctx) {
+    return { error: 'You need to sign in again.' };
+  }
+
+  const loaded = await loadPlaceholderizedRecentNotesForPerson(
+    ctx.client,
+    ctx.userId,
+    personId,
+  );
+  if ('error' in loaded) {
+    return { error: loaded.error };
+  }
+
+  const openai = tryCreateOpenAiClient();
+  if (!openai) {
+    return { error: aiDisabledMessage() };
+  }
+
+  const allowed = new Set(loaded.linkedPersonIds);
+
+  const { error: delErr } = await ctx.client
+    .from('tasks')
+    .delete()
+    .eq('user_id', ctx.userId)
+    .eq('person_id', personId)
+    .in('interaction_id', loaded.bundledInteractionIds)
+    .eq('status', 'suggested');
+
+  if (delErr) {
+    return { error: delErr.message };
+  }
+
+  let parsed;
+  try {
+    parsed = await runSuggestTasksModel({
+      openai,
+      interactionId: loaded.primaryInteractionId,
+      allowedPersonIds: loaded.linkedPersonIds,
+      redactedNote: loaded.redactedNote,
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Task suggestions failed.';
+    return { error: msg };
+  }
+
+  const model = defaultResponsesModel();
+  const rows = parsed.tasks.map((t) => {
+    const pid = t.person_id && allowed.has(t.person_id) ? t.person_id : null;
+    return {
+      user_id: ctx.userId,
+      person_id: pid,
+      interaction_id: loaded.primaryInteractionId,
       title: t.title.trim(),
       description: t.description?.trim() || null,
       status: 'suggested' as const,

@@ -2,42 +2,59 @@
 
 import { useActionState } from 'react';
 import {
-  extractFactsForInteraction,
-  suggestTasksForInteraction,
+  extractFactsFromPersonRecentNotes,
+  suggestTasksFromPersonRecentNotes,
   type AiMemoryActionResult,
 } from '@/lib/actions/ai-memory';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 
 type Props = {
-  interactionId: string;
+  personId: string;
   aiEnabled: boolean;
+  hasRecentNotes: boolean;
 };
 
-export function InteractionAiToolbar({ interactionId, aiEnabled }: Props) {
+export function PersonMemoryAiToolbar({
+  personId,
+  aiEnabled,
+  hasRecentNotes,
+}: Props) {
   const [exState, exFormAction, exPending] = useActionState<
     AiMemoryActionResult,
     FormData
-  >(extractFactsForInteraction, {});
+  >(extractFactsFromPersonRecentNotes, {});
   const [tkState, tkFormAction, tkPending] = useActionState<
     AiMemoryActionResult,
     FormData
-  >(suggestTasksForInteraction, {});
+  >(suggestTasksFromPersonRecentNotes, {});
 
   if (!aiEnabled) {
     return (
-      <p className="max-w-sm text-right text-xs leading-relaxed text-muted">
+      <p className="max-w-2xl text-sm leading-7 text-muted">
         Add{' '}
         <span className="font-medium text-foreground/80">OPENAI_API_KEY</span>{' '}
-        to enable fact and task suggestions.
+        to suggest facts and follow-ups from your notes.
+      </p>
+    );
+  }
+
+  if (!hasRecentNotes) {
+    return (
+      <p className="max-w-2xl text-sm leading-7 text-muted">
+        Log a timeline interaction with a note to suggest facts and follow-ups
+        from your most recent notes.
       </p>
     );
   }
 
   return (
-    <div className="flex w-full flex-col items-stretch gap-3 sm:items-end">
-      <form action={exFormAction} className="flex flex-col items-stretch gap-1 sm:items-end">
-        <input type="hidden" name="interaction_id" value={interactionId} />
+    <div className="flex max-w-2xl flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
+      <form
+        action={exFormAction}
+        className="flex flex-col gap-1 sm:min-w-[10rem]"
+      >
+        <input type="hidden" name="person_id" value={personId} />
         <Button
           type="submit"
           size="sm"
@@ -50,8 +67,11 @@ export function InteractionAiToolbar({ interactionId, aiEnabled }: Props) {
           <FieldError size="inline">{exState.error}</FieldError>
         ) : null}
       </form>
-      <form action={tkFormAction} className="flex flex-col items-stretch gap-1 sm:items-end">
-        <input type="hidden" name="interaction_id" value={interactionId} />
+      <form
+        action={tkFormAction}
+        className="flex flex-col gap-1 sm:min-w-[10rem]"
+      >
+        <input type="hidden" name="person_id" value={personId} />
         <Button
           type="submit"
           size="sm"
@@ -64,6 +84,10 @@ export function InteractionAiToolbar({ interactionId, aiEnabled }: Props) {
           <FieldError size="inline">{tkState.error}</FieldError>
         ) : null}
       </form>
+      <p className="w-full text-xs leading-relaxed text-muted sm:pl-0">
+        Uses up to five most recent timeline notes that include this person
+        (newest first).
+      </p>
     </div>
   );
 }

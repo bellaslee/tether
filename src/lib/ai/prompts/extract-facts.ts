@@ -2,7 +2,7 @@ export const EXTRACT_FACTS_PROMPT_VERSION = 1;
 
 export function buildExtractFactsInstructions() {
   return [
-    'You help a personal relationship CRM. Extract short, reviewable candidate facts from the user-authored note.',
+    'You help a personal relationship CRM. Extract short, reviewable candidate facts from the user-authored note or notes (the text may include several dated segments from recent interactions).',
     'People are identified only by UUID. The note may contain placeholders like [person:<uuid>] instead of names.',
     'Each fact must reference exactly one subject: set person_id to one of the allowed IDs from the JSON input.',
     'Do not invent contact details. If a fact would need a phone or email, omit it or refer abstractly without numbers.',

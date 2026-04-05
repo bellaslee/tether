@@ -24,7 +24,6 @@ import {
 } from '@/lib/people/connection-type-options';
 import { PersonConnectionsPanel } from '@/components/people/person-connections-panel';
 import { PersonMemorySection } from '@/components/ai/person-memory-section';
-import { InteractionAiToolbar } from '@/components/ai/interaction-ai-toolbar';
 import { hasOpenAiApiKey } from '@/lib/env';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -250,6 +249,10 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
     partitionPersonTimelineRows(timelineRows);
+
+  const hasRecentNotes = timelineRows.some(
+    (row) => (row.interaction.raw_note ?? '').trim().length > 0,
+  );
 
   const defaultOccurredAt = toDatetimeLocalInputValue(
     new Date(person.created_at),
@@ -506,7 +509,6 @@ export default async function PersonDetailPage(props: PageProps) {
                           }
                           allPeople={allPeople ?? []}
                           interactionTypeOptions={interactionTypeOptions}
-                          aiEnabled={aiEnabled}
                         />
                       ))}
                     </ol>
@@ -537,7 +539,6 @@ export default async function PersonDetailPage(props: PageProps) {
                           }
                           allPeople={allPeople ?? []}
                           interactionTypeOptions={interactionTypeOptions}
-                          aiEnabled={aiEnabled}
                         />
                       ))}
                     </ol>
@@ -550,6 +551,7 @@ export default async function PersonDetailPage(props: PageProps) {
         <PersonMemorySection
           personId={person.id}
           aiEnabled={aiEnabled}
+          hasRecentNotes={hasRecentNotes}
           facts={factRows ?? []}
           summaries={summaryRows ?? []}
           tasks={taskRows ?? []}
@@ -603,7 +605,6 @@ function PersonTimelineRow({
   participants,
   allPeople,
   interactionTypeOptions,
-  aiEnabled,
 }: {
   interaction: InteractionWithType;
   role: string;
@@ -615,7 +616,6 @@ function PersonTimelineRow({
     display_name: string | null;
   }>;
   interactionTypeOptions: InteractionTypeOption[];
-  aiEnabled: boolean;
 }) {
   const cardClass = isUpcoming
     ? 'card-surface rounded-[1.75rem] border-2 border-dashed border-accent/40 bg-accent-soft/20 p-6 sm:p-8'
@@ -650,10 +650,6 @@ function PersonTimelineRow({
           ) : null}
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
-          <InteractionAiToolbar
-            interactionId={interaction.id}
-            aiEnabled={aiEnabled}
-          />
           {allPeople.length > 0 ? (
             <InteractionEditDisclosure
               interactionId={interaction.id}

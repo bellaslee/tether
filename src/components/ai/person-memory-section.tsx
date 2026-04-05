@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { generateRelationshipSummary, updateCrmTask, updateFactReview } from '@/lib/actions/ai-memory';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
 import type { Tables } from '@/lib/db/database.types';
+import { PersonMemoryAiToolbar } from '@/components/ai/person-memory-ai-toolbar';
 import { SummaryRefreshForms } from '@/components/ai/summary-refresh-forms';
 import { FactReviewForms } from '@/components/ai/fact-review-forms';
 import { TaskReviewForms } from '@/components/ai/task-review-forms';
@@ -19,6 +20,7 @@ function taskVisible(row: TaskRow) {
 type Props = {
   personId: string;
   aiEnabled: boolean;
+  hasRecentNotes: boolean;
   facts: FactRow[];
   summaries: SummaryRow[];
   tasks: TaskRow[];
@@ -28,6 +30,7 @@ type Props = {
 export function PersonMemorySection({
   personId,
   aiEnabled,
+  hasRecentNotes,
   facts,
   summaries,
   tasks,
@@ -53,6 +56,13 @@ export function PersonMemorySection({
           AI suggestions stay editable. Names and contact details are filled in
           here, not sent to the model as structured profile data.
         </p>
+        <div className="mt-6">
+          <PersonMemoryAiToolbar
+            personId={personId}
+            aiEnabled={aiEnabled}
+            hasRecentNotes={hasRecentNotes}
+          />
+        </div>
       </header>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -101,11 +111,11 @@ export function PersonMemorySection({
           <h3 className="text-sm font-semibold text-foreground">Facts</h3>
           {facts.length === 0 ? (
             <p className="text-sm text-muted">
-              Run{' '}
+              Use{' '}
               <span className="font-medium text-foreground/80">
                 Suggest facts
               </span>{' '}
-              on a timeline note to add reviewable candidates.
+              above to add reviewable candidates from your recent notes.
             </p>
           ) : (
             <ul className="space-y-4">
@@ -129,7 +139,7 @@ export function PersonMemorySection({
             <span className="font-medium text-foreground/80">
               Suggest follow-ups
             </span>{' '}
-            on a note when something should not slip.
+            above when something should not slip.
           </p>
         ) : (
           <ul className="mt-4 space-y-3">
