@@ -28,6 +28,7 @@ type Props = {
   q: string;
   categoryIds: string[];
   categoryOptions: CategoryOption[];
+  categoryFilterInitiallyOpen: boolean;
   statusValues: PersonStatus[];
   statusFilterInitiallyOpen: boolean;
   warmthFilter: RelationshipWarmth[];
@@ -54,6 +55,20 @@ function parseCategoryIdsFromSearchParams(sp: URLSearchParams): string[] {
     }
   }
   return out;
+}
+
+function effectiveCategorySelection(
+  sp: URLSearchParams,
+  allOptionIds: string[],
+): Set<string> {
+  if (!sp.has('category')) {
+    return new Set(allOptionIds);
+  }
+  const parsed = parseCategoryIdsFromSearchParams(sp);
+  if (parsed.length === 0) {
+    return new Set(allOptionIds);
+  }
+  return new Set(parsed);
 }
 
 function parseStatusesFromSearchParams(sp: URLSearchParams): PersonStatus[] {
@@ -97,6 +112,7 @@ export function PeopleFiltersSidebar({
   q,
   categoryIds,
   categoryOptions,
+  categoryFilterInitiallyOpen,
   statusValues,
   statusFilterInitiallyOpen,
   warmthFilter,
@@ -161,20 +177,27 @@ export function PeopleFiltersSidebar({
 
   const toggleCategory = useCallback(
     (id: string, checked: boolean) => {
-      const p = new URLSearchParams(searchParams.toString());
-      p.delete('category');
-      const current = new Set(parseCategoryIdsFromSearchParams(searchParams));
+      const allIds = categoryOptions.map((c) => c.id);
+      const allSet = new Set(allIds);
+      const current = effectiveCategorySelection(searchParams, allIds);
       if (checked) {
         current.add(id);
       } else {
         current.delete(id);
       }
-      for (const cid of [...current].sort()) {
-        p.append('category', cid);
+      const p = new URLSearchParams(searchParams.toString());
+      p.delete('category');
+      const fullySelected =
+        current.size === allSet.size &&
+        [...allSet].every((optionId) => current.has(optionId));
+      if (!fullySelected && current.size > 0) {
+        for (const cid of [...current].sort()) {
+          p.append('category', cid);
+        }
       }
       replacePath(router, pathname, p);
     },
-    [pathname, router, searchParams],
+    [categoryOptions, pathname, router, searchParams],
   );
 
   const toggleStatus = useCallback(
@@ -247,12 +270,12 @@ export function PeopleFiltersSidebar({
       <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-1">
         <PeopleFilterDisclosure
           key={`category-filters-${categoryIds.slice().sort().join('|')}`}
-          initialOpen={categoryIds.length > 0}
+          initialOpen={categoryFilterInitiallyOpen}
           labelId="people-filter-categories-label"
           label="Categories"
         >
           <p className="mb-2 text-xs text-muted">
-            Leave all unchecked to show every category.
+            Everyone shows when all are checked. Uncheck to hide a category.
           </p>
           <div className="flex max-h-40 flex-col gap-2 overflow-y-auto text-sm">
             {categoryOptions.length === 0 ? (

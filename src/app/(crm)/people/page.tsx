@@ -156,7 +156,8 @@ export default async function PeoplePage(props: {
   const ctx = await requireCrmAccess();
   const searchParams = await props.searchParams;
   const q = first(searchParams.q)?.trim() ?? '';
-  const categoryIds = parseCategoryIds(searchParams.category);
+  const categoryInUrl = Object.hasOwn(searchParams, 'category');
+  const categoryIdsFromUrl = parseCategoryIds(searchParams.category);
   const statusInUrl = Object.hasOwn(searchParams, 'status');
   const statusFromUrl = parseStatuses(searchParams.status);
   const statusValues: PersonStatus[] =
@@ -166,7 +167,7 @@ export default async function PeoplePage(props: {
 
   const { data: categoryOptions, error: categoriesError } = await ctx.client
     .from('person_categories')
-    .select('id, name')
+    .select('id, name, sort_order')
     .eq('user_id', ctx.userId)
     .order('sort_order', { ascending: true });
 
@@ -182,8 +183,8 @@ export default async function PeoplePage(props: {
     .eq('user_id', ctx.userId)
     .order('full_name', { ascending: true });
 
-  if (categoryIds.length > 0) {
-    query = query.in('category_id', categoryIds);
+  if (categoryInUrl && categoryIdsFromUrl.length > 0) {
+    query = query.in('category_id', categoryIdsFromUrl);
   }
   if (statusValues.length > 0) {
     query = query.in('status', statusValues);
@@ -216,14 +217,50 @@ export default async function PeoplePage(props: {
         )
       : peopleList;
 
-  const displayed = [...warmthFiltered].sort((a, b) =>
-    comparePeopleListRows(sortKey, a, b),
-  );
+  type CategoryMeta = { name: string; sort_order: number };
+  const categoryMetaById = new Map<string, CategoryMeta>();
+  for (const c of categoryOptions ?? []) {
+    categoryMetaById.set(c.id, { name: c.name, sort_order: c.sort_order });
+  }
+
+  const peopleByCategory = new Map<string, PersonListRow[]>();
+  for (const p of warmthFiltered) {
+    const cid = p.category_id;
+    const bucket = peopleByCategory.get(cid) ?? [];
+    bucket.push(p);
+    peopleByCategory.set(cid, bucket);
+  }
+  for (const [, rows] of peopleByCategory) {
+    rows.sort((a, b) => comparePeopleListRows(sortKey, a, b));
+  }
+
+  const FALLBACK_SORT = 1_000_000;
+  const sectionCategoryIds = [...peopleByCategory.keys()].sort((a, b) => {
+    const ma = categoryMetaById.get(a) ?? {
+      name: '',
+      sort_order: FALLBACK_SORT,
+    };
+    const mb = categoryMetaById.get(b) ?? {
+      name: '',
+      sort_order: FALLBACK_SORT,
+    };
+    if (ma.sort_order !== mb.sort_order) {
+      return ma.sort_order - mb.sort_order;
+    }
+    return ma.name.localeCompare(mb.name, undefined, { sensitivity: 'base' });
+  });
 
   const categoryOptionsList = (categoryOptions ?? []).map((c) => ({
     id: c.id,
     name: c.name,
   }));
+  const allCategoryIds = categoryOptionsList.map((c) => c.id);
+  const categorySelectionIds =
+    !categoryInUrl || categoryIdsFromUrl.length === 0
+      ? allCategoryIds
+      : categoryIdsFromUrl;
+  const categoryFilterInitiallyOpen =
+    categoryInUrl && categoryIdsFromUrl.length > 0;
   const statusFilterInitiallyOpen =
     statusInUrl && statusFromUrl.length > 0;
 
@@ -254,8 +291,9 @@ export default async function PeoplePage(props: {
           >
             <PeopleFiltersSidebar
               q={q}
-              categoryIds={categoryIds}
+              categoryIds={categorySelectionIds}
               categoryOptions={categoryOptionsList}
+              categoryFilterInitiallyOpen={categoryFilterInitiallyOpen}
               statusValues={statusValues}
               statusFilterInitiallyOpen={statusFilterInitiallyOpen}
               warmthFilter={warmthFilter}
@@ -265,7 +303,7 @@ export default async function PeoplePage(props: {
         </section>
 
         <section className="order-2 min-w-0 space-y-4 lg:order-1 lg:flex-1">
-          {displayed.length === 0 ? (
+          {warmthFiltered.length === 0 ? (
             <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
               No one here yet, or nothing matches your filters.{' '}
               <Link
@@ -277,45 +315,61 @@ export default async function PeoplePage(props: {
               .
             </div>
           ) : (
-            <ul className="grid gap-3 md:grid-cols-2">
-              {displayed.map((person) => (
-                <li key={person.id} className="flex min-h-0 min-w-0">
-                  <Link
-                    href={`/people/${person.id}`}
-                    className="card-surface flex h-full w-full flex-col gap-2 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5"
-                  >
-                    <div className="min-w-0 shrink-0">
-                      <p className="font-display text-lg leading-snug tracking-tight">
-                        {personShownName(person)}
-                      </p>
-                    </div>
-                    <div className="mt-auto flex flex-wrap content-start items-center gap-1.5 text-xs text-muted">
-                      <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
-                        {person.person_categories?.name ?? '—'}
-                      </span>
-                      <RelationshipWarmthChip
-                        lastInteractionAt={person.last_interaction_at}
-                        metAt={person.met_at}
-                        createdAt={person.created_at}
-                        size="compact"
-                      />
-                      {person.last_interaction_at ? (
-                        <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-                          Last touch{' '}
-                          {new Date(
-                            person.last_interaction_at,
-                          ).toLocaleDateString()}
-                        </span>
-                      ) : (
-                        <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-                          No interactions yet
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-10">
+              {sectionCategoryIds.map((categoryId) => {
+                const sectionPeople = peopleByCategory.get(categoryId) ?? [];
+                const sectionTitle =
+                  categoryMetaById.get(categoryId)?.name ??
+                  sectionPeople[0]?.person_categories?.name ??
+                  'Uncategorized';
+                return (
+                  <section key={categoryId} className="space-y-3">
+                    <h2 className="font-display text-xl tracking-tight text-muted">
+                      {sectionTitle}
+                    </h2>
+                    <ul className="grid gap-3 md:grid-cols-2">
+                      {sectionPeople.map((person) => (
+                        <li key={person.id} className="flex min-h-0 min-w-0">
+                          <Link
+                            href={`/people/${person.id}`}
+                            className="card-surface flex h-full w-full flex-col gap-2 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5"
+                          >
+                            <div className="min-w-0 shrink-0">
+                              <p className="font-display text-lg leading-snug tracking-tight">
+                                {personShownName(person)}
+                              </p>
+                            </div>
+                            <div className="mt-auto flex flex-wrap content-start items-center gap-1.5 text-xs text-muted">
+                              <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
+                                {person.person_categories?.name ?? '—'}
+                              </span>
+                              <RelationshipWarmthChip
+                                lastInteractionAt={person.last_interaction_at}
+                                metAt={person.met_at}
+                                createdAt={person.created_at}
+                                size="compact"
+                              />
+                              {person.last_interaction_at ? (
+                                <span className="rounded-full border border-border-soft px-2.5 py-0.5">
+                                  Last touch{' '}
+                                  {new Date(
+                                    person.last_interaction_at,
+                                  ).toLocaleDateString()}
+                                </span>
+                              ) : (
+                                <span className="rounded-full border border-border-soft px-2.5 py-0.5">
+                                  No interactions yet
+                                </span>
+                              )}
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })}
+            </div>
           )}
         </section>
       </div>

@@ -98,7 +98,8 @@ export default async function SettingsPage() {
             Person categories
           </h2>
           <p className="mt-2 text-sm leading-7 text-muted">
-            How someone fits in your life — used in profiles and filters.
+            How someone fits in your life — used in profiles, filters, and the
+            order of groups on the People page.
           </p>
         </div>
         <ManageCategoriesPanel categories={categoriesRes.data ?? []} />
