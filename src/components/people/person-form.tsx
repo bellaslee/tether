@@ -48,7 +48,7 @@ export function PersonForm(props: PersonFormProps) {
           autoFocus={props.mode === 'create'}
         />
         <TextField
-          containerClassName="sm:col-span-2"
+          containerClassName="min-w-0"
           id="display_name"
           name="display_name"
           label="Display name"
@@ -56,6 +56,7 @@ export function PersonForm(props: PersonFormProps) {
           defaultValue={person?.display_name ?? ''}
         />
         <TextField
+          containerClassName="min-w-0"
           id="pronouns"
           name="pronouns"
           label="Pronouns"
