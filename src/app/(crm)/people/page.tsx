@@ -87,9 +87,7 @@ export default async function PeoplePage(props: {
   const statusInUrl = Object.hasOwn(searchParams, 'status');
   const statusFromUrl = parseStatuses(searchParams.status);
   const statusValues: PersonStatus[] =
-    !statusInUrl && statusFromUrl.length === 0
-      ? ['active']
-      : statusFromUrl;
+    !statusInUrl && statusFromUrl.length === 0 ? ['active'] : statusFromUrl;
 
   const { data: categoryOptions, error: categoriesError } = await ctx.client
     .from('person_categories')
@@ -157,6 +155,17 @@ export default async function PeoplePage(props: {
                 aria-label="Search by name"
               />
             </div>
+            <Button type="submit" variant="secondary" size="lg">
+              Apply
+            </Button>
+            <div className="flex flex-wrap justify-end gap-2 text-xs text-muted">
+              <Link
+                className="underline-offset-4 hover:underline"
+                href="/people"
+              >
+                Clear filters
+              </Link>
+            </div>
             <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-1">
               <PeopleFilterDisclosure
                 key={`category-filters-${categoryIds.slice().sort().join('|')}`}
@@ -217,19 +226,7 @@ export default async function PeoplePage(props: {
                 </div>
               </PeopleFilterDisclosure>
             </div>
-            <Button type="submit" variant="secondary" size="lg">
-              Apply
-            </Button>
           </form>
-
-          <div className="mt-6 flex flex-wrap gap-2 text-xs text-muted">
-            <span className="font-semibold uppercase tracking-wide">
-              Quick:
-            </span>
-            <Link className="underline-offset-4 hover:underline" href="/people">
-              Clear filters
-            </Link>
-          </div>
         </section>
 
         <section className="order-2 min-w-0 space-y-4 lg:order-1 lg:flex-1">
