@@ -2,7 +2,6 @@ type PersonNameRow = {
   id: string;
   full_name: string;
   display_name: string | null;
-  preferred_name: string | null;
 };
 
 /**
@@ -37,11 +36,7 @@ export function buildAliasMapForPeople(
 ): Map<string, string> {
   const map = new Map<string, string>();
   for (const row of rows) {
-    const aliases = [
-      row.full_name,
-      row.display_name,
-      row.preferred_name,
-    ]
+    const aliases = [row.full_name, row.display_name]
       .map((s) => (typeof s === 'string' ? s.trim() : ''))
       .filter((s) => s.length > 0);
 
@@ -54,17 +49,14 @@ export function buildAliasMapForPeople(
   return map;
 }
 
-/** person id → label for denormalizing model output (display > preferred > full). */
+/** person id → label for denormalizing model output (display > full). */
 export function buildPersonIdToDisplayLabelMap(
   rows: PersonNameRow[],
 ): Map<string, string> {
   const map = new Map<string, string>();
   for (const row of rows) {
     const label =
-      (row.display_name?.trim() ||
-        row.preferred_name?.trim() ||
-        row.full_name.trim()) ||
-      row.id;
+      (row.display_name?.trim() || row.full_name.trim()) || row.id;
     map.set(row.id, label);
   }
   return map;

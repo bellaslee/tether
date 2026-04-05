@@ -161,7 +161,6 @@ export interface Database {
           user_id: string;
           full_name: string;
           display_name: string | null;
-          preferred_name: string | null;
           category_id: string;
           status: PersonStatus;
           birthday: string | null;
@@ -181,7 +180,6 @@ export interface Database {
           user_id: string;
           full_name: string;
           display_name?: string | null;
-          preferred_name?: string | null;
           category_id: string;
           status?: PersonStatus;
           birthday?: string | null;
@@ -201,7 +199,6 @@ export interface Database {
           user_id?: string;
           full_name?: string;
           display_name?: string | null;
-          preferred_name?: string | null;
           category_id?: string;
           status?: PersonStatus;
           birthday?: string | null;

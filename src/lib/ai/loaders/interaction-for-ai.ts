@@ -56,7 +56,7 @@ export async function loadPlaceholderizedInteractionNote(
 
   const { data: peopleRows, error: peopleErr } = await client
     .from('people')
-    .select('id, full_name, display_name, preferred_name')
+    .select('id, full_name, display_name')
     .eq('user_id', userId)
     .in('id', linkedPersonIds);
 
@@ -155,7 +155,7 @@ export async function loadPlaceholderizedRecentNotesForPerson(
 
   const { data: peopleRows, error: peopleErr } = await client
     .from('people')
-    .select('id, full_name, display_name, preferred_name')
+    .select('id, full_name, display_name')
     .eq('user_id', userId)
     .in('id', linkedPersonIds);
 

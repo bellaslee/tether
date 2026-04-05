@@ -91,7 +91,6 @@ type PersonListRow = Pick<
   | 'id'
   | 'full_name'
   | 'display_name'
-  | 'preferred_name'
   | 'category_id'
   | 'status'
   | 'last_interaction_at'
@@ -178,7 +177,7 @@ export default async function PeoplePage(props: {
   let query = ctx.client
     .from('people')
     .select(
-      'id, full_name, display_name, preferred_name, category_id, status, last_interaction_at, met_at, created_at, person_categories ( name )',
+      'id, full_name, display_name, category_id, status, last_interaction_at, met_at, created_at, person_categories ( name )',
     )
     .eq('user_id', ctx.userId)
     .order('full_name', { ascending: true });
@@ -289,11 +288,6 @@ export default async function PeoplePage(props: {
                       <p className="font-display text-lg leading-snug tracking-tight">
                         {personShownName(person)}
                       </p>
-                      {person.preferred_name ? (
-                        <p className="mt-0.5 truncate text-xs leading-snug text-muted">
-                          Goes by {person.preferred_name}
-                        </p>
-                      ) : null}
                     </div>
                     <div className="mt-auto flex flex-wrap content-start items-center gap-1.5 text-xs text-muted">
                       <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">

@@ -55,12 +55,6 @@ export function PersonForm(props: PersonFormProps) {
           defaultValue={person?.display_name ?? ''}
         />
         <TextField
-          id="preferred_name"
-          name="preferred_name"
-          label="Preferred name"
-          defaultValue={person?.preferred_name ?? ''}
-        />
-        <TextField
           id="pronouns"
           name="pronouns"
           label="Pronouns"

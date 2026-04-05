@@ -901,7 +901,7 @@ export async function generateRelationshipSummary(
 
   const { data: nameRows, error: nErr } = await ctx.client
     .from('people')
-    .select('id, full_name, display_name, preferred_name')
+    .select('id, full_name, display_name')
     .eq('user_id', ctx.userId)
     .in('id', [...idsForLabels]);
 

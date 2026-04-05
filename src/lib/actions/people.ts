@@ -33,7 +33,6 @@ export async function createPerson(
   const categoryIdRaw = String(formData.get('category_id') ?? '').trim();
   const statusRaw = String(formData.get('status') ?? 'active');
   const display_name = optionalString(formData.get('display_name'));
-  const preferred_name = optionalString(formData.get('preferred_name'));
   const pronouns = optionalString(formData.get('pronouns'));
   const location = optionalString(formData.get('location'));
   const occupation = optionalString(formData.get('occupation'));
@@ -77,7 +76,6 @@ export async function createPerson(
       display_name,
       category_id: categoryIdRaw,
       status: statusRaw,
-      preferred_name,
       pronouns,
       location,
       occupation,
@@ -120,7 +118,6 @@ export async function updatePerson(
   const categoryIdRaw = String(formData.get('category_id') ?? '').trim();
   const statusRaw = String(formData.get('status') ?? 'active');
   const display_name = optionalString(formData.get('display_name'));
-  const preferred_name = optionalString(formData.get('preferred_name'));
   const pronouns = optionalString(formData.get('pronouns'));
   const location = optionalString(formData.get('location'));
   const occupation = optionalString(formData.get('occupation'));
@@ -174,7 +171,6 @@ export async function updatePerson(
       display_name,
       category_id: categoryIdRaw,
       status: statusRaw,
-      preferred_name,
       pronouns,
       location,
       occupation,

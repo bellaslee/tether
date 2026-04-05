@@ -64,7 +64,6 @@ people
 - id uuid primary key
 - user_id uuid not null
 - full_name text not null
-- preferred_name text
 - category text not null
 - status text not null default 'active'
 - birthday date
@@ -83,7 +82,6 @@ people
 Notes:
 
 - `full_name` is required because it is the minimum identity field.
-- `preferred_name` helps the UI feel more personal.
 - `category` should exist now because friend versus networking context is already part of the product vision.
 - `status` helps hide dormant or archived relationships without deleting them.
 - `last_interaction_at` should be maintained by application logic or a later trigger.
@@ -294,7 +292,6 @@ create table people (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   full_name text not null,
-  preferred_name text,
   category text not null check (
     category in ('friend', 'close_friend', 'acquaintance', 'networking', 'mentor', 'family')
   ),

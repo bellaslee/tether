@@ -400,11 +400,6 @@ export default async function PersonDetailPage(props: PageProps) {
               createdAt={person.created_at}
             />
           </div>
-          {person.preferred_name ? (
-            <p className="mt-2 text-sm text-muted">
-              Goes by {person.preferred_name}
-            </p>
-          ) : null}
         </div>
       </PersonDetailHeader>
 

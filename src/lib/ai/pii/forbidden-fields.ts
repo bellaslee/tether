@@ -7,7 +7,6 @@
 export const FORBIDDEN_PROMPT_PERSON_COLUMNS = [
   'full_name',
   'display_name',
-  'preferred_name',
   'birthday',
   'location',
   'pronouns',
