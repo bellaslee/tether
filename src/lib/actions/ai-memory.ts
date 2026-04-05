@@ -13,7 +13,7 @@ import {
   filterDedupedSuggestedTasks,
   type TaskSig,
 } from '@/lib/ai/memory-similarity';
-import { computeMemoryAiInputHash } from '@/lib/ai/memory-ai-input-hash';
+import { computeMemoryAiNoteDigest } from '@/lib/ai/memory-ai-input-hash';
 import {
   loadDeclinedMemoryForInteraction,
   loadPlaceholderizedInteractionNote,
@@ -384,33 +384,38 @@ export async function suggestTasksForInteraction(
   return { ok: true };
 }
 
-/** Fire-and-forget friendly: skips when no API key; skips when input fingerprint unchanged. */
-export async function runAutoMemorySuggestForInteraction(
-  interactionId: string,
-): Promise<void> {
-  if (!isUuid(interactionId) || !hasOpenAiApiKey()) {
-    return;
+export async function runMemorySuggestForInteraction(
+  _prev: AiMemoryActionResult,
+  formData: FormData,
+): Promise<AiMemoryActionResult> {
+  const interactionId = String(formData.get('interaction_id') ?? '').trim();
+  if (!isUuid(interactionId)) {
+    return { error: 'Invalid interaction.' };
+  }
+
+  if (!hasOpenAiApiKey()) {
+    return { error: aiDisabledMessage() };
   }
 
   const ctx = await getCrmSupabaseContext();
   if (!ctx) {
-    return;
+    return { error: 'You need to sign in again.' };
   }
 
   const { data: interaction, error: intErr } = await ctx.client
     .from('interactions')
-    .select('raw_note, memory_ai_input_hash')
+    .select('raw_note')
     .eq('id', interactionId)
     .eq('user_id', ctx.userId)
     .maybeSingle();
 
   if (intErr || !interaction) {
-    return;
+    return { error: 'Could not load this memory.' };
   }
 
   const noteTrimmed = interaction.raw_note?.trim() ?? '';
   if (!noteTrimmed) {
-    return;
+    return { error: 'Add a note before requesting suggestions.' };
   }
 
   const { data: links, error: linkErr } = await ctx.client
@@ -419,37 +424,39 @@ export async function runAutoMemorySuggestForInteraction(
     .eq('interaction_id', interactionId);
 
   if (linkErr) {
-    return;
+    return { error: linkErr.message };
   }
 
-  const sortedPersonIds = [
-    ...new Set((links ?? []).map((l) => l.person_id)),
-  ].sort();
-  if (sortedPersonIds.length === 0) {
-    return;
+  const personIds = [...new Set((links ?? []).map((l) => l.person_id))];
+  if (personIds.length === 0) {
+    return {
+      error: 'Link at least one person to this memory before suggesting.',
+    };
   }
 
-  const fingerprint = computeMemoryAiInputHash({
-    rawNote: noteTrimmed,
-    sortedPersonIds,
-  });
-
-  if (interaction.memory_ai_input_hash === fingerprint) {
-    return;
+  const inner = new FormData();
+  inner.set('interaction_id', interactionId);
+  const extractResult = await extractFactsForInteraction({}, inner);
+  if (extractResult.error) {
+    return extractResult;
+  }
+  const suggestResult = await suggestTasksForInteraction({}, inner);
+  if (suggestResult.error) {
+    return suggestResult;
   }
 
-  const formData = new FormData();
-  formData.set('interaction_id', interactionId);
-  const extractResult = await extractFactsForInteraction({}, formData);
-  const suggestResult = await suggestTasksForInteraction({}, formData);
+  const digest = computeMemoryAiNoteDigest(noteTrimmed);
+  const { error: updErr } = await ctx.client
+    .from('interactions')
+    .update({ memory_ai_input_hash: digest })
+    .eq('id', interactionId)
+    .eq('user_id', ctx.userId);
 
-  if (!extractResult.error && !suggestResult.error) {
-    await ctx.client
-      .from('interactions')
-      .update({ memory_ai_input_hash: fingerprint })
-      .eq('id', interactionId)
-      .eq('user_id', ctx.userId);
+  if (updErr) {
+    return { error: updErr.message };
   }
+
+  return { ok: true };
 }
 
 export async function updateFactReview(

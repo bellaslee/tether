@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/button';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
+import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
 import { requireCrmAccess } from '@/lib/crm/guard';
@@ -8,6 +9,8 @@ import { toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { partitionTimelineByOccurrence } from '@/lib/interactions/timeline-partition';
+import { hasOpenAiApiKey } from '@/lib/env';
+import { interactionShowsMemorySuggestCta } from '@/lib/interactions/memory-suggest-visibility';
 import { personShownName } from '@/lib/people/list-name';
 
 type InteractionWithType = Tables<'interactions'> & {
@@ -64,6 +67,8 @@ export default async function TimelinePage() {
   const { upcoming, past } = partitionTimelineByOccurrence(interactionList);
   const interactionIds = interactionList.map((row) => row.id);
   const peopleByInteraction = new Map<string, PersonChip[]>();
+
+  const memorySuggestAvailable = hasOpenAiApiKey();
 
   if (interactionIds.length > 0) {
     const { data: linkRows, error: linkError } = await ctx.client
@@ -155,6 +160,7 @@ export default async function TimelinePage() {
                     peopleByInteraction={peopleByInteraction}
                     allPeople={allPeople}
                     interactionTypeOptions={interactionTypeOptions}
+                    memorySuggestAvailable={memorySuggestAvailable}
                   />
                 ))}
               </ol>
@@ -179,6 +185,7 @@ export default async function TimelinePage() {
                     peopleByInteraction={peopleByInteraction}
                     allPeople={allPeople}
                     interactionTypeOptions={interactionTypeOptions}
+                    memorySuggestAvailable={memorySuggestAvailable}
                   />
                 ))}
               </ol>
@@ -196,6 +203,7 @@ function GlobalTimelineRow({
   peopleByInteraction,
   allPeople,
   interactionTypeOptions,
+  memorySuggestAvailable,
 }: {
   interaction: InteractionWithType;
   isUpcoming: boolean;
@@ -206,12 +214,21 @@ function GlobalTimelineRow({
     display_name: string | null;
   }>;
   interactionTypeOptions: InteractionTypeOption[];
+  memorySuggestAvailable: boolean;
 }) {
   const people = peopleByInteraction.get(interaction.id) ?? [];
   const primaryPersonId = people.find((p) => p.role === 'primary')?.id ?? '';
   const attendeeIds = people
     .filter((p) => p.role === 'attendee')
     .map((p) => p.id);
+
+  const showMemorySuggest =
+    memorySuggestAvailable &&
+    people.length > 0 &&
+    interactionShowsMemorySuggestCta(
+      interaction.raw_note,
+      interaction.memory_ai_input_hash,
+    );
 
   const cardClass = isUpcoming
     ? 'card-surface rounded-[1.75rem] border-2 border-dashed border-accent/40 bg-accent-soft/20 p-6 sm:p-8'
@@ -257,6 +274,9 @@ function GlobalTimelineRow({
           ) : null}
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+          {showMemorySuggest ? (
+            <InteractionMemorySuggestButton interactionId={interaction.id} />
+          ) : null}
           {allPeople.length > 0 ? (
             <InteractionEditDisclosure
               interactionId={interaction.id}

@@ -3,9 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { InteractionDirection } from '@/lib/db/database.types';
-import { runAutoMemorySuggestForInteraction } from '@/lib/actions/ai-memory';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
-import { hasOpenAiApiKey } from '@/lib/env';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
 import {
@@ -144,15 +142,6 @@ export async function createInteractionFromPerson(
   revalidatePath(`/people/${primaryPersonId}`);
   allIds.forEach((id) => revalidatePath(`/people/${id}`));
 
-  const noteTrimmed = payload.raw_note?.trim() ?? '';
-  if (noteTrimmed && hasOpenAiApiKey()) {
-    try {
-      await runAutoMemorySuggestForInteraction(interaction.id);
-    } catch {
-      /* Best-effort AI; interaction is already saved. */
-    }
-  }
-
   return { ok: true };
 }
 
@@ -244,15 +233,6 @@ export async function createGlobalInteraction(
 
   revalidatePath('/timeline');
   allIds.forEach((id) => revalidatePath(`/people/${id}`));
-
-  const noteTrimmed = payload.raw_note?.trim() ?? '';
-  if (noteTrimmed && hasOpenAiApiKey()) {
-    try {
-      await runAutoMemorySuggestForInteraction(interaction.id);
-    } catch {
-      /* Best-effort AI; interaction is already saved. */
-    }
-  }
 
   redirect('/timeline');
 }
@@ -386,15 +366,6 @@ export async function updateInteraction(
 
   revalidatePath('/timeline');
   touchIds.forEach((pid) => revalidatePath(`/people/${pid}`));
-
-  const noteTrimmed = payload.raw_note?.trim() ?? '';
-  if (noteTrimmed && hasOpenAiApiKey()) {
-    try {
-      await runAutoMemorySuggestForInteraction(interactionId);
-    } catch {
-      /* Best-effort AI; interaction is already saved. */
-    }
-  }
 
   return { ok: true };
 }

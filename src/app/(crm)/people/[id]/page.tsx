@@ -10,6 +10,7 @@ import {
   TimelineLogInteractionTrigger,
 } from '@/components/people/person-log-interaction-context';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
+import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { requireCrmAccess } from '@/lib/crm/guard';
@@ -25,6 +26,7 @@ import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
   type InteractionTypeOption,
 } from '@/lib/interactions/type-options';
+import { interactionShowsMemorySuggestCta } from '@/lib/interactions/memory-suggest-visibility';
 import { partitionPersonTimelineRows } from '@/lib/interactions/timeline-partition';
 import {
   defaultConnectionTypeId as pickDefaultConnectionTypeId,
@@ -534,6 +536,7 @@ export default async function PersonDetailPage(props: PageProps) {
                           }
                           allPeople={allPeople ?? []}
                           interactionTypeOptions={interactionTypeOptions}
+                          memorySuggestAvailable={aiEnabled}
                         />
                       ))}
                     </ol>
@@ -564,6 +567,7 @@ export default async function PersonDetailPage(props: PageProps) {
                           }
                           allPeople={allPeople ?? []}
                           interactionTypeOptions={interactionTypeOptions}
+                          memorySuggestAvailable={aiEnabled}
                         />
                       ))}
                     </ol>
@@ -621,6 +625,7 @@ function PersonTimelineRow({
   participants,
   allPeople,
   interactionTypeOptions,
+  memorySuggestAvailable,
 }: {
   interaction: InteractionWithType;
   role: string;
@@ -632,7 +637,19 @@ function PersonTimelineRow({
     display_name: string | null;
   }>;
   interactionTypeOptions: InteractionTypeOption[];
+  memorySuggestAvailable: boolean;
 }) {
+  const hasLinkedPeople =
+    Boolean(participants.primaryPersonId) ||
+    participants.attendeeIds.length > 0;
+  const showMemorySuggest =
+    memorySuggestAvailable &&
+    hasLinkedPeople &&
+    interactionShowsMemorySuggestCta(
+      interaction.raw_note,
+      interaction.memory_ai_input_hash,
+    );
+
   const cardClass = isUpcoming
     ? 'card-surface rounded-[1.75rem] border-2 border-dashed border-accent/40 bg-accent-soft/20 p-6 sm:p-8'
     : 'card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
@@ -666,6 +683,9 @@ function PersonTimelineRow({
           ) : null}
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+          {showMemorySuggest ? (
+            <InteractionMemorySuggestButton interactionId={interaction.id} />
+          ) : null}
           {allPeople.length > 0 ? (
             <InteractionEditDisclosure
               interactionId={interaction.id}
