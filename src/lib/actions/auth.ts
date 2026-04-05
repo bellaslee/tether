@@ -14,8 +14,12 @@ export async function signUpAction(
 ): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const privacyAccepted = formData.get("privacy_accepted");
   if (!email || !password) {
     return { error: "Email and password are required." };
+  }
+  if (privacyAccepted !== "on") {
+    return { error: "Please confirm you have read and agree to the Privacy Policy." };
   }
 
   const client = await createSupabaseServerClient();

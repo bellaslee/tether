@@ -32,6 +32,8 @@ export type CrmTaskStatus =
   | 'dismissed'
   | 'snoozed';
 
+export type UsageEventCategory = 'screen' | 'feature' | 'llm';
+
 export interface Database {
   public: {
     Tables: {
@@ -428,6 +430,36 @@ export interface Database {
           suggester_metadata?: Json;
           created_at?: string;
           updated_at?: string;
+        };
+        Relationships: [];
+      };
+      usage_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          category: UsageEventCategory;
+          name: string;
+          properties: Json;
+          duration_ms: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          category: UsageEventCategory;
+          name: string;
+          properties?: Json;
+          duration_ms?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          category?: UsageEventCategory;
+          name?: string;
+          properties?: Json;
+          duration_ms?: number | null;
+          created_at?: string;
         };
         Relationships: [];
       };

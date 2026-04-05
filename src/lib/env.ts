@@ -6,6 +6,7 @@ const crmAiDebugPrompts = process.env.CRM_AI_DEBUG_PROMPTS;
 const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
 const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 const crmDisableLlmRateLimit = process.env.CRM_DISABLE_LLM_RATE_LIMIT;
+const publicCrmUsageTracking = process.env.NEXT_PUBLIC_CRM_USAGE_TRACKING;
 
 function isNonEmpty(value: string | undefined): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -72,6 +73,11 @@ export function hasUpstashRedisForRateLimit() {
 /** When true, skips distributed LLM rate limits (emergency / local only). */
 export function isCrmLlmRateLimitDisabled() {
   return isTruthyEnv(crmDisableLlmRateLimit);
+}
+
+/** Client + server: first-party usage / screen / LLM metadata logging. */
+export function isCrmUsageTrackingEnabled() {
+  return isTruthyEnv(publicCrmUsageTracking);
 }
 
 export function getSetupStatus() {

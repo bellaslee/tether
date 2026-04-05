@@ -19,6 +19,7 @@ import { EXTRACT_FACTS_PROMPT_VERSION } from '@/lib/ai/prompts/extract-facts';
 import { SUGGEST_TASKS_PROMPT_VERSION } from '@/lib/ai/prompts/suggest-tasks';
 import { fetchPersonIdsForUserInteraction } from '@/lib/interactions/interaction-people-queries';
 import { isUuid } from './constants';
+import { recordLlmUsage } from '@/lib/usage/record-usage-event';
 import { requireCrmForAiAction, requireOpenAiPipeline } from './guard';
 import {
   loadAcceptedFactBodiesForPersons,
@@ -89,6 +90,7 @@ export async function extractFactsForInteraction(
     return { error: delErr.message };
   }
 
+  const model = defaultResponsesModel();
   let parsed;
   try {
     parsed = await runExtractFactsModel({
@@ -100,12 +102,17 @@ export async function extractFactsForInteraction(
       userDeclinedFacts: declined.ok.declinedFactBodies,
       acceptedFacts: acceptedFactsRes.ok,
     });
+    recordLlmUsage(ctx.client, 'extract_facts', { model, ok: true });
   } catch (e) {
+    recordLlmUsage(ctx.client, 'extract_facts', {
+      model,
+      ok: false,
+      error_code: 'exception',
+    });
     const msg = e instanceof Error ? e.message : 'Extraction failed.';
     return { error: msg };
   }
 
-  const model = defaultResponsesModel();
   const labelMap = loaded.personIdToDisplayLabel;
   const rows = parsed.facts
     .filter((f) => allowed.has(f.person_id))
@@ -215,6 +222,7 @@ export async function suggestTasksForInteraction(
 
   revalidatePath('/reminders');
 
+  const model = defaultResponsesModel();
   let parsed;
   try {
     parsed = await runSuggestTasksModel({
@@ -226,12 +234,17 @@ export async function suggestTasksForInteraction(
       userDeclinedReminders: declined.ok.declinedReminders,
       acceptedTasks: acceptedTasksRes.ok,
     });
+    recordLlmUsage(ctx.client, 'suggest_tasks', { model, ok: true });
   } catch (e) {
+    recordLlmUsage(ctx.client, 'suggest_tasks', {
+      model,
+      ok: false,
+      error_code: 'exception',
+    });
     const msg = e instanceof Error ? e.message : 'Task suggestions failed.';
     return { error: msg };
   }
 
-  const model = defaultResponsesModel();
   const labelMap = loaded.personIdToDisplayLabel;
   const rows = parsed.tasks.map((t) => {
     const pid = t.person_id && allowed.has(t.person_id) ? t.person_id : null;

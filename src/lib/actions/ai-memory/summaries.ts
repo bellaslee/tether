@@ -17,6 +17,7 @@ import {
   fetchInteractionPeopleLinksForUserInteractions,
 } from '@/lib/interactions/interaction-people-queries';
 import { isUuid } from './constants';
+import { recordLlmUsage } from '@/lib/usage/record-usage-event';
 import { requireCrmForAiAction, requireOpenAiPipeline } from './guard';
 import type { AiMemoryActionResult } from './types';
 
@@ -153,6 +154,7 @@ export async function generateRelationshipSummary(
     }));
   }
 
+  const model = defaultResponsesModel();
   let parsed;
   try {
     parsed = await runRelationshipSummaryModel({
@@ -165,12 +167,17 @@ export async function generateRelationshipSummary(
       acceptedFactLines,
       recentNotes,
     });
+    recordLlmUsage(ctx.client, 'relationship_summary', { model, ok: true });
   } catch (e) {
+    recordLlmUsage(ctx.client, 'relationship_summary', {
+      model,
+      ok: false,
+      error_code: 'exception',
+    });
     const msg = e instanceof Error ? e.message : 'Summary generation failed.';
     return { error: msg };
   }
 
-  const model = defaultResponsesModel();
   const summaryContent = replacePersonUuidReferencesInText(
     parsed.content.trim(),
     personIdToDisplayLabel,
