@@ -100,7 +100,7 @@ src/
         page.tsx
     timeline/
       page.tsx
-    tasks/
+    reminders/
       page.tsx
     inbox/
       page.tsx
