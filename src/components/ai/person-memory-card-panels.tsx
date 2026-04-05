@@ -7,10 +7,6 @@ import {
   ManualFactForm,
   ManualReminderForm,
 } from '@/components/ai/manual-memory-add-forms';
-import {
-  SuggestFactsControl,
-  SuggestFollowUpsControl,
-} from '@/components/ai/person-memory-ai-toolbar';
 import { TaskReviewForms } from '@/components/ai/task-review-forms';
 import { Button } from '@/components/ui/button';
 import type { Tables } from '@/lib/db/database.types';
@@ -23,15 +19,11 @@ type TaskRow = Tables<'tasks'>;
 
 type FactsProps = {
   personId: string;
-  aiEnabled: boolean;
-  hasRecentNotes: boolean;
   facts: FactRow[];
 };
 
 export function PersonFactsMemorySection({
   personId,
-  aiEnabled,
-  hasRecentNotes,
   facts,
 }: FactsProps) {
   const [addOpen, setAddOpen] = useState(false);
@@ -60,23 +52,16 @@ export function PersonFactsMemorySection({
           </p>
         </div>
         <div className="min-w-0 shrink-0">
-          <div className="flex w-full min-w-0 flex-row flex-wrap items-start justify-end gap-2">
-            {!addOpen ? (
-              <Button
-                type="button"
-                variant="secondaryMuted"
-                size="sm"
-                onClick={startAdd}
-              >
-                Add fact
-              </Button>
-            ) : null}
-            <SuggestFactsControl
-              personId={personId}
-              aiEnabled={aiEnabled}
-              hasRecentNotes={hasRecentNotes}
-            />
-          </div>
+          {!addOpen ? (
+            <Button
+              type="button"
+              variant="secondaryMuted"
+              size="sm"
+              onClick={startAdd}
+            >
+              Add fact
+            </Button>
+          ) : null}
         </div>
       </header>
       <div className="mt-6 min-h-0 flex-1 space-y-4">
@@ -91,9 +76,9 @@ export function PersonFactsMemorySection({
         {facts.length === 0 && !addOpen ? (
           <p className="text-sm text-muted">
             <span className="font-medium text-foreground/80">Add fact</span> to
-            capture something yourself, or use{' '}
-            <span className="font-medium text-foreground/80">Suggest facts</span>{' '}
-            when you have timeline notes—candidates show up here for review.
+            capture something yourself, or log a timeline note on this
+            profile—candidate facts from your notes will show up here for
+            review.
           </p>
         ) : null}
         {facts.length > 0 ? (
@@ -116,15 +101,11 @@ export function PersonFactsMemorySection({
 
 type RemindersProps = {
   personId: string;
-  aiEnabled: boolean;
-  hasRecentNotes: boolean;
   tasks: TaskRow[];
 };
 
 export function PersonRemindersMemorySection({
   personId,
-  aiEnabled,
-  hasRecentNotes,
   tasks,
 }: RemindersProps) {
   const [addOpen, setAddOpen] = useState(false);
@@ -153,23 +134,16 @@ export function PersonRemindersMemorySection({
           </p>
         </div>
         <div className="min-w-0 shrink-0">
-          <div className="flex w-full min-w-0 flex-row flex-wrap items-start justify-end gap-2">
-            {!addOpen ? (
-              <Button
-                type="button"
-                variant="secondaryMuted"
-                size="sm"
-                onClick={startAdd}
-              >
-                Add reminder
-              </Button>
-            ) : null}
-            <SuggestFollowUpsControl
-              personId={personId}
-              aiEnabled={aiEnabled}
-              hasRecentNotes={hasRecentNotes}
-            />
-          </div>
+          {!addOpen ? (
+            <Button
+              type="button"
+              variant="secondaryMuted"
+              size="sm"
+              onClick={startAdd}
+            >
+              Add reminder
+            </Button>
+          ) : null}
         </div>
       </header>
       <div className="mt-6 min-h-0 flex-1 space-y-4">
@@ -184,11 +158,8 @@ export function PersonRemindersMemorySection({
         {tasks.length === 0 && !addOpen ? (
           <p className="text-sm text-muted">
             <span className="font-medium text-foreground/80">Add reminder</span>{' '}
-            for something you want to follow up on, or use{' '}
-            <span className="font-medium text-foreground/80">
-              Suggest reminders
-            </span>{' '}
-            from your notes.
+            for something you want to follow up on, or add a note to a timeline
+            interaction—suggested reminders from your notes will appear here.
           </p>
         ) : null}
         {tasks.length > 0 ? (

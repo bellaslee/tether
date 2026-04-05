@@ -25,6 +25,15 @@ export function TaskReviewForms({ task, action }: Props) {
   >(action, {});
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
+  const submitDelete = () => {
+    const fd = new FormData();
+    fd.set('task_id', task.id);
+    fd.set('intent', 'delete');
+    startTransition(() => {
+      void formAction(fd);
+    });
+  };
+
   const showSuggested = task.status === 'suggested';
   const showActive =
     task.status === 'active' || task.status === 'snoozed';
@@ -89,7 +98,13 @@ export function TaskReviewForms({ task, action }: Props) {
           size="sm"
           variant="ghostSubtle"
           disabled={pending}
-          onClick={() => setConfirmDeleteOpen(true)}
+          onClick={() => {
+            if (showSuggested) {
+              submitDelete();
+            } else {
+              setConfirmDeleteOpen(true);
+            }
+          }}
         >
           Delete
         </Button>
@@ -101,12 +116,7 @@ export function TaskReviewForms({ task, action }: Props) {
         description="It will be removed from open loops. You can suggest new follow-ups from notes anytime."
         confirmLabel="Delete"
         onConfirm={() => {
-          const fd = new FormData();
-          fd.set('task_id', task.id);
-          fd.set('intent', 'delete');
-          startTransition(() => {
-            void formAction(fd);
-          });
+          submitDelete();
         }}
       />
       {state.error ? <FieldError size="inline">{state.error}</FieldError> : null}

@@ -258,10 +258,6 @@ export default async function PersonDetailPage(props: PageProps) {
   const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
     partitionPersonTimelineRows(timelineRows);
 
-  const hasRecentNotes = timelineRows.some(
-    (row) => (row.interaction.raw_note ?? '').trim().length > 0,
-  );
-
   const defaultOccurredAt = toDatetimeLocalInputValue(
     new Date(person.created_at),
   );
@@ -311,6 +307,7 @@ export default async function PersonDetailPage(props: PageProps) {
       .select('*')
       .eq('person_id', id)
       .eq('user_id', ctx.userId)
+      .neq('status', 'dismissed')
       .order('created_at', { ascending: false });
 
     if (tasksError) {
@@ -466,18 +463,8 @@ export default async function PersonDetailPage(props: PageProps) {
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2 lg:items-stretch">
-            <PersonFactsSection
-              personId={person.id}
-              aiEnabled={aiEnabled}
-              hasRecentNotes={hasRecentNotes}
-              facts={factRows}
-            />
-            <PersonRemindersSection
-              personId={person.id}
-              aiEnabled={aiEnabled}
-              hasRecentNotes={hasRecentNotes}
-              tasks={taskRows}
-            />
+            <PersonFactsSection personId={person.id} facts={factRows} />
+            <PersonRemindersSection personId={person.id} tasks={taskRows} />
           </div>
 
           <section

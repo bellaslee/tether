@@ -40,7 +40,8 @@ export default async function RemindersPage() {
   const { data: taskRows, error: tasksError } = await ctx.client
     .from('tasks')
     .select('*')
-    .eq('user_id', ctx.userId);
+    .eq('user_id', ctx.userId)
+    .neq('status', 'dismissed');
 
   if (tasksError) {
     throw new Error(tasksError.message);
@@ -103,7 +104,7 @@ export default async function RemindersPage() {
             <p className="mt-2 text-xs text-muted">
               {openCount} open
               {openCount !== tasks.length
-                ? ` · ${tasks.length} total including done or dismissed`
+                ? ` · ${tasks.length} total including done`
                 : null}
             </p>
           ) : null}
@@ -122,11 +123,9 @@ export default async function RemindersPage() {
         </h2>
         {sorted.length === 0 ? (
           <p className="mt-6 text-sm text-muted">
-            Nothing here yet. Add a reminder on someone’s profile, or use{' '}
-            <span className="font-medium text-foreground/80">
-              Suggest reminders
-            </span>{' '}
-            from their timeline notes.{' '}
+            Nothing here yet. Add a reminder on someone’s profile, or log a
+            timeline note with a follow-up—suggestions from your notes will show
+            up here.{' '}
             <Link
               href="/people"
               className="font-semibold text-accent underline-offset-4 hover:underline"

@@ -13,10 +13,8 @@ import {
   filterDedupedSuggestedTasks,
   type TaskSig,
 } from '@/lib/ai/memory-similarity';
-import {
-  loadPlaceholderizedInteractionNote,
-  loadPlaceholderizedRecentNotesForPerson,
-} from '@/lib/ai/loaders/interaction-for-ai';
+import { computeMemoryAiInputHash } from '@/lib/ai/memory-ai-input-hash';
+import { loadPlaceholderizedInteractionNote } from '@/lib/ai/loaders/interaction-for-ai';
 import { tryCreateOpenAiClient } from '@/lib/ai/openai';
 import {
   buildAliasMapForPeople,
@@ -49,7 +47,13 @@ function aiDisabledMessage() {
 
 type DbClient = SupabaseClient<Database>;
 
-const TASK_DEDUP_STATUSES = ['suggested', 'active', 'snoozed'] as const;
+const TASK_DEDUP_STATUSES: CrmTaskStatus[] = [
+  'suggested',
+  'active',
+  'snoozed',
+  'done',
+  'dismissed',
+];
 
 async function loadExistingFactBodiesByPerson(
   client: DbClient,
@@ -65,7 +69,7 @@ async function loadExistingFactBodiesByPerson(
     .select('person_id, body')
     .eq('user_id', userId)
     .in('person_id', personIds)
-    .in('review_status', ['candidate', 'accepted']);
+    .in('review_status', ['candidate', 'accepted', 'dismissed']);
 
   if (error) {
     return { error: error.message };
@@ -357,243 +361,72 @@ export async function suggestTasksForInteraction(
   return { ok: true };
 }
 
-/** Fire-and-forget friendly: skips when no API key; ignores model/loader errors. */
+/** Fire-and-forget friendly: skips when no API key; skips when input fingerprint unchanged. */
 export async function runAutoMemorySuggestForInteraction(
   interactionId: string,
 ): Promise<void> {
   if (!isUuid(interactionId) || !hasOpenAiApiKey()) {
     return;
   }
-  const formData = new FormData();
-  formData.set('interaction_id', interactionId);
-  await extractFactsForInteraction({}, formData);
-  await suggestTasksForInteraction({}, formData);
-}
-
-export async function extractFactsFromPersonRecentNotes(
-  _prev: AiMemoryActionResult,
-  formData: FormData,
-): Promise<AiMemoryActionResult> {
-  const personId = String(formData.get('person_id') ?? '').trim();
-  if (!isUuid(personId)) {
-    return { error: 'Invalid person.' };
-  }
-
-  if (!hasOpenAiApiKey()) {
-    return { error: aiDisabledMessage() };
-  }
 
   const ctx = await getCrmSupabaseContext();
   if (!ctx) {
-    return { error: 'You need to sign in again.' };
+    return;
   }
 
-  const loaded = await loadPlaceholderizedRecentNotesForPerson(
-    ctx.client,
-    ctx.userId,
-    personId,
-  );
-  if ('error' in loaded) {
-    return { error: loaded.error };
-  }
-
-  const openai = tryCreateOpenAiClient();
-  if (!openai) {
-    return { error: aiDisabledMessage() };
-  }
-
-  const allowed = new Set(loaded.linkedPersonIds);
-
-  const { error: delErr } = await ctx.client
-    .from('facts')
-    .delete()
+  const { data: interaction, error: intErr } = await ctx.client
+    .from('interactions')
+    .select('raw_note, memory_ai_input_hash')
+    .eq('id', interactionId)
     .eq('user_id', ctx.userId)
-    .eq('person_id', personId)
-    .in('interaction_id', loaded.bundledInteractionIds)
-    .eq('review_status', 'candidate');
+    .maybeSingle();
 
-  if (delErr) {
-    return { error: delErr.message };
+  if (intErr || !interaction) {
+    return;
   }
 
-  let parsed;
-  try {
-    parsed = await runExtractFactsModel({
-      openai,
-      interactionId: loaded.primaryInteractionId,
-      allowedPersonIds: loaded.linkedPersonIds,
-      redactedNote: loaded.redactedNote,
-    });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Extraction failed.';
-    return { error: msg };
+  const noteTrimmed = interaction.raw_note?.trim() ?? '';
+  if (!noteTrimmed) {
+    return;
   }
 
-  const model = defaultResponsesModel();
-  const labelMap = loaded.personIdToDisplayLabel;
-  const rows = parsed.facts
-    .filter((f) => allowed.has(f.person_id))
-    .map((f) => ({
-      user_id: ctx.userId,
-      person_id: f.person_id,
-      interaction_id: loaded.primaryInteractionId,
-      body: replacePersonUuidReferencesInText(f.body.trim(), labelMap),
-      review_status: 'candidate' as const,
-      extractor_metadata: {
-        model,
-        prompt_version: EXTRACT_FACTS_PROMPT_VERSION,
-        pipeline: 'extract_facts',
-      },
-    }));
+  const { data: links, error: linkErr } = await ctx.client
+    .from('interaction_people')
+    .select('person_id')
+    .eq('interaction_id', interactionId);
 
-  const existingFacts = await loadExistingFactBodiesByPerson(
-    ctx.client,
-    ctx.userId,
-    [...loaded.linkedPersonIds],
-  );
-  if ('error' in existingFacts) {
-    return { error: existingFacts.error };
-  }
-  const rowsToInsert = filterDedupedFacts(rows, existingFacts.ok);
-
-  if (rowsToInsert.length === 0) {
-    revalidatePath('/timeline');
-    for (const pid of loaded.linkedPersonIds) {
-      revalidatePath(`/people/${pid}`);
-    }
-    return { ok: true };
+  if (linkErr) {
+    return;
   }
 
-  const { error: insErr } = await ctx.client.from('facts').insert(rowsToInsert);
-  if (insErr) {
-    return { error: insErr.message };
+  const sortedPersonIds = [
+    ...new Set((links ?? []).map((l) => l.person_id)),
+  ].sort();
+  if (sortedPersonIds.length === 0) {
+    return;
   }
 
-  revalidatePath('/timeline');
-  for (const pid of loaded.linkedPersonIds) {
-    revalidatePath(`/people/${pid}`);
-  }
-  return { ok: true };
-}
-
-export async function suggestTasksFromPersonRecentNotes(
-  _prev: AiMemoryActionResult,
-  formData: FormData,
-): Promise<AiMemoryActionResult> {
-  const personId = String(formData.get('person_id') ?? '').trim();
-  if (!isUuid(personId)) {
-    return { error: 'Invalid person.' };
-  }
-
-  if (!hasOpenAiApiKey()) {
-    return { error: aiDisabledMessage() };
-  }
-
-  const ctx = await getCrmSupabaseContext();
-  if (!ctx) {
-    return { error: 'You need to sign in again.' };
-  }
-
-  const loaded = await loadPlaceholderizedRecentNotesForPerson(
-    ctx.client,
-    ctx.userId,
-    personId,
-  );
-  if ('error' in loaded) {
-    return { error: loaded.error };
-  }
-
-  const openai = tryCreateOpenAiClient();
-  if (!openai) {
-    return { error: aiDisabledMessage() };
-  }
-
-  const allowed = new Set(loaded.linkedPersonIds);
-
-  const { error: delErr } = await ctx.client
-    .from('tasks')
-    .delete()
-    .eq('user_id', ctx.userId)
-    .eq('person_id', personId)
-    .in('interaction_id', loaded.bundledInteractionIds)
-    .eq('status', 'suggested');
-
-  if (delErr) {
-    return { error: delErr.message };
-  }
-
-  let parsed;
-  try {
-    parsed = await runSuggestTasksModel({
-      openai,
-      interactionId: loaded.primaryInteractionId,
-      allowedPersonIds: loaded.linkedPersonIds,
-      redactedNote: loaded.redactedNote,
-    });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Task suggestions failed.';
-    return { error: msg };
-  }
-
-  const model = defaultResponsesModel();
-  const labelMap = loaded.personIdToDisplayLabel;
-  const rows = parsed.tasks.map((t) => {
-    const pid = t.person_id && allowed.has(t.person_id) ? t.person_id : null;
-    const desc = t.description?.trim() || null;
-    return {
-      user_id: ctx.userId,
-      person_id: pid,
-      interaction_id: loaded.primaryInteractionId,
-      title: replacePersonUuidReferencesInText(t.title.trim(), labelMap),
-      description: desc
-        ? replacePersonUuidReferencesInText(desc, labelMap)
-        : null,
-      status: 'suggested' as const,
-      suggester_metadata: {
-        model,
-        prompt_version: SUGGEST_TASKS_PROMPT_VERSION,
-        pipeline: 'suggest_tasks',
-      },
-    };
+  const fingerprint = computeMemoryAiInputHash({
+    rawNote: noteTrimmed,
+    sortedPersonIds,
   });
 
-  const includeNullPerson = rows.some((r) => r.person_id === null);
-  const existingTasks = await loadExistingTaskSigsForDedup(
-    ctx.client,
-    ctx.userId,
-    loaded.linkedPersonIds,
-    includeNullPerson,
-  );
-  if ('error' in existingTasks) {
-    return { error: existingTasks.error };
-  }
-  const rowsToInsert = filterDedupedSuggestedTasks(rows, existingTasks.ok);
-
-  if (rowsToInsert.length === 0) {
-    revalidatePath('/timeline');
-    revalidatePath('/reminders');
-    const touch = new Set<string>(loaded.linkedPersonIds);
-    for (const pid of touch) {
-      revalidatePath(`/people/${pid}`);
-    }
-    return { ok: true };
+  if (interaction.memory_ai_input_hash === fingerprint) {
+    return;
   }
 
-  const { error: insErr } = await ctx.client.from('tasks').insert(rowsToInsert);
-  if (insErr) {
-    return { error: insErr.message };
-  }
+  const formData = new FormData();
+  formData.set('interaction_id', interactionId);
+  const extractResult = await extractFactsForInteraction({}, formData);
+  const suggestResult = await suggestTasksForInteraction({}, formData);
 
-  revalidatePath('/timeline');
-  revalidatePath('/reminders');
-  const touch = new Set<string>(loaded.linkedPersonIds);
-  for (const r of rowsToInsert) {
-    if (r.person_id) touch.add(r.person_id);
+  if (!extractResult.error && !suggestResult.error) {
+    await ctx.client
+      .from('interactions')
+      .update({ memory_ai_input_hash: fingerprint })
+      .eq('id', interactionId)
+      .eq('user_id', ctx.userId);
   }
-  for (const pid of touch) {
-    revalidatePath(`/people/${pid}`);
-  }
-  return { ok: true };
 }
 
 export async function updateFactReview(

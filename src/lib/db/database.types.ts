@@ -258,6 +258,7 @@ export interface Database {
           title: string | null;
           raw_note: string | null;
           counts_toward_last_touch: boolean;
+          memory_ai_input_hash: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -270,6 +271,7 @@ export interface Database {
           title?: string | null;
           raw_note?: string | null;
           counts_toward_last_touch?: boolean;
+          memory_ai_input_hash?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -282,6 +284,7 @@ export interface Database {
           title?: string | null;
           raw_note?: string | null;
           counts_toward_last_touch?: boolean;
+          memory_ai_input_hash?: string | null;
           created_at?: string;
           updated_at?: string;
         };
