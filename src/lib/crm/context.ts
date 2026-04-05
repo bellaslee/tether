@@ -14,6 +14,9 @@ export type CrmSupabaseContext = {
   client: SupabaseClient<Database>;
   userId: string;
   bypass: boolean;
+  /** Set when signed in with Supabase (not local bypass). */
+  accountEmail?: string;
+  accountDisplayName?: string | null;
 };
 
 export async function getCrmSupabaseContext(): Promise<CrmSupabaseContext | null> {
@@ -39,5 +42,18 @@ export async function getCrmSupabaseContext(): Promise<CrmSupabaseContext | null
     return null;
   }
 
-  return { client, userId: user.id, bypass: false };
+  const meta = user.user_metadata as Record<string, unknown> | undefined;
+  const rawName = meta?.full_name;
+  const accountDisplayName =
+    typeof rawName === 'string' && rawName.trim().length > 0
+      ? rawName.trim()
+      : null;
+
+  return {
+    client,
+    userId: user.id,
+    bypass: false,
+    accountEmail: user.email ?? undefined,
+    accountDisplayName,
+  };
 }

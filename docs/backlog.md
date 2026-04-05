@@ -15,6 +15,7 @@ Ideas and follow-ups that are not scheduled work yet.
 - [ ] allow user to select view: list by category or grid
 - [ ] code review to address inefficiencies
 - [ ] address supabase warnings
+- [ ] calendar time selection in increments of 5 only
 
 ## User settings
 

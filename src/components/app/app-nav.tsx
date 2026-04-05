@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { signOutAction } from '@/lib/actions/auth';
-import { Button } from '@/components/ui/button';
 import type { CrmSupabaseContext } from '@/lib/crm/context';
+import { UserMenu } from '@/components/app/user-menu';
 
 type AppNavProps = {
-  context: Pick<CrmSupabaseContext, 'bypass'>;
+  context: Pick<
+    CrmSupabaseContext,
+    'bypass' | 'accountEmail' | 'accountDisplayName'
+  >;
 };
 
 export function AppNav({ context }: AppNavProps) {
@@ -31,9 +33,6 @@ export function AppNav({ context }: AppNavProps) {
             <Link href="/reminders" className="transition hover:text-foreground">
               Reminders
             </Link>
-            <Link href="/settings" className="transition hover:text-foreground">
-              Settings
-            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">
@@ -41,13 +40,12 @@ export function AppNav({ context }: AppNavProps) {
             <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
               Local dev (no sign-in)
             </span>
-          ) : (
-            <form action={signOutAction}>
-              <Button type="submit" variant="secondaryMuted" size="md">
-                Sign out
-              </Button>
-            </form>
-          )}
+          ) : null}
+          <UserMenu
+            bypass={context.bypass}
+            accountEmail={context.accountEmail}
+            accountDisplayName={context.accountDisplayName}
+          />
         </div>
       </div>
     </header>
