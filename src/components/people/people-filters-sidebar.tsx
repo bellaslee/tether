@@ -269,7 +269,7 @@ export function PeopleFiltersSidebar({
       </div>
       <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-1">
         <PeopleFilterDisclosure
-          key={`category-filters-${categoryIds.slice().sort().join('|')}`}
+          key="people-filter-categories"
           initialOpen={categoryFilterInitiallyOpen}
           labelId="people-filter-categories-label"
           label="Categories"

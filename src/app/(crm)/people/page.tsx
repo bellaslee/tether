@@ -327,19 +327,19 @@ export default async function PeoplePage(props: {
                     <h2 className="font-display text-xl tracking-tight text-muted">
                       {sectionTitle}
                     </h2>
-                    <ul className="grid gap-3 md:grid-cols-2">
+                    <ul className="grid grid-cols-1 gap-3">
                       {sectionPeople.map((person) => (
                         <li key={person.id} className="flex min-h-0 min-w-0">
                           <Link
                             href={`/people/${person.id}`}
-                            className="card-surface flex h-full w-full flex-col gap-2 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5"
+                            className="card-surface flex w-full items-start justify-between gap-3 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5"
                           >
-                            <div className="min-w-0 shrink-0">
+                            <div className="min-w-0 flex-1">
                               <p className="font-display text-lg leading-snug tracking-tight">
                                 {personShownName(person)}
                               </p>
                             </div>
-                            <div className="mt-auto flex flex-wrap content-start items-center gap-1.5 text-xs text-muted">
+                            <div className="flex shrink-0 flex-wrap justify-end gap-1.5 text-xs text-muted">
                               <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
                                 {person.person_categories?.name ?? '—'}
                               </span>

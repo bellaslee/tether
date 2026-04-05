@@ -10,6 +10,7 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] ability to filter by relationship strength
 - [ ] fix suggest button placeholder taking up too much space
 - [ ] one combined participant control with an explicit “mark as main” on one row for the interaction edit UI
+- [ ] dark mode
 
 ## User settings
 
