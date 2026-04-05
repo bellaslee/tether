@@ -148,7 +148,7 @@ Recommended contents (adjust to what the codebase actually provides after Milest
 
 ## Concrete Steps
 
-From the repository root (`personal-crm`), after substantive edits:
+From the repository root (`tether`), after substantive edits:
 
     npm run lint
 

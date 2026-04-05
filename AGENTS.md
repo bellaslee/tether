@@ -61,10 +61,10 @@ At the moment, this repo is mostly planning-stage.
 
 Known existing doc:
 
-- [docs/personal-crm-user-stories.md](/Users/bella/Developer/projects/personal-crm/docs/personal-crm-user-stories.md)
-- [docs/phase-1-mvp-schema-design.md](/Users/bella/Developer/projects/personal-crm/docs/phase-1-mvp-schema-design.md)
-- [.agent/PLANS.md](/Users/bella/Developer/projects/personal-crm/.agent/PLANS.md)
-- [docs/plans/initialize-project.md](/Users/bella/Developer/projects/personal-crm/docs/plans/initialize-project.md)
+- [docs/personal-crm-user-stories.md](/Users/bella/Developer/projects/tether/docs/personal-crm-user-stories.md)
+- [docs/phase-1-mvp-schema-design.md](/Users/bella/Developer/projects/tether/docs/phase-1-mvp-schema-design.md)
+- [.agent/PLANS.md](/Users/bella/Developer/projects/tether/.agent/PLANS.md)
+- [docs/plans/initialize-project.md](/Users/bella/Developer/projects/tether/docs/plans/initialize-project.md)
 
 If you add implementation code, keep it consistent with the structure below
 unless the user asks for a different layout.

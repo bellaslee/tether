@@ -89,7 +89,7 @@ Finally, validate everything end to end. Install dependencies, start local Supab
 
 ## Concrete Steps
 
-Run the following commands from the repository root at `/Users/bella/Developer/projects/personal-crm`.
+Run the following commands from the repository root at `/Users/bella/Developer/projects/tether`.
 
 Scaffold the Next.js app:
 
