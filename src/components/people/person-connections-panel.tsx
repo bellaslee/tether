@@ -178,6 +178,7 @@ function AddConnectionForm(props: {
           onChange={(e) => setRelatedId(e.target.value)}
           className={formControlClassName()}
           required
+          autoFocus
         >
           <option value="">Select…</option>
           {otherPeople.map((p) => (

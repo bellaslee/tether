@@ -45,6 +45,7 @@ export function PersonForm(props: PersonFormProps) {
           label="Full name"
           required
           defaultValue={person?.full_name ?? ''}
+          autoFocus={props.mode === 'create'}
         />
         <TextField
           containerClassName="sm:col-span-2"

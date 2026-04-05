@@ -157,6 +157,7 @@ export function ManageConnectionTypesPanel(
             maxLength={120}
             className="min-w-0 flex-1"
             aria-label="New connection type name"
+            autoFocus
           />
           <Button
             type="button"

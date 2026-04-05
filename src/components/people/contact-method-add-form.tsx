@@ -37,6 +37,7 @@ export function ContactMethodAddForm({ personId }: ContactMethodAddFormProps) {
             id={`cm-type-${personId}`}
             name="type"
             required
+            autoFocus
             className={formControlClassName({ size: 'compact' })}
           >
             {CONTACT_METHOD_TYPES.map((t) => (

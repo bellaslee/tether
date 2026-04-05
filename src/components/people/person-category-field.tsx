@@ -140,6 +140,7 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
               maxLength={120}
               fieldSize="dense"
               aria-label="New category name"
+              autoFocus
             />
             <div className="flex flex-wrap gap-2">
               <Button

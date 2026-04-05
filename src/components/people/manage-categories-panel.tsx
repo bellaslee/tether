@@ -153,6 +153,7 @@ export function ManageCategoriesPanel(props: ManageCategoriesPanelProps) {
             maxLength={120}
             className="min-w-0 flex-1"
             aria-label="New category name"
+            autoFocus
           />
           <Button
             type="button"

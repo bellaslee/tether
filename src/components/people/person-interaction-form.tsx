@@ -76,6 +76,7 @@ export function PersonInteractionForm({
             type="datetime-local"
             required
             defaultValue={defaultOccurredAt}
+            autoFocus
           />
         </div>
         <div className="space-y-2">

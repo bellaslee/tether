@@ -166,6 +166,7 @@ function InteractionEditForm({
           value={primaryId}
           onChange={(event) => handlePrimaryChange(event.target.value)}
           className={formControlClassName()}
+          autoFocus
         >
           <option value="">No main person</option>
           {people.map((person) => (

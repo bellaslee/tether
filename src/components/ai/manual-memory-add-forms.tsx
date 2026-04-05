@@ -52,6 +52,7 @@ export function ManualFactForm({
         required
         fieldSize="compact"
         hint="Saved directly to this profile—no AI."
+        autoFocus
       />
       {state.error ? (
         <FieldError size="compact">{state.error}</FieldError>
@@ -109,6 +110,7 @@ export function ManualReminderForm({
         required
         fieldSize="compact"
         hint="Shows as an active open loop you can complete or snooze."
+        autoFocus
       />
       <div className="space-y-2">
         <label

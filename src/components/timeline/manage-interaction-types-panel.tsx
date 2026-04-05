@@ -163,6 +163,7 @@ export function ManageInteractionTypesPanel(
             maxLength={120}
             className="min-w-0 flex-1"
             aria-label="New interaction type name"
+            autoFocus
           />
           <Button
             type="button"
