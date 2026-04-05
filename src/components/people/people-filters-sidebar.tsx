@@ -12,10 +12,6 @@ import {
   type RelationshipWarmth,
 } from '@/lib/people/relationship-warmth';
 import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
-import {
-  PeopleSortControl,
-  type PeopleSortOption,
-} from '@/components/people/people-sort-control';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -32,7 +28,6 @@ type Props = {
   statusValues: PersonStatus[];
   statusFilterInitiallyOpen: boolean;
   warmthFilter: RelationshipWarmth[];
-  sortKey: PeopleSortOption;
 };
 
 function replacePath(
@@ -116,7 +111,6 @@ export function PeopleFiltersSidebar({
   statusValues,
   statusFilterInitiallyOpen,
   warmthFilter,
-  sortKey,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -242,7 +236,6 @@ export function PeopleFiltersSidebar({
 
   return (
     <div className="flex flex-col gap-4">
-      <PeopleSortControl value={sortKey} className="pb-1" />
       <div className="min-w-0 w-full">
         <FormInput
           id="q"

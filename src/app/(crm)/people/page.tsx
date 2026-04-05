@@ -10,6 +10,9 @@ import {
   type RelationshipWarmth,
 } from '@/lib/people/relationship-warmth';
 import { PeopleFiltersSidebar } from '@/components/people/people-filters-sidebar';
+import { PeopleListPreferencesSync } from '@/components/people/people-list-preferences-sync';
+import { PeopleViewSortBar } from '@/components/people/people-view-sort-bar';
+import type { PeopleViewOption } from '@/components/people/people-view-control';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -100,7 +103,69 @@ type PersonListRow = Pick<
   person_categories: { name: string } | null;
 };
 
+function PeopleListItem({
+  person,
+  variant = 'row',
+}: {
+  person: PersonListRow;
+  /** `stacked`: chips below name (grid). `row`: name and chips side by side (list by category). */
+  variant?: 'row' | 'stacked';
+}) {
+  const stacked = variant === 'stacked';
+  return (
+    <li className="flex min-h-0 min-w-0">
+      <Link
+        href={`/people/${person.id}`}
+        className={`card-surface flex w-full gap-3 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5 ${
+          stacked
+            ? 'flex-col items-stretch'
+            : 'items-start justify-between'
+        }`}
+      >
+        <div className={stacked ? 'min-w-0' : 'min-w-0 flex-1'}>
+          <p className="font-display text-lg leading-snug tracking-tight">
+            {personShownName(person)}
+          </p>
+        </div>
+        <div
+          className={`flex flex-wrap gap-1.5 text-xs text-muted ${
+            stacked ? 'justify-start' : 'shrink-0 justify-end'
+          }`}
+        >
+          <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
+            {person.person_categories?.name ?? '—'}
+          </span>
+          <RelationshipWarmthChip
+            lastInteractionAt={person.last_interaction_at}
+            metAt={person.met_at}
+            createdAt={person.created_at}
+            size="compact"
+          />
+          {person.last_interaction_at ? (
+            <span className="rounded-full border border-border-soft px-2.5 py-0.5">
+              Last touch{' '}
+              {new Date(person.last_interaction_at).toLocaleDateString()}
+            </span>
+          ) : (
+            <span className="rounded-full border border-border-soft px-2.5 py-0.5">
+              No interactions yet
+            </span>
+          )}
+        </div>
+      </Link>
+    </li>
+  );
+}
+
 type PeopleSortKey = 'name' | 'last_interaction' | 'created' | 'met';
+
+function parsePeopleView(param: string | undefined): PeopleViewOption {
+  const v = param?.trim().toLowerCase();
+  if (v === 'grid') {
+    return 'grid';
+  }
+  return 'categories';
+}
 
 function parsePeopleSort(param: string | undefined): PeopleSortKey {
   const s = param?.trim();
@@ -164,6 +229,7 @@ export default async function PeoplePage(props: {
     !statusInUrl && statusFromUrl.length === 0 ? ['active'] : statusFromUrl;
   const warmthFilter = parseWarmthFilters(searchParams.warmth);
   const sortKey = parsePeopleSort(first(searchParams.sort));
+  const viewKey = parsePeopleView(first(searchParams.view));
 
   const { data: categoryOptions, error: categoriesError } = await ctx.client
     .from('person_categories')
@@ -216,6 +282,10 @@ export default async function PeoplePage(props: {
           ),
         )
       : peopleList;
+
+  const gridSortedPeople = [...warmthFiltered].sort((a, b) =>
+    comparePeopleListRows(sortKey, a, b),
+  );
 
   type CategoryMeta = { name: string; sort_order: number };
   const categoryMetaById = new Map<string, CategoryMeta>();
@@ -297,12 +367,22 @@ export default async function PeoplePage(props: {
               statusValues={statusValues}
               statusFilterInitiallyOpen={statusFilterInitiallyOpen}
               warmthFilter={warmthFilter}
-              sortKey={sortKey}
             />
           </Suspense>
         </section>
 
         <section className="order-2 min-w-0 space-y-4 lg:order-1 lg:flex-1">
+          <Suspense
+            fallback={
+              <div
+                className="h-9 animate-pulse rounded-2xl border border-border-soft bg-white/40"
+                aria-hidden
+              />
+            }
+          >
+            <PeopleListPreferencesSync />
+            <PeopleViewSortBar viewKey={viewKey} sortKey={sortKey} />
+          </Suspense>
           {warmthFiltered.length === 0 ? (
             <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
               No one here yet, or nothing matches your filters.{' '}
@@ -314,6 +394,16 @@ export default async function PeoplePage(props: {
               </Link>
               .
             </div>
+          ) : viewKey === 'grid' ? (
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {gridSortedPeople.map((person) => (
+                <PeopleListItem
+                  key={person.id}
+                  person={person}
+                  variant="stacked"
+                />
+              ))}
+            </ul>
           ) : (
             <div className="space-y-10">
               {sectionCategoryIds.map((categoryId) => {
@@ -329,41 +419,7 @@ export default async function PeoplePage(props: {
                     </h2>
                     <ul className="grid grid-cols-1 gap-3">
                       {sectionPeople.map((person) => (
-                        <li key={person.id} className="flex min-h-0 min-w-0">
-                          <Link
-                            href={`/people/${person.id}`}
-                            className="card-surface flex w-full items-start justify-between gap-3 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="font-display text-lg leading-snug tracking-tight">
-                                {personShownName(person)}
-                              </p>
-                            </div>
-                            <div className="flex shrink-0 flex-wrap justify-end gap-1.5 text-xs text-muted">
-                              <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
-                                {person.person_categories?.name ?? '—'}
-                              </span>
-                              <RelationshipWarmthChip
-                                lastInteractionAt={person.last_interaction_at}
-                                metAt={person.met_at}
-                                createdAt={person.created_at}
-                                size="compact"
-                              />
-                              {person.last_interaction_at ? (
-                                <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-                                  Last touch{' '}
-                                  {new Date(
-                                    person.last_interaction_at,
-                                  ).toLocaleDateString()}
-                                </span>
-                              ) : (
-                                <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-                                  No interactions yet
-                                </span>
-                              )}
-                            </div>
-                          </Link>
-                        </li>
+                        <PeopleListItem key={person.id} person={person} />
                       ))}
                     </ul>
                   </section>

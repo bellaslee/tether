@@ -109,9 +109,6 @@ function InteractionEditForm({
     [interactionId, resolvedPrimary, attendeeIds],
   );
 
-  const autoRevealList =
-    Boolean(resolvedPrimary) || attendeeIds.filter(Boolean).length > 0;
-
   const [state, formAction, pending] = useActionState(
     updateInteraction.bind(null, interactionId),
     initial,
@@ -142,9 +139,9 @@ function InteractionEditForm({
           People
         </p>
         <p className="text-xs text-muted">
-          Tap a row to include someone. Use{' '}
-          <span className="font-medium text-foreground">Mark as main</span> if
-          the moment was mostly about one person (optional).
+          Select who was part of this moment. Use{' '}
+          <span className="font-medium text-foreground">Mark as main</span> if it
+          was mostly about one person (optional).
         </p>
         <div
           role="group"
@@ -155,7 +152,7 @@ function InteractionEditForm({
             people={people}
             initialPrimaryId={resolvedPrimary}
             initialAttendeeIds={attendeeIds}
-            autoRevealList={autoRevealList}
+            autoRevealList={false}
           />
         </div>
       </div>
