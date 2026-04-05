@@ -23,7 +23,11 @@ import {
   type ConnectionTypeOption,
 } from '@/lib/people/connection-type-options';
 import { PersonConnectionsPanel } from '@/components/people/person-connections-panel';
-import { PersonMemorySection } from '@/components/ai/person-memory-section';
+import {
+  PersonBriefsSection,
+  PersonFactsSection,
+  PersonRemindersSection,
+} from '@/components/ai/person-memory-section';
 import { hasOpenAiApiKey } from '@/lib/env';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -72,12 +76,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const { id } = await props.params;
   const searchParams = await props.searchParams;
   const tabParam = first(searchParams.tab);
-  const tab =
-    tabParam === 'details'
-      ? 'details'
-      : tabParam === 'memory'
-        ? 'memory'
-        : 'overview';
+  const tab = tabParam === 'details' ? 'details' : 'overview';
 
   const ctx = await requireCrmAccess();
 
@@ -277,7 +276,7 @@ export default async function PersonDetailPage(props: PageProps) {
   let taskRows: Tables<'tasks'>[] = [];
   const interactionLabels = new Map<string, string>();
 
-  if (tab === 'memory') {
+  if (tab === 'overview') {
     const { data: factsData, error: factsError } = await ctx.client
       .from('facts')
       .select('*')
@@ -361,13 +360,7 @@ export default async function PersonDetailPage(props: PageProps) {
               href={`/people/${person.id}?tab=details`}
               className={tab === 'details' ? tabLinkActive : tabLinkInactive}
             >
-              Details
-            </Link>
-            <Link
-              href={`/people/${person.id}?tab=memory`}
-              className={tab === 'memory' ? tabLinkActive : tabLinkInactive}
-            >
-              Memory &amp; follow-ups
+              Contact and Connections
             </Link>
           </nav>
         }
@@ -411,58 +404,81 @@ export default async function PersonDetailPage(props: PageProps) {
       </PersonDetailHeader>
 
       {tab === 'overview' ? (
-        <>
-        <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
-          <section
-            className="card-surface min-w-0 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:sticky lg:top-6"
-            aria-label="Relationship context"
-          >
-            <h2 className="font-display text-2xl">Context</h2>
-            <div className="mt-6">
-              <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                <DetailItem label="Pronouns" value={person.pronouns} />
-                <DetailItem
-                  label="Birthday"
-                  value={
-                    person.birthday ? formatDateOnly(person.birthday) : null
-                  }
-                />
-                <DetailItem
-                  label="Met"
-                  value={
-                    person.met_at ? formatMonthYear(person.met_at) : null
-                  }
-                />
-                <DetailItem label="Location" value={person.location} />
-                <DetailItem label="Occupation" value={person.occupation} />
-                <DetailItem label="Company" value={person.company} />
-                <DetailItem
-                  label="Last interaction"
-                  value={
-                    person.last_interaction_at
-                      ? formatDateTime(person.last_interaction_at)
-                      : null
-                  }
-                />
-                <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                    How you met
-                  </p>
-                  <p className="mt-1 leading-7 text-foreground/90">
-                    {person.how_you_met ?? '—'}
-                  </p>
-                </div>
-                <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                    Relationship context
-                  </p>
-                  <p className="mt-1 leading-7 text-foreground/90">
-                    {person.relationship_context ?? '—'}
-                  </p>
+        <div className="flex min-w-0 flex-col gap-8">
+          <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch lg:gap-8">
+            <section
+              className="card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:sticky lg:top-6"
+              aria-label="Relationship context"
+            >
+              <h2 className="shrink-0 font-display text-2xl">Context</h2>
+              <div className="mt-6 min-h-0 flex-1">
+                <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                  <DetailItem label="Pronouns" value={person.pronouns} />
+                  <DetailItem
+                    label="Birthday"
+                    value={
+                      person.birthday ? formatDateOnly(person.birthday) : null
+                    }
+                  />
+                  <DetailItem
+                    label="Met"
+                    value={
+                      person.met_at ? formatMonthYear(person.met_at) : null
+                    }
+                  />
+                  <DetailItem label="Location" value={person.location} />
+                  <DetailItem label="Occupation" value={person.occupation} />
+                  <DetailItem label="Company" value={person.company} />
+                  <DetailItem
+                    label="Last interaction"
+                    value={
+                      person.last_interaction_at
+                        ? formatDateTime(person.last_interaction_at)
+                        : null
+                    }
+                  />
+                  <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      How you met
+                    </p>
+                    <p className="mt-1 leading-7 text-foreground/90">
+                      {person.how_you_met ?? '—'}
+                    </p>
+                  </div>
+                  <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      Relationship context
+                    </p>
+                    <p className="mt-1 leading-7 text-foreground/90">
+                      {person.relationship_context ?? '—'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+
+            <PersonBriefsSection
+              personId={person.id}
+              aiEnabled={aiEnabled}
+              summaries={summaryRows}
+              interactionLabels={interactionLabels}
+            />
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-stretch">
+            <PersonFactsSection
+              personId={person.id}
+              aiEnabled={aiEnabled}
+              hasRecentNotes={hasRecentNotes}
+              facts={factRows}
+            />
+            <PersonRemindersSection
+              personId={person.id}
+              aiEnabled={aiEnabled}
+              hasRecentNotes={hasRecentNotes}
+              tasks={taskRows}
+            />
+          </div>
 
           <section
             className="card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
@@ -568,21 +584,10 @@ export default async function PersonDetailPage(props: PageProps) {
             )}
           </section>
         </div>
-        </>
-      ) : tab === 'memory' ? (
-        <PersonMemorySection
-          personId={person.id}
-          aiEnabled={aiEnabled}
-          hasRecentNotes={hasRecentNotes}
-          facts={factRows ?? []}
-          summaries={summaryRows ?? []}
-          tasks={taskRows ?? []}
-          interactionLabels={interactionLabels}
-        />
       ) : (
         <section
           className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
-          aria-label="Contact methods and connections"
+          aria-label="Contact and Connections"
         >
           <div className="card-surface flex min-h-0 h-full flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
             <h2 className="shrink-0 font-display text-2xl">Stay in touch</h2>
