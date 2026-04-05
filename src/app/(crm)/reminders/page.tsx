@@ -124,7 +124,7 @@ export default async function RemindersPage() {
           <p className="mt-6 text-sm text-muted">
             Nothing here yet. Add a reminder on someone’s profile, or use{' '}
             <span className="font-medium text-foreground/80">
-              Suggest follow-ups
+              Suggest reminders
             </span>{' '}
             from their timeline notes.{' '}
             <Link

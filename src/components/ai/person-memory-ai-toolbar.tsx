@@ -79,7 +79,7 @@ export function SuggestFollowUpsControl({
         <p className="max-w-[14rem] text-xs leading-relaxed text-muted">
           Add{' '}
           <span className="font-medium text-foreground/80">OPENAI_API_KEY</span>{' '}
-          to suggest follow-ups from notes.
+          to suggest reminders from notes.
         </p>
       </div>
     );
@@ -89,7 +89,7 @@ export function SuggestFollowUpsControl({
     return (
       <div className="flex flex-col items-end gap-2 text-right">
         <p className="max-w-[14rem] text-xs leading-relaxed text-muted">
-          Log a timeline interaction with a note to suggest follow-ups from
+          Log a timeline interaction with a note to suggest reminders from
           recent notes.
         </p>
       </div>
@@ -106,7 +106,7 @@ export function SuggestFollowUpsControl({
           variant="secondaryMuted"
           disabled={pending}
         >
-          {pending ? 'Suggesting…' : 'Suggest follow-ups'}
+          {pending ? 'Suggesting reminders…' : 'Suggest reminders'}
         </Button>
         {state.error ? (
           <FieldError size="inline">{state.error}</FieldError>

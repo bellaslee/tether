@@ -186,7 +186,7 @@ export function PersonRemindersMemorySection({
             <span className="font-medium text-foreground/80">Add reminder</span>{' '}
             for something you want to follow up on, or use{' '}
             <span className="font-medium text-foreground/80">
-              Suggest follow-ups
+              Suggest reminders
             </span>{' '}
             from your notes.
           </p>
