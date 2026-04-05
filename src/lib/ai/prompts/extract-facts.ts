@@ -31,6 +31,7 @@ export function buildExtractFactsInstructions() {
     '- "Had dinner on Tuesday."',
     '- "Was busy this week."',
     '- "Talked about work and family."',
+    'Return an empty output if there are no good facts to extract.',
   ].join('\n');
 }
 
