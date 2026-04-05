@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { GlobalInteractionForm } from '@/components/interactions/global-interaction-form';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { requirePrmAccess } from '@/lib/prm/guard';
 import { toNewInteractionDatetimeLocalInputValue } from '@/lib/datetime';
 import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
@@ -8,7 +8,7 @@ import {
 } from '@/lib/interactions/type-options';
 
 export default async function NewInteractionPage() {
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
 
   const { data: people, error } = await ctx.client
     .from('people')
@@ -40,7 +40,7 @@ export default async function NewInteractionPage() {
   const defaultOccurredAt = toNewInteractionDatetimeLocalInputValue();
 
   return (
-    <main className="crm-form-shell max-w-3xl">
+    <main className="prm-form-shell max-w-3xl">
       <div>
         <Link
           href="/timeline"
@@ -48,7 +48,7 @@ export default async function NewInteractionPage() {
         >
           ← Timeline
         </Link>
-        <p className="crm-eyebrow mt-4">Shared moments</p>
+        <p className="prm-eyebrow mt-4">Shared moments</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
           Log a shared moment
         </h1>

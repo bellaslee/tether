@@ -5,7 +5,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import {
   hasUpstashRedisForRateLimit,
-  isCrmLlmRateLimitDisabled,
+  isPrmLlmRateLimitDisabled,
 } from '@/lib/env';
 
 export type LlmRateLimitIdentity = {
@@ -30,42 +30,42 @@ function createLimiters(redis: Redis): Limiters {
   return {
     userBurst: new Ratelimit({
       redis,
-      prefix: 'crm:llm:u:burst',
+      prefix: 'prm:llm:u:burst',
       limiter: Ratelimit.slidingWindow(3, '5 s'),
     }),
     userMinute: new Ratelimit({
       redis,
-      prefix: 'crm:llm:u:min',
+      prefix: 'prm:llm:u:min',
       limiter: Ratelimit.slidingWindow(5, '1 m'),
     }),
     userHour: new Ratelimit({
       redis,
-      prefix: 'crm:llm:u:hr',
+      prefix: 'prm:llm:u:hr',
       limiter: Ratelimit.slidingWindow(200, '1 h'),
     }),
     userDay: new Ratelimit({
       redis,
-      prefix: 'crm:llm:u:day',
+      prefix: 'prm:llm:u:day',
       limiter: Ratelimit.slidingWindow(1000, '1 d'),
     }),
     ipBurst: new Ratelimit({
       redis,
-      prefix: 'crm:llm:ip:burst',
+      prefix: 'prm:llm:ip:burst',
       limiter: Ratelimit.slidingWindow(3, '5 s'),
     }),
     ipMinute: new Ratelimit({
       redis,
-      prefix: 'crm:llm:ip:min',
+      prefix: 'prm:llm:ip:min',
       limiter: Ratelimit.slidingWindow(5, '1 m'),
     }),
     ipHour: new Ratelimit({
       redis,
-      prefix: 'crm:llm:ip:hr',
+      prefix: 'prm:llm:ip:hr',
       limiter: Ratelimit.slidingWindow(200, '1 h'),
     }),
     ipDay: new Ratelimit({
       redis,
-      prefix: 'crm:llm:ip:day',
+      prefix: 'prm:llm:ip:day',
       limiter: Ratelimit.slidingWindow(1000, '1 d'),
     }),
   };
@@ -114,13 +114,13 @@ export type LlmRateLimitResult =
  * - Burst: 3 requests / 5s (quick back-to-back clicks)
  * - 5 / minute, 200 / hour, 1000 / day (sliding windows)
  *
- * Requires Upstash Redis in production, unless CRM_DISABLE_LLM_RATE_LIMIT is set.
+ * Requires Upstash Redis in production, unless PRM_DISABLE_LLM_RATE_LIMIT is set.
  * In development, missing Redis is allowed so local work does not need Upstash.
  */
 export async function enforceLlmRateLimits(
   id: LlmRateLimitIdentity,
 ): Promise<LlmRateLimitResult> {
-  if (isCrmLlmRateLimitDisabled()) {
+  if (isPrmLlmRateLimitDisabled()) {
     return { ok: true };
   }
 
@@ -132,7 +132,7 @@ export async function enforceLlmRateLimits(
     return {
       ok: false,
       message:
-        'AI rate limiting is not configured. Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN, or set CRM_DISABLE_LLM_RATE_LIMIT=true only for controlled environments.',
+        'AI rate limiting is not configured. Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN, or set PRM_DISABLE_LLM_RATE_LIMIT=true only for controlled environments.',
       retryAfterMs: 60_000,
     };
   }

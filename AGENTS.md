@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository is for a personal relationship CRM focused on friends first and
+This repository is for a personal relationship PRM focused on friends first and
 networking second.
 
 The product is meant to help the user remember:
@@ -16,11 +16,11 @@ The product is meant to help the user remember:
 - what open loops still exist
 
 The product should feel warm, respectful, and useful. It should not feel like a
-sales CRM.
+sales PRM.
 
 ## Product Philosophy
 
-- Build a solid CRM first. AI is a layer on top, not the foundation.
+- Build a solid PRM first. AI is a layer on top, not the foundation.
 - Optimize for trust, recall, and thoughtful follow-up.
 - Friends are the primary use case. Networking support is secondary.
 - Avoid creepy automation. The app should assist, not surveil.
@@ -61,7 +61,7 @@ At the moment, this repo is mostly planning-stage.
 
 Known existing doc:
 
-- [docs/personal-crm-user-stories.md](/Users/bella/Developer/projects/tether/docs/personal-crm-user-stories.md)
+- [docs/personal-prm-user-stories.md](/Users/bella/Developer/projects/tether/docs/personal-prm-user-stories.md)
 - [docs/phase-1-mvp-schema-design.md](/Users/bella/Developer/projects/tether/docs/phase-1-mvp-schema-design.md)
 - [.agent/PLANS.md](/Users/bella/Developer/projects/tether/.agent/PLANS.md)
 - [docs/plans/initialize-project.md](/Users/bella/Developer/projects/tether/docs/plans/initialize-project.md)
@@ -189,7 +189,7 @@ Build in this order unless the user asks for something else.
 
 - embeddings
 - semantic search
-- ask-my-CRM workflow
+- ask-my-PRM workflow
 
 ### Phase 4
 
@@ -300,7 +300,7 @@ Avoid:
   without traceability
 - Prefer deterministic or low-variance settings for extraction workflows and
   more flexible settings only when summarization clearly benefits
-- Build graceful failure paths so the core CRM still works when AI calls fail,
+- Build graceful failure paths so the core PRM still works when AI calls fail,
   time out, or are disabled
 
 ## Database Design Best Practices
@@ -375,12 +375,12 @@ forms, errors, and list rows stay visually consistent.
 
 ### Product tone and language
 
-Keep the friend-first, warm, non-sales CRM voice described under **Product
+Keep the friend-first, warm, non-sales PRM voice described under **Product
 Philosophy** and **UX Guardrails**. Do not contradict those rules here.
 
 ### Layout and surfaces
 
-- Primary page framing uses utilities such as `crm-page`, `card-surface`, and
+- Primary page framing uses utilities such as `prm-page`, `card-surface`, and
   `border-border-soft` on large rounded shells (often `rounded-[1.75rem]`).
 - Softer inline regions use translucent whites (`bg-white/80`, `bg-white/60`)
   and generous radius (`rounded-2xl`) for controls and nested panels.
@@ -483,7 +483,7 @@ When making tradeoffs, prefer:
 2. clarity over cleverness
 3. editable structured data over opaque AI output
 4. Postgres simplicity over exotic infrastructure
-5. friend-first UX over professional-CRM behavior
+5. friend-first UX over professional-PRM behavior
 
 If a proposed feature would make the app feel intrusive, transactional, or
 overly automated, pause and reconsider the implementation.

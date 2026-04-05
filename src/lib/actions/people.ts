@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { PersonStatus } from '@/lib/db/database.types';
-import { getCrmSupabaseContext } from '@/lib/crm/context';
+import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { syncCategoryChangeTimelineEntry } from '@/lib/interactions/category-change-audit';
 
@@ -24,7 +24,7 @@ export async function createPerson(
   _prev: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }
@@ -109,7 +109,7 @@ export async function updatePerson(
   _prev: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }

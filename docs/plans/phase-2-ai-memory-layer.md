@@ -4,7 +4,7 @@ This ExecPlan is a living document. The sections `Progress`, `Surprises & Discov
 
 Repository ExecPlan authoring rules live at `.agent/PLANS.md`. This document must be maintained in accordance with that file.
 
-**Prerequisites (checked in):** Phase 1 CRM data model and UI are implemented per `docs/plans/phase-1-core-crm.md` and migrations under `supabase/migrations/`. Tables `people`, `contact_methods`, `interactions`, and `interaction_people` exist with RLS. Server data access uses `src/lib/db/server.ts` (and optional service-role path for local dev bypass). A minimal OpenAI client stub exists at `src/lib/ai/openai.ts`.
+**Prerequisites (checked in):** Phase 1 PRM data model and UI are implemented per `docs/plans/phase-1-core-prm.md` and migrations under `supabase/migrations/`. Tables `people`, `contact_methods`, `interactions`, and `interaction_people` exist with RLS. Server data access uses `src/lib/db/server.ts` (and optional service-role path for local dev bypass). A minimal OpenAI client stub exists at `src/lib/ai/openai.ts`.
 
 ---
 
@@ -28,7 +28,7 @@ Users can **accept, edit, or delete** extracted facts and **keep, edit, snooze, 
 - [x] (2026-04-04) Server actions or route handlers for: run extraction on one interaction; list/review/update/delete facts; generate and refresh summaries; suggest tasks; optional “refresh summaries after new interaction” hook (manual button first; automatic refresh can be a follow-up if it risks cost loops).
 - [x] (2026-04-04) UI on person detail and/or interaction views: fact review, summary panel, suggested tasks, source links back to interactions.
 - [x] (2026-04-04) Wire `OPENAI_API_KEY` (and any model name env vars) in `src/lib/env.ts` and `.env.example`; document local testing.
-- [x] (2026-04-04) Run `npm run lint` and `npm run build`; execute validation scenarios from `docs/personal-crm-user-stories.md` Phase 2 and this plan’s Validation section.
+- [x] (2026-04-04) Run `npm run lint` and `npm run build`; execute validation scenarios from `docs/personal-prm-user-stories.md` Phase 2 and this plan’s Validation section.
 
 Use timestamps on items as they complete, per `.agent/PLANS.md`.
 
@@ -85,11 +85,11 @@ Update when the plan completes.
 
 ## Context and Orientation
 
-**Phase 2 user stories** live in `docs/personal-crm-user-stories.md` under “Phase 2: AI Memory Layer.” They cover fact extraction from interactions, human review of facts, relationship summaries, next-meeting-style briefs, summary refresh after activity, task extraction from notes, and review of reminder suggestions.
+**Phase 2 user stories** live in `docs/personal-prm-user-stories.md` under “Phase 2: AI Memory Layer.” They cover fact extraction from interactions, human review of facts, relationship summaries, next-meeting-style briefs, summary refresh after activity, task extraction from notes, and review of reminder suggestions.
 
 **Phase 1 schema** in `docs/phase-1-mvp-schema-design.md` intentionally omitted `facts`, `relationship_summaries`, and `tasks`. This phase adds them via new migrations. Each new table should include **`user_id`** (or strict RLS via join ownership to `people` / `interactions` that already carry `user_id`) so policies stay simple.
 
-**Existing code paths:** People and interactions are loaded in App Router pages under `src/app/(crm)/`. OpenAI is not yet wired beyond `createOpenAiClient()` in `src/lib/ai/openai.ts`. Environment validation belongs in `src/lib/env.ts`.
+**Existing code paths:** People and interactions are loaded in App Router pages under `src/app/(prm)/`. OpenAI is not yet wired beyond `createOpenAiClient()` in `src/lib/ai/openai.ts`. Environment validation belongs in `src/lib/env.ts`.
 
 **Terms:**
 
@@ -101,7 +101,7 @@ Update when the plan completes.
 
 - **Placeholder** means a deliberate token or structured field in model output that the UI or server replaces with real data from the database **after** inference, only when appropriate.
 
-**Phase 3 cross-reference:** When you add the **semantic recall and Ask interface** (`docs/personal-crm-user-stories.md`, “Phase 3: Semantic Recall and Ask Interface”), treat the PII module from Milestone B (`src/lib/ai/pii/`, placeholderization, forbidden-field list, UUID-in / resolve-locally-out) as the **single shared boundary** for every outbound LLM call. Retrieval can still use embeddings over stored text, but **question prompts, reranker context, and answer composition** sent to the model should follow the same rules: person identity as UUID in structured paths, display names and contact values only after local resolution, and user questions optionally scrubbed or constrained the same way as `raw_note`. When Phase 3 gets its own ExecPlan, it should reference this document rather than redefining PII rules.
+**Phase 3 cross-reference:** When you add the **semantic recall and Ask interface** (`docs/personal-prm-user-stories.md`, “Phase 3: Semantic Recall and Ask Interface”), treat the PII module from Milestone B (`src/lib/ai/pii/`, placeholderization, forbidden-field list, UUID-in / resolve-locally-out) as the **single shared boundary** for every outbound LLM call. Retrieval can still use embeddings over stored text, but **question prompts, reranker context, and answer composition** sent to the model should follow the same rules: person identity as UUID in structured paths, display names and contact values only after local resolution, and user questions optionally scrubbed or constrained the same way as `raw_note`. When Phase 3 gets its own ExecPlan, it should reference this document rather than redefining PII rules.
 
 ---
 
@@ -123,7 +123,7 @@ Regenerate Supabase TypeScript types if the project uses a generator for `src/li
 
 ### Milestone B — PII boundary module (required before any feature prompts)
 
-Create a small, well-tested module (for example `src/lib/ai/pii/redact.ts` and `src/lib/ai/pii/resolve.ts`) that centralizes rules. Design it so **Phase 3 Ask-my-CRM** can import the same helpers without a parallel policy (see **Phase 3 cross-reference** under Context and Orientation). **Forbidden for prompts** when loaded from the database: `people.full_name`, `people.display_name`, `people.birthday`, `people.location`, `people.pronouns`, `people.occupation`, `people.company`, and all `contact_methods` rows (types and values), plus any future column explicitly marked sensitive in this plan’s Decision Log. **Allowed:** `people.id`, `people.category`, `people.status`, and coarse non-identifying enums if truly needed for tone (justify in Decision Log if you add more).
+Create a small, well-tested module (for example `src/lib/ai/pii/redact.ts` and `src/lib/ai/pii/resolve.ts`) that centralizes rules. Design it so **Phase 3 Ask-my-PRM** can import the same helpers without a parallel policy (see **Phase 3 cross-reference** under Context and Orientation). **Forbidden for prompts** when loaded from the database: `people.full_name`, `people.display_name`, `people.birthday`, `people.location`, `people.pronouns`, `people.occupation`, `people.company`, and all `contact_methods` rows (types and values), plus any future column explicitly marked sensitive in this plan’s Decision Log. **Allowed:** `people.id`, `people.category`, `people.status`, and coarse non-identifying enums if truly needed for tone (justify in Decision Log if you add more).
 
 **Note text (`raw_note`):** Before sending a note to the model, run a **local placeholderization** step: for every `person_id` linked to the interaction via `interaction_people`, load **name aliases** (display name and full name) **only in server memory**, build a longest-match or safe replacement strategy, and replace occurrences in the note string with a neutral token such as `[person:<uuid>]` so the model learns facts about “the person identified by this id” without receiving the legal name from the column. This does not guarantee removal of names the user typed that are not in the database; it **does** guarantee structured names from profiles are not duplicated into the prompt. Document that residual risk in `Surprises & Discoveries` if user testing shows gaps.
 
@@ -147,7 +147,7 @@ Similar pipeline: placeholderized note, person ids, structured output for sugges
 
 ### Milestone F — Configuration, failure modes, and docs
 
-Extend `src/lib/env.ts` and `.env.example` with `OPENAI_API_KEY` and a **default model name** constant or env var. If the key is missing, AI buttons should **fail gracefully** with a clear message; core CRM pages must still load per `AGENTS.md`.
+Extend `src/lib/env.ts` and `.env.example` with `OPENAI_API_KEY` and a **default model name** constant or env var. If the key is missing, AI buttons should **fail gracefully** with a clear message; core PRM pages must still load per `AGENTS.md`.
 
 Optional: add a **development-only** logging flag that prints **redacted** prompt previews (never log secrets, never log unredacted notes in production).
 
@@ -192,7 +192,7 @@ Phrase checks as observable behavior.
 
 **Auth isolation:** A second local user cannot load another user’s facts, summaries, or tasks (RLS).
 
-**Graceful degradation:** With `OPENAI_API_KEY` unset, CRM pages work; AI actions show a helpful error.
+**Graceful degradation:** With `OPENAI_API_KEY` unset, PRM pages work; AI actions show a helpful error.
 
 ---
 
@@ -232,4 +232,4 @@ Inductive examples belong here as the implementation produces them (sample JSON 
 
 - **2026-04-04:** Initial ExecPlan authored for Phase 2 with non-negotiable PII-safe LLM boundaries, UUID identity in prompts, local display-name resolution, and placeholder-based contact handling per product owner direction.
 
-- **2026-04-04:** Added explicit **Phase 3** cross-reference so semantic search and Ask-my-CRM reuse the same `src/lib/ai/pii/` boundary; future Phase 3 ExecPlan should cite this plan for PII rules instead of duplicating them.
+- **2026-04-04:** Added explicit **Phase 3** cross-reference so semantic search and Ask-my-PRM reuse the same `src/lib/ai/pii/` boundary; future Phase 3 ExecPlan should cite this plan for PII rules instead of duplicating them.

@@ -1,5 +1,5 @@
-const VIEW_STORAGE_KEY = 'crm.people.listView';
-const SORT_STORAGE_KEY = 'crm.people.listSort';
+const VIEW_STORAGE_KEY = 'prm.people.listView';
+const SORT_STORAGE_KEY = 'prm.people.listSort';
 
 export type ListViewPreference = 'categories' | 'grid';
 

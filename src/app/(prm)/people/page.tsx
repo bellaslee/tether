@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { ButtonLink } from '@/components/ui/button';
 import type { PersonStatus, Tables } from '@/lib/db/database.types';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { requirePrmAccess } from '@/lib/prm/guard';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { personShownName } from '@/lib/people/list-name';
 import {
@@ -218,7 +218,7 @@ function comparePeopleListRows(
 export default async function PeoplePage(props: {
   searchParams: SearchParams;
 }) {
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
   const searchParams = await props.searchParams;
   const q = first(searchParams.q)?.trim() ?? '';
   const categoryInUrl = Object.hasOwn(searchParams, 'category');
@@ -335,10 +335,10 @@ export default async function PeoplePage(props: {
     statusInUrl && statusFromUrl.length > 0;
 
   return (
-    <main className="crm-page">
+    <main className="prm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="crm-eyebrow">Your circle</p>
+          <p className="prm-eyebrow">Your circle</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">People</h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
             Details you don’t want to forget. Let them know you care.

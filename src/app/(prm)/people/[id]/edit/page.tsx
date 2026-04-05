@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PersonForm } from '@/components/people/person-form';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { requirePrmAccess } from '@/lib/prm/guard';
 import { personShownName } from '@/lib/people/list-name';
 
 type PageProps = { params: Promise<{ id: string }> };
 
 export default async function EditPersonPage(props: PageProps) {
   const { id } = await props.params;
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
 
   const { data: person, error } = await ctx.client
     .from('people')
@@ -35,7 +35,7 @@ export default async function EditPersonPage(props: PageProps) {
   }
 
   return (
-    <main className="crm-form-shell max-w-4xl">
+    <main className="prm-form-shell max-w-4xl">
       <div>
         <Link
           href={`/people/${person.id}`}
@@ -43,7 +43,7 @@ export default async function EditPersonPage(props: PageProps) {
         >
           ← Back to profile
         </Link>
-        <p className="crm-eyebrow mt-4">Profile</p>
+        <p className="prm-eyebrow mt-4">Profile</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
           Edit {personShownName(person)}
         </h1>

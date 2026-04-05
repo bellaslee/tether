@@ -81,8 +81,8 @@ summary {
   box-shadow: var(--shadow);
 }
 
-/** Shared CRM page shells — keep list views and form flows visually aligned. */
-.crm-page {
+/** Shared PRM page shells — keep list views and form flows visually aligned. */
+.prm-page {
   margin-inline: auto;
   display: flex;
   width: 100%;
@@ -95,18 +95,18 @@ summary {
 }
 
 @media (min-width: 640px) {
-  .crm-page {
+  .prm-page {
     padding-inline: 2.5rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .crm-page {
+  .prm-page {
     padding-inline: 3rem;
   }
 }
 
-.crm-form-shell {
+.prm-form-shell {
   margin-inline: auto;
   display: flex;
   width: 100%;
@@ -118,18 +118,18 @@ summary {
 }
 
 @media (min-width: 640px) {
-  .crm-form-shell {
+  .prm-form-shell {
     padding-inline: 2.5rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .crm-form-shell {
+  .prm-form-shell {
     padding-inline: 3rem;
   }
 }
 
-.crm-eyebrow {
+.prm-eyebrow {
   font-size: 0.75rem;
   line-height: 1rem;
   font-weight: 600;

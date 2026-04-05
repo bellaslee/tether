@@ -17,7 +17,7 @@ const displayFont = Newsreader({
 export const metadata: Metadata = {
   title: 'Tether',
   description:
-    'A warm, respectful relationship CRM for remembering people well.',
+    'A warm, respectful relationship PRM for remembering people well.',
 };
 
 export default function RootLayout({

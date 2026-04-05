@@ -2,10 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/app/site-footer";
 import { LoginForm } from "@/components/auth/login-form";
-import { getCrmSupabaseContext } from "@/lib/crm/context";
+import { getPrmSupabaseContext } from "@/lib/prm/context";
 
 export default async function LoginPage() {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (ctx) {
     redirect("/people");
   }

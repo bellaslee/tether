@@ -3,14 +3,14 @@ import type { Metadata } from 'next';
 import { ManageCategoriesPanel } from '@/components/people/manage-categories-panel';
 import { ManageConnectionTypesPanel } from '@/components/people/manage-connection-types-panel';
 import { ManageInteractionTypesPanel } from '@/components/timeline/manage-interaction-types-panel';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { requirePrmAccess } from '@/lib/prm/guard';
 
 export const metadata: Metadata = {
-  title: 'Label settings · Personal CRM',
+  title: 'Label settings · Tether',
 };
 
 export default async function SettingsPage() {
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
 
   const [categoriesRes, connectionTypesRes, interactionTypesRes] =
     await Promise.all([
@@ -50,7 +50,7 @@ export default async function SettingsPage() {
         >
           ← People
         </Link>
-        <p className="crm-eyebrow mt-4">Your workspace</p>
+        <p className="prm-eyebrow mt-4">Your workspace</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
           Label settings
         </h1>

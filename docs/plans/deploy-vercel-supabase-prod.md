@@ -6,7 +6,7 @@ If the repository’s authoring guide is checked in, it lives at [.agent/PLANS.m
 
 ## Purpose / Big Picture
 
-After this work, the **Tether** CRM (this Next.js app) runs on the public internet at a stable HTTPS URL served by **Vercel**, and **all CRM data and authentication** are backed by a **hosted Supabase** Postgres project whose schema matches the SQL migrations in this repository. A real user can sign up or sign in, use people, timeline, reminders, and (if configured) AI features, with **row level security** enforcing that each account sees only its own data. **You can also load the same CRM rows you already have in local development** (people, interactions, facts, and so on) so production does not start empty—after import, signing in as your production user shows the familiar dataset.
+After this work, the **Tether** PRM (this Next.js app) runs on the public internet at a stable HTTPS URL served by **Vercel**, and **all PRM data and authentication** are backed by a **hosted Supabase** Postgres project whose schema matches the SQL migrations in this repository. A real user can sign up or sign in, use people, timeline, reminders, and (if configured) AI features, with **row level security** enforcing that each account sees only its own data. **You can also load the same PRM rows you already have in local development** (people, interactions, facts, and so on) so production does not start empty—after import, signing in as your production user shows the familiar dataset.
 
 You know it is working when you can open the production URL in a private browser window, complete email sign-up or sign-in without redirect errors, and see **your migrated dev rows** under `/people` and `/timeline` (not only empty lists); when `npm run build` succeeds in CI or locally with production-like env; and when the Supabase dashboard shows your project’s tables and applied migrations aligned with `supabase/migrations/`.
 
@@ -37,7 +37,7 @@ Document unexpected behaviors during your deployment (CLI prompts, Vercel build 
   Rationale: Clear data boundaries and simple rotation of keys; avoids accidental writes to prod from experiments.
   Date/Author: (set when executing)
 
-- Decision: Store **only** the Supabase **anon** key and URL in Vercel as `NEXT_PUBLIC_*` variables; do **not** put the Supabase **service role** key in any environment variable that Next.js exposes to the browser bundle. Use the service role only in trusted server-only automation outside this app (if ever needed), not in this CRM’s runtime paths.
+- Decision: Store **only** the Supabase **anon** key and URL in Vercel as `NEXT_PUBLIC_*` variables; do **not** put the Supabase **service role** key in any environment variable that Next.js exposes to the browser bundle. Use the service role only in trusted server-only automation outside this app (if ever needed), not in this PRM’s runtime paths.
   Rationale: This app is designed for cookie-backed sessions and RLS; the service role bypasses RLS and must not be reachable from client code.
   Date/Author: (set when executing)
 
@@ -57,9 +57,9 @@ Summarize here once production is live: final URLs, which Supabase project ref i
 
 **Vercel** is a hosting platform that builds your Git branch on each push and runs the **Next.js** production server (or static/serverless hybrid as Next 16 defines). For this repo, the important command is `npm run build`, which must succeed without missing environment variables for any code path that runs at build time.
 
-**Supabase (hosted)** is a managed Postgres plus Auth API. This app talks to Supabase using **`@supabase/ssr`** and **`@supabase/supabase-js`**. The **anon (public) key** is safe to embed in the browser: access is still limited by **RLS (row level security)**, Postgres rules that filter rows per authenticated user. The **middleware** at [middleware.ts](/middleware.ts) refreshes the session cookie on each request when `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set. CRM routes under `src/app/(crm)/` enforce sign-in via [src/lib/crm/guard.ts](/src/lib/crm/guard.ts) (`requireCrmAccess`).
+**Supabase (hosted)** is a managed Postgres plus Auth API. This app talks to Supabase using **`@supabase/ssr`** and **`@supabase/supabase-js`**. The **anon (public) key** is safe to embed in the browser: access is still limited by **RLS (row level security)**, Postgres rules that filter rows per authenticated user. The **middleware** at [middleware.ts](/middleware.ts) refreshes the session cookie on each request when `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set. PRM routes under `src/app/(prm)/` enforce sign-in via [src/lib/prm/guard.ts](/src/lib/prm/guard.ts) (`requirePrmAccess`).
 
-**Environment variables** are defined for the app in [src/lib/env.ts](/src/lib/env.ts) and summarized for developers in [.env.example](/.env.example). **Production-specific behavior:** if `OPENAI_API_KEY` is set and `NODE_ENV` is `production`, the app expects **Upstash Redis** credentials for LLM rate limiting unless you explicitly set `CRM_DISABLE_LLM_RATE_LIMIT` (discouraged for real production).
+**Environment variables** are defined for the app in [src/lib/env.ts](/src/lib/env.ts) and summarized for developers in [.env.example](/.env.example). **Production-specific behavior:** if `OPENAI_API_KEY` is set and `NODE_ENV` is `production`, the app expects **Upstash Redis** credentials for LLM rate limiting unless you explicitly set `PRM_DISABLE_LLM_RATE_LIMIT` (discouraged for real production).
 
 **Migrations** live under [supabase/migrations/](/supabase/migrations/). The local Supabase CLI config in [supabase/config.toml](/supabase/config.toml) pins **Postgres major version 17**; your hosted project should match that major version before relying on `db push`.
 
@@ -77,7 +77,7 @@ Work in this order so you never point a live Vercel deployment at an empty or wr
 
 **Import dev data milestone (after migrations on hosted Postgres, and after you have a production `auth.users` row).** In practice you usually complete **Auth URL configuration** and a minimal **Vercel deploy with Supabase env** first if you create the account through the app; the **Progress** checklist reflects that order. This step is **in scope** for your deployment goal.
 
-1. **Record your local auth user id.** With local Supabase running, open the **SQL Editor** in local Studio or run `psql` against the local DB URL from `npx supabase status` and execute `select id, email from auth.users order by created_at;`. Note the `id` for the account that owns your CRM rows (call this **LOCAL_USER_ID**).
+1. **Record your local auth user id.** With local Supabase running, open the **SQL Editor** in local Studio or run `psql` against the local DB URL from `npx supabase status` and execute `select id, email from auth.users order by created_at;`. Note the `id` for the account that owns your PRM rows (call this **LOCAL_USER_ID**).
 
 2. **Create the production user before importing `public` data.** Either sign up through the deployed app (requires Vercel env vars, a working build, and Auth **Site URL** / **Redirect URLs** already set) or create the user from Supabase hosted **Authentication → Users** if your project offers that. In the hosted project SQL editor, run `select id, email from auth.users order by created_at desc;` and note **PROD_USER_ID** for the account that should own the imported rows.
 
@@ -97,7 +97,7 @@ Work in this order so you never point a live Vercel deployment at an empty or wr
 
 6. **Verify.** As the production user, sign in on the live app and open `/people` and `/timeline`; counts should match what you had locally for that account. If lists are empty, check RLS is not hiding rows because `user_id` still mismatches **PROD_USER_ID**.
 
-**Security note:** The dump file contains **personal CRM content**. Delete it after a successful import or store it encrypted; never push it to git.
+**Security note:** The dump file contains **Tether content**. Delete it after a successful import or store it encrypted; never push it to git.
 
 **Second milestone — Auth URLs.** In Supabase **Authentication → URL configuration**, set **Site URL** to your canonical production URL (for example `https://<project>.vercel.app` or your custom domain). Add to **Redirect URLs** at minimum that same origin with the paths Supabase uses for your auth flow (email confirmation and PKCE flows often use `/` or paths under your app; if you see redirect errors in the browser, add the exact URL from the error). If you use **Vercel preview deployments** (each branch gets `*.vercel.app` URLs), either add wildcard patterns if your Supabase plan supports them, add each preview base URL as needed, or accept that previews only work when URLs are registered—many teams use a single **staging** Vercel URL plus a staging Supabase project to avoid wildcard complexity.
 
@@ -105,7 +105,7 @@ Work in this order so you never point a live Vercel deployment at an empty or wr
 
 **Fourth milestone — environment variables on Vercel.** In the Vercel project **Settings → Environment Variables**, add the variables below. Use **Production** for the live site; add **Preview** if previews should talk to a real database (often a separate Supabase project) or omit secrets on previews if previews are UI-only.
 
-Required for any working CRM:
+Required for any working PRM:
 
 - `NEXT_PUBLIC_SUPABASE_URL` — from Supabase **Project Settings → API**, Project URL.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — from the same page, **anon** `public` key.
@@ -121,8 +121,8 @@ Strongly recommended when `OPENAI_API_KEY` is set in production:
 Optional:
 
 - `OPENAI_MODEL` — overrides default `gpt-4o-mini` for Responses API calls.
-- `NEXT_PUBLIC_CRM_USAGE_TRACKING` — set to `true` if you intend to enable first-party usage logging described in code comments in `env.ts`.
-- `CRM_DISABLE_LLM_RATE_LIMIT` — only for emergencies; set to `true` to skip distributed limits (not recommended for production).
+- `NEXT_PUBLIC_PRM_USAGE_TRACKING` — set to `true` if you intend to enable first-party usage logging described in code comments in `env.ts`.
+- `PRM_DISABLE_LLM_RATE_LIMIT` — only for emergencies; set to `true` to skip distributed limits (not recommended for production).
 
 Redeploy after saving variables (Vercel offers **Redeploy** on the latest deployment).
 
@@ -167,7 +167,7 @@ All commands assume the **repository root** as the working directory unless note
 
 ## Validation and Acceptance
 
-Acceptance is behavioral. **Build:** `npm run lint` exits 0; `npm run build` completes and emits a production build. **Database:** hosted Supabase lists the same logical schema you get locally after `npx supabase db reset` (tables and RLS present; no migration errors on `db push`). **Auth:** a new user can sign up and sign in on the production URL without “redirect URL not allowed” or similar errors. **CRM:** if you seeded from dev, the signed-in production user sees the same people and interactions they had locally (spot-check a few records and note text); otherwise create and read back new rows. **AI (if enabled):** trigger a feature that calls OpenAI (for example extraction or summary) and confirm it succeeds when Upstash vars are set; without Upstash in production with `OPENAI_API_KEY` set, the app’s setup messaging in `getSetupStatus()` indicates the gap—resolve by adding Upstash or temporarily accepting the emergency flag only for debugging.
+Acceptance is behavioral. **Build:** `npm run lint` exits 0; `npm run build` completes and emits a production build. **Database:** hosted Supabase lists the same logical schema you get locally after `npx supabase db reset` (tables and RLS present; no migration errors on `db push`). **Auth:** a new user can sign up and sign in on the production URL without “redirect URL not allowed” or similar errors. **PRM:** if you seeded from dev, the signed-in production user sees the same people and interactions they had locally (spot-check a few records and note text); otherwise create and read back new rows. **AI (if enabled):** trigger a feature that calls OpenAI (for example extraction or summary) and confirm it succeeds when Upstash vars are set; without Upstash in production with `OPENAI_API_KEY` set, the app’s setup messaging in `getSetupStatus()` indicates the gap—resolve by adding Upstash or temporarily accepting the emergency flag only for debugging.
 
 For tenancy, follow the **two-account manual test** described in [docs/plans/architecture-remediation-supabase-hardening.md](/docs/plans/architecture-remediation-supabase-hardening.md) before you call the deployment “done” for multi-user trust.
 
@@ -177,7 +177,7 @@ For tenancy, follow the **two-account manual test** described in [docs/plans/arc
 
 **Risky operations:** `supabase db reset` on **hosted** data destroys data—only use on disposable projects. Never paste the **service role** key into client-accessible env. If you leak an API key, rotate it in Supabase or OpenAI immediately and update Vercel env. **Re-importing** a dev dump twice without truncating can cause **primary key conflicts**—treat the first successful import as the baseline or truncate selected tables before a re-run on a non-live database.
 
-**Recovery from bad import:** If you imported with the wrong `user_id`, sign-in may show an empty CRM; fix with targeted `UPDATE ... SET user_id = PROD_USER_ID WHERE user_id = wrong_id` per table (only on a database you control), or restore from a Supabase backup if available and retry.
+**Recovery from bad import:** If you imported with the wrong `user_id`, sign-in may show an empty PRM; fix with targeted `UPDATE ... SET user_id = PROD_USER_ID WHERE user_id = wrong_id` per table (only on a database you control), or restore from a Supabase backup if available and retry.
 
 If a migration partially applied, use Supabase support and migration repair workflows documented for the CLI version you use; do not hand-edit production schema without recording the same change in a new migration file for reproducibility.
 

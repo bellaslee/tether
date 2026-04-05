@@ -132,7 +132,7 @@ export function InteractionParticipantPicker({
   if (people.length === 0) {
     return (
       <p className="text-sm text-muted">
-        Add people to your CRM before logging interactions.
+        Add people to your PRM before logging interactions.
       </p>
     );
   }

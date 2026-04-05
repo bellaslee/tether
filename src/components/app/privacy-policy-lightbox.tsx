@@ -119,7 +119,7 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
             </p>
             <p className="text-sm leading-7 text-muted">
               If you use optional voice transcription, only the audio you record for that action is
-              sent to the provider so it can be turned into text; it is not bundled with your CRM
+              sent to the provider so it can be turned into text; it is not bundled with your PRM
               profile or people directory. Those requests are made to deliver the feature you
               triggered, not for unrelated advertising. You should avoid entering information you
               are not comfortable sharing with the AI provider under their terms.

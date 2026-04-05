@@ -20,7 +20,7 @@ export function buildRelationshipSummaryInstructions(
   kind: RelationshipSummaryKind,
 ) {
   return [
-    'You help a personal relationship CRM. The subject person is identified only by UUID.',
+    'You help a personal relationship PRM. The subject person is identified only by UUID.',
     'You receive accepted facts (text only, no names required) and recent interaction snippets with [person:<uuid>] placeholders.',
     'Never include structured PII (phone, email, exact address, birth dates).',
     "Treat the UUIDs as the person's name gramatically, as they will be converted to display names locally in the UI.",

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { ContactMethodType } from "@/lib/db/database.types";
-import { getCrmSupabaseContext } from "@/lib/crm/context";
+import { getPrmSupabaseContext } from "@/lib/prm/context";
 import { CONTACT_METHOD_TYPES } from "@/lib/domain/constants";
 
 export type ActionResult = { error?: string; ok?: true };
@@ -12,7 +12,7 @@ function isContactMethodType(value: string): value is ContactMethodType {
 }
 
 async function assertOwnsPerson(personId: string) {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { error: "You need to sign in again." as const, ctx: null };
   }

@@ -4,13 +4,13 @@ This ExecPlan is a living document. The sections `Progress`, `Surprises & Discov
 
 Repository ExecPlan authoring rules live at `.agent/PLANS.md`. This document must be maintained in accordance with that file.
 
-**Prerequisite (checked in):** The CRM UI is implemented under `src/app` and `src/components` per `AGENTS.md` and prior plans such as `docs/plans/phase-1-core-crm.md`. The stack is Next.js App Router, TypeScript, and Tailwind CSS. A shared button primitive already exists at `src/components/ui/button.tsx`.
+**Prerequisite (checked in):** The PRM UI is implemented under `src/app` and `src/components` per `AGENTS.md` and prior plans such as `docs/plans/phase-1-core-prm.md`. The stack is Next.js App Router, TypeScript, and Tailwind CSS. A shared button primitive already exists at `src/components/ui/button.tsx`.
 
 ---
 
 ## Purpose / Big Picture
 
-After this work, **visually and behaviorally identical UI patterns** appear in **one place** as small, typed React components (or documented Tailwind class helpers) instead of being copy-pasted across pages and feature modules. A contributor can change the look of a **text field**, **inline error**, or **card shell** once and have every screen that uses it stay consistent. **End users** see the same warm, minimal CRM aesthetic everywhere, with fewer accidental inconsistencies (spacing, focus rings, error styling).
+After this work, **visually and behaviorally identical UI patterns** appear in **one place** as small, typed React components (or documented Tailwind class helpers) instead of being copy-pasted across pages and feature modules. A contributor can change the look of a **text field**, **inline error**, or **card shell** once and have every screen that uses it stay consistent. **End users** see the same warm, minimal PRM aesthetic everywhere, with fewer accidental inconsistencies (spacing, focus rings, error styling).
 
 This is primarily a **maintainability and consistency** change. There may be no new user-facing features; success is measured by **reduced duplication**, **stable visuals** after refactors, and **clean page files** that compose named components rather than long repeated `className` strings.
 
@@ -25,7 +25,7 @@ This is primarily a **maintainability and consistency** change. There may be no 
 - [x] (2026-04-04) Complete Milestone A: inventory of repeated patterns and proposed component boundaries (document in this plan’s Artifacts section or Decision Log as the list stabilizes).
 - [x] (2026-04-04) Complete Milestone B: add shared primitives under `src/components/ui/` (or agreed folder) with TypeScript props and accessibility defaults.
 - [x] (2026-04-04) Complete Milestone C: migrate highest-impact call sites (forms and panels) to primitives; remove duplicate class strings.
-- [x] (2026-04-04) Complete Milestone D: migrate remaining pages (`src/app`) and large route files; shrink `people/[id]/page.tsx` composition surface where repetition is structural. *(People list search migrated; `[id]/page.tsx` had no duplicated CRM input strings left to extract.)*
+- [x] (2026-04-04) Complete Milestone D: migrate remaining pages (`src/app`) and large route files; shrink `people/[id]/page.tsx` composition surface where repetition is structural. *(People list search migrated; `[id]/page.tsx` had no duplicated PRM input strings left to extract.)*
 - [x] (2026-04-04) Complete Milestone E: add a **Design guide** section to `AGENTS.md` (repo root); align it with landed primitives and existing UI guidance elsewhere in that file.
 - [x] (2026-04-04) Run `npm run lint` and `npm run build`; manual spot-check of auth, people, timeline, interactions, settings.
 
@@ -40,14 +40,14 @@ Document unexpected coupling (for example a “primitive” that needs server-on
 - Observation: No `clsx` / `tailwind-merge` was added; primitives concatenate classes like `button.tsx`. Optional `className` on controls may not override same-utility conflicts from size presets—call sites should prefer `fieldSize` over fighting padding with extra classes when possible.  
   Evidence: `src/components/ui/form-control-classes.ts`, `form-input.tsx`.
 - Observation: `FormInput` / `FormTextarea` are server-safe (no `'use client'`) and work from the People page Server Component for the GET search field.  
-  Evidence: `src/app/(crm)/people/page.tsx`.
+  Evidence: `src/app/(prm)/people/page.tsx`.
 
 ---
 
 ## Decision Log
 
 - **Decision:** Prefer **small presentational primitives** (`Input`, `Textarea`, `FieldError`, `FormCard`) over one giant “form layout” component unless repetition proves otherwise.  
-  **Rationale:** Matches `AGENTS.md` guidance to keep route files as composition; primitives stay reusable across auth and CRM without forcing one layout.  
+  **Rationale:** Matches `AGENTS.md` guidance to keep route files as composition; primitives stay reusable across auth and PRM without forcing one layout.  
   **Date:** 2026-04-04 / User request
 
 - **Decision:** Default new shared UI to **`src/components/ui/`** next to `button.tsx`; use route-local `src/app/.../_components/` only for UI that is **not** reused outside one route tree.  
@@ -76,7 +76,7 @@ Summarize which primitives landed, approximate count of removed duplicate string
 
 **Migrations:** Auth forms, person form, interaction forms (person, global, edit disclosure), contact method add/row, attendee picker, person category field, manage categories / connection types / interaction types panels, person connections add form, people list search—plus centralized form error callouts.
 
-**Intentional inline exceptions:** Checkbox/radio styling, chip-style borders (`interaction-meta-chips.tsx`), large `card-surface` shells, attendee row hover still composed via `listRowCardClassName` + extra utilities. Person detail and timeline routes did not duplicate the CRM text-input string after grep; no route-local `_components` extract was needed there for this pass.
+**Intentional inline exceptions:** Checkbox/radio styling, chip-style borders (`interaction-meta-chips.tsx`), large `card-surface` shells, attendee row hover still composed via `listRowCardClassName` + extra utilities. Person detail and timeline routes did not duplicate the PRM text-input string after grep; no route-local `_components` extract was needed there for this pass.
 
 **Design guide:** New **Design guide (shared UI)** section in `AGENTS.md` documents the above imports and file locations.
 
@@ -84,13 +84,13 @@ Summarize which primitives landed, approximate count of removed duplicate string
 
 ## Context and Orientation
 
-**Next.js App Router** means route entry files live under `src/app/`. Many CRM screens are under `src/app/(crm)/`. **Server Components** are the default; **Client Components** are marked with `'use client'` at the top of the file.
+**Next.js App Router** means route entry files live under `src/app/`. Many PRM screens are under `src/app/(prm)/`. **Server Components** are the default; **Client Components** are marked with `'use client'` at the top of the file.
 
 **Tailwind CSS** means styling is expressed as `className` strings. **Duplication** here means the same long string (or same combination of utility classes) appears in multiple files, which makes redesigns error-prone.
 
 **Existing shared UI:** `src/components/ui/button.tsx` is the established pattern for a variant-based control. Feature-level components live under `src/components/people/`, `src/components/interactions/`, `src/components/auth/`, `src/components/timeline/`, and `src/components/app/`.
 
-**Known duplication hotspots (non-exhaustive, as of plan authoring):** A repeated **text input** style appears across `person-form.tsx`, `person-interaction-form.tsx`, `global-interaction-form.tsx`, `interaction-edit-disclosure.tsx`, `login-form.tsx`, `signup-form.tsx`, `attendee-picker.tsx`, `person-category-field.tsx`, `manage-categories-panel.tsx`, `manage-connection-types-panel.tsx`, `manage-interaction-types-panel.tsx`, `person-connections-panel.tsx`, and `people/page.tsx`. The pattern is along the lines of full width, `rounded-2xl`, `border-border-soft`, `bg-white/80`, padding, `text-sm`, and `ring-accent/30` on focus. **Error callouts** repeat `border-red-200 bg-red-50` with similar padding across forms. **List row shells** repeat `rounded-2xl border border-border-soft bg-white/60 px-4 py-3` in several manage panels and connection rows. **Smaller-radius** variants (`rounded-xl`, tighter padding) appear in `contact-method-add-form.tsx` and `contact-method-row.tsx`; decide whether to unify radii or expose a `size` variant on primitives. The person detail route `src/app/(crm)/people/[id]/page.tsx` is large and likely contains composition that could use shared **empty states**, **section headers**, or **cards** once those patterns are named.
+**Known duplication hotspots (non-exhaustive, as of plan authoring):** A repeated **text input** style appears across `person-form.tsx`, `person-interaction-form.tsx`, `global-interaction-form.tsx`, `interaction-edit-disclosure.tsx`, `login-form.tsx`, `signup-form.tsx`, `attendee-picker.tsx`, `person-category-field.tsx`, `manage-categories-panel.tsx`, `manage-connection-types-panel.tsx`, `manage-interaction-types-panel.tsx`, `person-connections-panel.tsx`, and `people/page.tsx`. The pattern is along the lines of full width, `rounded-2xl`, `border-border-soft`, `bg-white/80`, padding, `text-sm`, and `ring-accent/30` on focus. **Error callouts** repeat `border-red-200 bg-red-50` with similar padding across forms. **List row shells** repeat `rounded-2xl border border-border-soft bg-white/60 px-4 py-3` in several manage panels and connection rows. **Smaller-radius** variants (`rounded-xl`, tighter padding) appear in `contact-method-add-form.tsx` and `contact-method-row.tsx`; decide whether to unify radii or expose a `size` variant on primitives. The person detail route `src/app/(prm)/people/[id]/page.tsx` is large and likely contains composition that could use shared **empty states**, **section headers**, or **cards** once those patterns are named.
 
 **Terms:**
 
@@ -122,7 +122,7 @@ Replace inline class strings in auth forms, person forms, interaction forms, and
 
 ### Milestone D — Migrate pages and large routes
 
-Refactor `src/app/(crm)/people/[id]/page.tsx`, `timeline/page.tsx`, `people/page.tsx`, and other routes where Milestone A found repetition. Target **readability**: page components should read as a short list of sections, not hundreds of lines of repeated markup. If a pattern is **only** used on one page but appears **many times** on that page, a **route-local** `_components/` file is appropriate.
+Refactor `src/app/(prm)/people/[id]/page.tsx`, `timeline/page.tsx`, `people/page.tsx`, and other routes where Milestone A found repetition. Target **readability**: page components should read as a short list of sections, not hundreds of lines of repeated markup. If a pattern is **only** used on one page but appears **many times** on that page, a **route-local** `_components/` file is appropriate.
 
 ### Milestone E — Design guide in `AGENTS.md`
 
@@ -130,7 +130,7 @@ Add a **Design guide** (or similarly titled) section to **`AGENTS.md`** at the r
 
 Recommended contents (adjust to what the codebase actually provides after Milestone B):
 
-- **Product tone and language:** Friend-first, warm, non-sales CRM; reuse and point to existing **UX Guardrails** / wording rules in `AGENTS.md` rather than contradicting them.
+- **Product tone and language:** Friend-first, warm, non-sales PRM; reuse and point to existing **UX Guardrails** / wording rules in `AGENTS.md` rather than contradicting them.
 
 - **Layout and surfaces:** How pages use max-width, section spacing, and card-like regions; when to use shared shells versus one-off Tailwind. Reference real tokens if the app uses CSS variables or theme names (for example `border-border-soft`, `bg-white/80`).
 
@@ -158,7 +158,7 @@ For local visual verification:
 
     npm run dev
 
-Then open `http://127.0.0.1:3000` (or the host shown in the terminal) and walk the CRM and auth routes. Compare key screens to a screenshot or to production before the refactor if available.
+Then open `http://127.0.0.1:3000` (or the host shown in the terminal) and walk the PRM and auth routes. Compare key screens to a screenshot or to production before the refactor if available.
 
 ---
 
@@ -188,12 +188,12 @@ Work is **safe to do incrementally**. Each merged primitive batch should leave t
 
 | Pattern | Primitive(s) | Notes |
 |--------|----------------|-------|
-| CRM text input / select / textarea (soft border, focus ring, `bg-white/80` or compact `bg-white/90`) | `formControlClassName`, `FormInput`, `FormTextarea` | `fieldSize`: default (2xl, py-3), compact (xl, py-2), dense (flex row renames, py-2.5). |
+| PRM text input / select / textarea (soft border, focus ring, `bg-white/80` or compact `bg-white/90`) | `formControlClassName`, `FormInput`, `FormTextarea` | `fieldSize`: default (2xl, py-3), compact (xl, py-2), dense (flex row renames, py-2.5). |
 | Label + input + hint + optional field error | `TextField`, `TextareaField` | `hintAfter` for copy below control (e.g. password rules). |
 | Form-level / inline error callout | `FieldError` | Variants: default, compact, inline, textOnly. |
 | Settings-style list row shell | `listRowCardClassName`, `ListRowCardLi` | Base `rounded-2xl border … bg-white/60 px-4 py-3`. |
 
-**Highest-traffic files migrated:** `person-form.tsx`, `login-form.tsx`, `signup-form.tsx`, `person-interaction-form.tsx`, `global-interaction-form.tsx`, `interaction-edit-disclosure.tsx`, `contact-method-add-form.tsx`, `contact-method-row.tsx`, `attendee-picker.tsx`, `person-category-field.tsx`, `manage-categories-panel.tsx`, `manage-connection-types-panel.tsx`, `manage-interaction-types-panel.tsx`, `person-connections-panel.tsx`, `src/app/(crm)/people/page.tsx`.
+**Highest-traffic files migrated:** `person-form.tsx`, `login-form.tsx`, `signup-form.tsx`, `person-interaction-form.tsx`, `global-interaction-form.tsx`, `interaction-edit-disclosure.tsx`, `contact-method-add-form.tsx`, `contact-method-row.tsx`, `attendee-picker.tsx`, `person-category-field.tsx`, `manage-categories-panel.tsx`, `manage-connection-types-panel.tsx`, `manage-interaction-types-panel.tsx`, `person-connections-panel.tsx`, `src/app/(prm)/people/page.tsx`.
 
 ---
 

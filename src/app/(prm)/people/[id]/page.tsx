@@ -13,8 +13,8 @@ import { InteractionEditDisclosure } from '@/components/interactions/interaction
 import { InteractionNotePreview } from '@/components/interactions/interaction-note-preview';
 import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
-import { getCrmSupabaseContext } from '@/lib/crm/context';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { getPrmSupabaseContext } from '@/lib/prm/context';
+import { requirePrmAccess } from '@/lib/prm/guard';
 import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
 import { formatStatus } from '@/lib/domain/labels';
 import {
@@ -74,9 +74,9 @@ export async function generateMetadata(props: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await props.params;
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
-    return { title: 'Person · Personal CRM' };
+    return { title: 'Person · Tether' };
   }
   const { data } = await ctx.client
     .from('people')
@@ -87,7 +87,7 @@ export async function generateMetadata(props: {
   if (!data) {
     return { title: 'Person' };
   }
-  return { title: `${data.full_name} · Personal CRM` };
+  return { title: `${data.full_name} · Tether` };
 }
 
 export default async function PersonDetailPage(props: PageProps) {
@@ -96,7 +96,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const tabParam = first(searchParams.tab);
   const tab = tabParam === 'details' ? 'details' : 'overview';
 
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
 
   const { data: personRow, error: personError } = await ctx.client
     .from('people')
@@ -364,7 +364,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const tabLinkInactive = `${tabLinkBase} border-transparent text-muted hover:text-foreground/80`;
 
   return (
-    <main className="crm-page">
+    <main className="prm-page">
       <PersonLogInteractionProvider>
       <PersonDetailHeader
         afterTitle={
@@ -400,7 +400,7 @@ export default async function PersonDetailPage(props: PageProps) {
           >
             ← People
           </Link>
-          <p className="crm-eyebrow mt-4">Profile</p>
+          <p className="prm-eyebrow mt-4">Profile</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <h1 className="font-display text-4xl tracking-tight">
               {person.full_name}

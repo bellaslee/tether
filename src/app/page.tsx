@@ -1,7 +1,7 @@
 import { SiteFooter } from '@/components/app/site-footer';
 import { ButtonLink } from '@/components/ui/button';
 import { redirect } from 'next/navigation';
-import { getCrmSupabaseContext } from '@/lib/crm/context';
+import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { getSetupStatus } from '@/lib/env';
 
 const flowMoments = [
@@ -55,7 +55,7 @@ const upcomingFeatures = [
 ] as const;
 
 export default async function Home() {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (ctx) {
     redirect('/people');
   }

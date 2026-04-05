@@ -2,11 +2,11 @@ const publicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publicSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const openAiApiKey = process.env.OPENAI_API_KEY;
 const openAiModel = process.env.OPENAI_MODEL;
-const crmAiDebugPrompts = process.env.CRM_AI_DEBUG_PROMPTS;
+const prmAiDebugPrompts = process.env.PRM_AI_DEBUG_PROMPTS;
 const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
 const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-const crmDisableLlmRateLimit = process.env.CRM_DISABLE_LLM_RATE_LIMIT;
-const publicCrmUsageTracking = process.env.NEXT_PUBLIC_CRM_USAGE_TRACKING;
+const prmDisableLlmRateLimit = process.env.PRM_DISABLE_LLM_RATE_LIMIT;
+const publicPrmUsageTracking = process.env.NEXT_PUBLIC_PRM_USAGE_TRACKING;
 
 function isNonEmpty(value: string | undefined): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -59,7 +59,7 @@ export function getOpenAiModel() {
 /** Development-only: log redacted AI request metadata (never logs full note text). */
 export function isAiDebugPromptsEnabled() {
   return (
-    process.env.NODE_ENV === 'development' && isTruthyEnv(crmAiDebugPrompts)
+    process.env.NODE_ENV === 'development' && isTruthyEnv(prmAiDebugPrompts)
   );
 }
 
@@ -71,13 +71,13 @@ export function hasUpstashRedisForRateLimit() {
 }
 
 /** When true, skips distributed LLM rate limits (emergency / local only). */
-export function isCrmLlmRateLimitDisabled() {
-  return isTruthyEnv(crmDisableLlmRateLimit);
+export function isPrmLlmRateLimitDisabled() {
+  return isTruthyEnv(prmDisableLlmRateLimit);
 }
 
 /** Client + server: first-party usage / screen / LLM metadata logging. */
-export function isCrmUsageTrackingEnabled() {
-  return isTruthyEnv(publicCrmUsageTracking);
+export function isPrmUsageTrackingEnabled() {
+  return isTruthyEnv(publicPrmUsageTracking);
 }
 
 export function getSetupStatus() {
@@ -99,24 +99,24 @@ export function getSetupStatus() {
     {
       description: isNonEmpty(openAiApiKey)
         ? 'Server-side OpenAI wiring is ready for future extraction and summary features.'
-        : 'Add OPENAI_API_KEY when you are ready to build AI features on top of the CRM.',
+        : 'Add OPENAI_API_KEY when you are ready to build AI features on top of the PRM.',
       label: 'OpenAI API key',
       ready: isNonEmpty(openAiApiKey),
     },
     {
       description:
-        hasUpstashRedisForRateLimit() || isCrmLlmRateLimitDisabled()
+        hasUpstashRedisForRateLimit() || isPrmLlmRateLimitDisabled()
           ? 'Upstash Redis is configured (or LLM rate limits are explicitly disabled).'
           : process.env.NODE_ENV !== 'production'
             ? 'Optional locally: add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for LLM rate limits.'
             : isNonEmpty(openAiApiKey)
-              ? 'Production AI needs Upstash Redis for per-user LLM rate limits, or set CRM_DISABLE_LLM_RATE_LIMIT=true only if you accept the risk.'
+              ? 'Production AI needs Upstash Redis for per-user LLM rate limits, or set PRM_DISABLE_LLM_RATE_LIMIT=true only if you accept the risk.'
               : 'Add Upstash credentials when you enable OpenAI in production.',
       label: 'LLM rate limits (Upstash)',
       ready:
         !isNonEmpty(openAiApiKey) ||
         hasUpstashRedisForRateLimit() ||
-        isCrmLlmRateLimitDisabled() ||
+        isPrmLlmRateLimitDisabled() ||
         process.env.NODE_ENV !== 'production',
     },
   ] as const;

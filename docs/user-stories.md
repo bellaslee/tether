@@ -1,18 +1,18 @@
-# Personal Relationship CRM User Stories
+# Personal Relationship PRM User Stories
 
-This document captures MVP user stories in Gherkin syntax for a personal relationship CRM focused on friends first and networking second.
+This document captures MVP user stories in Gherkin syntax for a personal relationship PRM focused on friends first and networking second.
 
-## Phase 1: Core CRM Foundation
+## Phase 1: Core PRM Foundation
 
 Feature: Authentication and private access
   As a user
-  I want secure access to my CRM
+  I want secure access to my PRM
   So that my personal relationship data stays private
 
   Scenario: Sign in to a private workspace
     Given I am a registered user
     When I sign in successfully
-    Then I should be taken to my CRM workspace
+    Then I should be taken to my PRM workspace
     And I should only be able to access my own relationship data
 
 Feature: Person profiles
@@ -66,10 +66,10 @@ Feature: Timeline visibility
   I want a shared timeline view
   So that I can review recent touchpoints across all people
 
-  Scenario: Review recent interactions across the CRM
+  Scenario: Review recent interactions across the PRM
     Given interactions exist for multiple people
     When I open the timeline page
-    Then I should see recent interactions across my CRM
+    Then I should see recent interactions across my PRM
     And each interaction should link back to the related person or people
 
 ## Phase 2: AI Memory Layer
@@ -148,7 +148,7 @@ Feature: Semantic search over relationship history
     Then the system should return relevant people, notes, or facts
     And the results should be ranked by relevance
 
-Feature: Ask my CRM
+Feature: Ask my PRM
   As a user
   I want to ask natural-language questions about my relationships
   So that I can retrieve context the way I naturally think
@@ -160,13 +160,13 @@ Feature: Ask my CRM
     And the answer should cite the notes or facts it used
 
   Scenario: Ask for cross-person recall
-    Given multiple people have relevant notes or facts in the CRM
+    Given multiple people have relevant notes or facts in the PRM
     When I ask which people mentioned moving recently
     Then the system should return the matching people
     And the answer should include supporting source snippets
 
   Scenario: Combine structured filtering with semantic retrieval
-    Given people, facts, and embeddings exist in the CRM
+    Given people, facts, and embeddings exist in the PRM
     When I ask for networking contacts in Seattle who mentioned a job change
     Then the system should use structured filters and semantic retrieval together
     And the answer should only include relevant matching contacts
@@ -174,7 +174,7 @@ Feature: Ask my CRM
 ## Phase 4: Plans, rate limits, and fair use
 
 Feature: Usage limits and predictable costs
-  As a user of a hosted CRM
+  As a user of a hosted PRM
   I want clear limits and steady performance
   So that the service stays reliable and I understand what I am entitled to use
 
@@ -190,10 +190,10 @@ Feature: Usage limits and predictable costs
     Then limits for AI usage, imports, or high-volume features should be higher on the paid tier than on the free tier
     And the limits should be described in plain language before I subscribe or upgrade
 
-  Scenario: Core CRM works when AI limits are reached
+  Scenario: Core PRM works when AI limits are reached
     Given I have reached my AI or premium-feature limit for the current period
-    When I continue using the CRM
-    Then I should still be able to use core CRM features such as people, interactions, and timeline
+    When I continue using the PRM
+    Then I should still be able to use core PRM features such as people, interactions, and timeline
     And AI-backed features should fail gracefully with guidance on when I can use them again or how to upgrade
 
 Feature: Paid tier and upgrades
@@ -241,7 +241,7 @@ Feature: Calendar and email imports
     Given I connected my calendar
     When a new calendar event is imported
     Then the event should be saved as a source document or interaction candidate
-    And it should appear in an inbox for review before being fully adopted into the CRM
+    And it should appear in an inbox for review before being fully adopted into the PRM
 
   Scenario: Link an imported artifact to a person
     Given an imported event or email exists in the inbox
@@ -251,23 +251,23 @@ Feature: Calendar and email imports
 
   Scenario: Keep email import optional
     Given I have not enabled email import
-    When the CRM processes my data sources
+    When the PRM processes my data sources
     Then email data should not be imported automatically
 
 Feature: Friend mode and networking mode
   As a user
-  I want the CRM to adapt to different relationship types
+  I want the PRM to adapt to different relationship types
   So that the product feels appropriate for both personal and professional contexts
 
   Scenario: Emphasize friend-oriented context
     Given a person is categorized as a friend
     When I view their profile and summaries
-    Then the CRM should emphasize life updates, open loops, and meaningful personal context
+    Then the PRM should emphasize life updates, open loops, and meaningful personal context
 
   Scenario: Emphasize networking-oriented context
     Given a person is categorized as a networking contact
     When I view their profile and summaries
-    Then the CRM should emphasize company, role, career context, and follow-up cadence
+    Then the PRM should emphasize company, role, career context, and follow-up cadence
 
   Scenario: Avoid invasive automation
     Given imports and AI features are enabled
@@ -279,7 +279,7 @@ Feature: Friend mode and networking mode
 
 Feature: Trust, transparency, and privacy
   As a user
-  I want the CRM to be transparent and easy to control
+  I want the PRM to be transparent and easy to control
   So that I can trust it with sensitive personal information
 
   Scenario: Show why a summary or reminder exists
@@ -288,11 +288,11 @@ Feature: Trust, transparency, and privacy
     Then I should be able to see the source note, interaction, or document behind it
 
   Scenario: Remove sensitive remembered information
-    Given a fact, note, or reminder exists in the CRM
+    Given a fact, note, or reminder exists in the PRM
     When I delete it
     Then it should no longer appear in summaries, reminders, or search results after processing completes
 
   Scenario: Keep the product warm rather than transactional
-    Given I am using the CRM to manage personal relationships
+    Given I am using the PRM to manage personal relationships
     When the system presents summaries, tasks, or suggestions
     Then the tone and framing should support genuine connection rather than sales-style pipeline management

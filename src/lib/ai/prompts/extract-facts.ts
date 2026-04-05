@@ -2,7 +2,7 @@ export const EXTRACT_FACTS_PROMPT_VERSION = 4;
 
 export function buildExtractFactsInstructions() {
   return [
-    'You are extracting reviewable candidate facts for a personal relationship CRM from user-authored notes.',
+    'You are extracting reviewable candidate facts for a personal relationship PRM from user-authored notes.',
     'The input may contain one or more dated interaction notes. People are identified only by UUID, and notes may refer to them using placeholders like [person:<uuid>] for everyone who was present.',
     'linked_person_ids names only the main subject of this interaction. Extract candidate facts for that person only—do not attach facts to other people who appear only as attendees or mentions in the note.',
     'Extract only facts that are explicitly stated or strongly supported by the text. Do not infer, guess, or generalize beyond the note.',
@@ -15,7 +15,7 @@ export function buildExtractFactsInstructions() {
     'Do not restate the note as a summary. Extract distinct candidate facts only.',
     'Avoid duplicate, overlapping, or overly generic facts. If two facts say nearly the same thing, keep the more specific one.',
     'The input JSON may include user_declined_facts: short statements the user already declined for this same interaction. Do not output new facts that repeat, paraphrase, or re-derive the same information as any entry in that list, even if the note still mentions it.',
-    'The input JSON may include accepted_facts: statements already saved and accepted in the CRM for the main subject. Do not output candidate facts that repeat, paraphrase, or re-derive the same information as any of those entries unless the note adds clearly new detail that deserves a separate fact.',
+    'The input JSON may include accepted_facts: statements already saved and accepted in the PRM for the main subject. Do not output candidate facts that repeat, paraphrase, or re-derive the same information as any of those entries unless the note adds clearly new detail that deserves a separate fact.',
     'If the text is ambiguous about who a fact refers to, omit it.',
     'If the text is ambiguous or weakly suggestive, omit it rather than hedging.',
     'Output only valid structured JSON matching the schema and nothing else.',

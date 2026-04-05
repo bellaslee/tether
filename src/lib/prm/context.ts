@@ -5,14 +5,14 @@ import { createSupabaseServerClient } from "@/lib/db/server";
 import type { Database } from "@/lib/db/database.types";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 
-export type CrmSupabaseContext = {
+export type PrmSupabaseContext = {
   client: SupabaseClient<Database>;
   userId: string;
   accountEmail?: string;
   accountDisplayName?: string | null;
 };
 
-export async function getCrmSupabaseContext(): Promise<CrmSupabaseContext | null> {
+export async function getPrmSupabaseContext(): Promise<PrmSupabaseContext | null> {
   if (!hasPublicSupabaseEnv()) {
     return null;
   }

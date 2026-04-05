@@ -1,4 +1,4 @@
-# Phase 1 core CRM implementation
+# Phase 1 core PRM implementation
 
 This ExecPlan is a living document. The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
@@ -10,13 +10,13 @@ Repository ExecPlan authoring rules live at `.agent/PLANS.md`. This document mus
 
 ## Purpose / Big Picture
 
-After this work, a user can manage relationship data in a private workspace: create and edit **people** (with category and status), attach **contact methods** (with a single primary per person), log **interactions** (including **multi-person** events stored once and linked via `interaction_people`), and browse a **per-person timeline** and a **global timeline** across the CRM. With normal auth enabled, another user cannot see their data because Postgres **row-level security** enforces ownership.
+After this work, a user can manage relationship data in a private workspace: create and edit **people** (with category and status), attach **contact methods** (with a single primary per person), log **interactions** (including **multi-person** events stored once and linked via `interaction_people`), and browse a **per-person timeline** and a **global timeline** across the PRM. With normal auth enabled, another user cannot see their data because Postgres **row-level security** enforces ownership.
 
-For **local testing**, the owner may enable an optional **development-only bypass** so the CRM pages work **without signing in**, using server-side access to local data for speed and simplicity. That mode must remain impossible in production builds.
+For **local testing**, the owner may enable an optional **development-only bypass** so the PRM pages work **without signing in**, using server-side access to local data for speed and simplicity. That mode must remain impossible in production builds.
 
 Validation paths:
 
-- **Full Phase 1:** Run local Supabase and Next.js, sign up and sign in with **email and password**, walk through the Phase 1 scenarios in `docs/personal-crm-user-stories.md`, and confirm timelines and isolation in the UI.
+- **Full Phase 1:** Run local Supabase and Next.js, sign up and sign in with **email and password**, walk through the Phase 1 scenarios in `docs/personal-prm-user-stories.md`, and confirm timelines and isolation in the UI.
 
 - **Simplified local:** With bypass enabled per the Decision Log, open People and Timeline and exercise CRUD **without** a session, confirming data still lands under a fixed dev `user_id` in Postgres.
 
@@ -40,7 +40,7 @@ Use timestamps on items as they complete, per `.agent/PLANS.md`.
 ## Surprises & Discoveries
 
 - `error.message as const` is invalid TypeScript; use a plain string for dynamic Supabase errors in action helpers.
-- Next.js 16 build lists middleware as `ƒ Proxy (Middleware)`; session refresh runs on the matcher while CRM route protection stays in the `(crm)` layout via `requireCrmAccess()` so bypass env vars remain server-only (not required on the Edge middleware runtime).
+- Next.js 16 build lists middleware as `ƒ Proxy (Middleware)`; session refresh runs on the matcher while PRM route protection stays in the `(prm)` layout via `requirePrmAccess()` so bypass env vars remain server-only (not required on the Edge middleware runtime).
 
 ---
 
@@ -51,7 +51,7 @@ Use timestamps on items as they complete, per `.agent/PLANS.md`.
   **Date:** 2026-04-04 / User
 
 - **Decision:** Phase 1 validation targets **local Supabase only**; hosted Supabase URL allowlists and production redirects are out of scope for this plan.  
-  **Rationale:** Reduces moving parts while the CRM loop is proven end to end.  
+  **Rationale:** Reduces moving parts while the PRM loop is proven end to end.  
   **Date:** 2026-04-04 / User
 
 - **Decision:** For **local development only**, support working **without signing in** so testing stays simple.  
@@ -59,10 +59,10 @@ Use timestamps on items as they complete, per `.agent/PLANS.md`.
   **Date:** 2026-04-04 / User
 
 - **Decision:** Implement that convenience as an explicit **opt-in dev bypass**, never as default behavior in production.  
-  **Rationale:** The service role key and skipping `auth.uid()` in the browser session are dangerous if misconfigured; gating bypass behind `NODE_ENV === 'development'` plus a named env flag (for example `CRM_LOCAL_DEV_BYPASS_AUTH=true`) keeps the happy path honest while preserving speed locally.  
+  **Rationale:** The service role key and skipping `auth.uid()` in the browser session are dangerous if misconfigured; gating bypass behind `NODE_ENV === 'development'` plus a named env flag (for example `PRM_LOCAL_DEV_BYPASS_AUTH=true`) keeps the happy path honest while preserving speed locally.  
   **Date:** 2026-04-04 / User
 
-- **Decision:** In bypass mode, use a **server-only Supabase client with the service role key** and scope every read/write to a single configured UUID, `CRM_LOCAL_DEV_USER_ID`, that must exist in `auth.users` (because `people.user_id` and `interactions.user_id` reference it). Document one-time creation of that user (Supabase Studio, `supabase auth`, or a single manual sign-up followed by copying the UUID into `.env.local`).  
+- **Decision:** In bypass mode, use a **server-only Supabase client with the service role key** and scope every read/write to a single configured UUID, `PRM_LOCAL_DEV_USER_ID`, that must exist in `auth.users` (because `people.user_id` and `interactions.user_id` reference it). Document one-time creation of that user (Supabase Studio, `supabase auth`, or a single manual sign-up followed by copying the UUID into `.env.local`).  
   **Rationale:** RLS continues to apply to the anon and user clients; bypass does not weaken production. Using a real `auth.users` row keeps foreign keys valid without loosening the schema.  
   **Date:** 2026-04-04 / Assistant
 
@@ -86,9 +86,9 @@ Complete when Phase 1 user stories are demonstrably satisfied locally (with or w
 
 **Supabase SSR** here means the server constructs a Supabase client that reads and writes the user’s **session cookies** so RLS sees `auth.uid()`. The existing helper is `src/lib/db/server.ts`. **Browser client** from `src/lib/db/browser.ts` is for client components if needed (for example auth listener); prefer server actions for mutations to keep secrets off the client.
 
-**Local dev without sign-in:** When bypass is enabled, product routes do not redirect to login. Server actions and Server Component loaders use a **service role** client (new helper under `src/lib/db/`, marked `server-only`) only on the server, never imported from client components. That client bypasses RLS, so application code must **manually filter** by `CRM_LOCAL_DEV_USER_ID` on `people` and `interactions`, and must set `user_id` to that same value on inserts. **Never** enable bypass outside development; **never** expose the service role key to the browser.
+**Local dev without sign-in:** When bypass is enabled, product routes do not redirect to login. Server actions and Server Component loaders use a **service role** client (new helper under `src/lib/db/`, marked `server-only`) only on the server, never imported from client components. That client bypasses RLS, so application code must **manually filter** by `PRM_LOCAL_DEV_USER_ID` on `people` and `interactions`, and must set `user_id` to that same value on inserts. **Never** enable bypass outside development; **never** expose the service role key to the browser.
 
-**Row-level security (RLS)** means the database rejects cross-tenant access for normal authenticated traffic. Server actions must still **set `user_id` from the session** (or from `CRM_LOCAL_DEV_USER_ID` in bypass mode only), never from unvalidated client input, on insert.
+**Row-level security (RLS)** means the database rejects cross-tenant access for normal authenticated traffic. Server actions must still **set `user_id` from the session** (or from `PRM_LOCAL_DEV_USER_ID` in bypass mode only), never from unvalidated client input, on insert.
 
 **Multi-person interactions:** one row in `interactions`, many rows in `interaction_people`. The “primary” vs “attendee” **role** distinguishes the main subject from others for display; when logging from a person’s page, that person should default to `primary` and additional people to `attendee`.
 
@@ -102,7 +102,7 @@ Complete when Phase 1 user stories are demonstrably satisfied locally (with or w
 
 ### Milestone A — Authentication, optional local bypass, and shell
 
-**Local bypass first (or alongside auth):** Add `createSupabaseServiceRoleClient()` (or equivalent) in `src/lib/db/` using `SUPABASE_SERVICE_ROLE_KEY` from `src/lib/env.ts`, loading only when `NODE_ENV === 'development'` and `CRM_LOCAL_DEV_BYPASS_AUTH` is truthy. Centralize “which Supabase client and effective `user_id`?” in one small module used by data loaders and server actions so bypass and real sessions do not diverge.
+**Local bypass first (or alongside auth):** Add `createSupabaseServiceRoleClient()` (or equivalent) in `src/lib/db/` using `SUPABASE_SERVICE_ROLE_KEY` from `src/lib/env.ts`, loading only when `NODE_ENV === 'development'` and `PRM_LOCAL_DEV_BYPASS_AUTH` is truthy. Centralize “which Supabase client and effective `user_id`?” in one small module used by data loaders and server actions so bypass and real sessions do not diverge.
 
 Add **sign up**, **sign in**, and **sign out** using Supabase `signUp`, `signInWithPassword`, and `signOut`. Use route segments such as `src/app/(auth)/login/page.tsx` and `src/app/(auth)/signup/page.tsx` (names flexible; keep URLs stable once chosen). Forms may be client components posting to **server actions** that call `createSupabaseServerClient()` and return structured errors (avoid leaking raw stack traces to the UI).
 
@@ -140,7 +140,7 @@ Add a path to log a **multi-person** interaction (for example `/interactions/new
 
 Generate TypeScript types from the local schema (`npx supabase gen types typescript --local`) into something like `src/lib/db/database.types.ts` and use them in query helpers to reduce drift.
 
-Ensure navigation between People, Timeline, and auth is obvious. Run `npm run lint` and `npm run build`. Perform manual acceptance against the Phase 1 scenarios in `docs/personal-crm-user-stories.md`.
+Ensure navigation between People, Timeline, and auth is obvious. Run `npm run lint` and `npm run build`. Perform manual acceptance against the Phase 1 scenarios in `docs/personal-prm-user-stories.md`.
 
 ---
 
@@ -150,7 +150,7 @@ From the repository root (see `docs/plans/initialize-project.md` for baseline):
 
 1. Start Docker, then `npx supabase start` and `npx supabase db reset` so the database matches migrations.
 2. Copy env vars per `.env.example`; run `npm install`, `npm run dev`.
-3. Create a **dev auth user** once if using bypass: sign up through the app or Supabase tooling, then set `CRM_LOCAL_DEV_USER_ID` to that user’s UUID and `CRM_LOCAL_DEV_BYPASS_AUTH=true` in `.env.local` together with `SUPABASE_SERVICE_ROLE_KEY` from `npx supabase status`.
+3. Create a **dev auth user** once if using bypass: sign up through the app or Supabase tooling, then set `PRM_LOCAL_DEV_USER_ID` to that user’s UUID and `PRM_LOCAL_DEV_BYPASS_AUTH=true` in `.env.local` together with `SUPABASE_SERVICE_ROLE_KEY` from `npx supabase status`.
 4. Implement milestones A through F in order, committing after each verified milestone.
 5. Optionally run `npx supabase gen types typescript --local > src/lib/db/database.types.ts` (exact path per team convention) after schema is stable.
 
@@ -162,7 +162,7 @@ If auth redirects fail, verify `site_url` and `additional_redirect_urls` in `sup
 
 Observable checks (Phase 1 only):
 
-1. **Local bypass (optional):** With bypass enabled, open `/people` and `/timeline` without signing in; create a person and an interaction; confirm rows in Supabase Table Editor use `CRM_LOCAL_DEV_USER_ID`. Turn bypass off and confirm routes require login again.
+1. **Local bypass (optional):** With bypass enabled, open `/people` and `/timeline` without signing in; create a person and an interaction; confirm rows in Supabase Table Editor use `PRM_LOCAL_DEV_USER_ID`. Turn bypass off and confirm routes require login again.
 2. **Auth:** Register a new user with email/password; sign in; refresh the page; session persists. Sign out; protected routes redirect or show login.
 3. **Isolation:** Create a second user (different email); confirm they see an empty people list and cannot access the first user’s person IDs (RLS should return empty or error; UI should handle gracefully).
 4. **People:** Create a person with category and status; they appear on the list; filters and search behave as implemented.
@@ -179,7 +179,7 @@ Observable checks (Phase 1 only):
 
 Migrations are already additive; Phase 1 product work should not require schema rewrites. If a server action partially fails (interaction inserted but links not), catch and delete the orphan or use a **database transaction** via Supabase RPC or a single Postgres function—if that is too heavy for v1, document the rare orphan risk and handle with manual DB cleanup during dev.
 
-Reset local data anytime with `npx supabase db reset`. After reset, recreate the dev `auth.users` row (sign up again) and update `CRM_LOCAL_DEV_USER_ID` if the UUID changed.
+Reset local data anytime with `npx supabase db reset`. After reset, recreate the dev `auth.users` row (sign up again) and update `PRM_LOCAL_DEV_USER_ID` if the UUID changed.
 
 ---
 
@@ -195,7 +195,7 @@ Keep short command transcripts (lint/build, db reset) in **Surprises & Discoveri
 
 **Server actions (illustrative):** `createPerson`, `updatePerson`, `upsertContactMethod`, `setPrimaryContactMethod`, `createInteractionWithPeople`, `deleteInteraction`, `refreshLastInteractionAtForPersonIds(personIds: string[])`.
 
-**Env (illustrative, document in `.env.example`):** `CRM_LOCAL_DEV_BYPASS_AUTH`, `CRM_LOCAL_DEV_USER_ID`, `SUPABASE_SERVICE_ROLE_KEY` (local only).
+**Env (illustrative, document in `.env.example`):** `PRM_LOCAL_DEV_BYPASS_AUTH`, `PRM_LOCAL_DEV_USER_ID`, `SUPABASE_SERVICE_ROLE_KEY` (local only).
 
 **Middleware:** Session refresh; optional auth guard unless bypass is on; keep matcher tight to avoid static asset churn.
 

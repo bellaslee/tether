@@ -1,15 +1,15 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ProfileSettingsForms } from '@/components/app/profile-settings-forms';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { requirePrmAccess } from '@/lib/prm/guard';
 import { createSupabaseServerClient } from '@/lib/db/server';
 
 export const metadata: Metadata = {
-  title: 'Profile settings · Personal CRM',
+  title: 'Profile settings · Tether',
 };
 
 export default async function ProfileSettingsPage() {
-  await requireCrmAccess();
+  await requirePrmAccess();
 
   const client = await createSupabaseServerClient();
   const {
@@ -35,7 +35,7 @@ export default async function ProfileSettingsPage() {
         >
           ← People
         </Link>
-        <p className="crm-eyebrow mt-4">Your account</p>
+        <p className="prm-eyebrow mt-4">Your account</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
           Profile settings
         </h1>

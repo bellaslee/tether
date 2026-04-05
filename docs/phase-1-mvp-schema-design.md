@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the recommended Phase 1 database schema for the personal relationship CRM MVP.
+This document defines the recommended Phase 1 database schema for the personal relationship PRM MVP.
 
 Phase 1 should support:
 
@@ -26,7 +26,7 @@ This phase intentionally does not include:
 
 - Start with real Postgres, not local JSON files
 - Keep the schema small but relationally correct
-- Support the core CRM loop before adding AI layers
+- Support the core PRM loop before adding AI layers
 - Preserve source-of-truth interaction history
 - Model multi-person events correctly from the beginning
 - Leave room for Phase 2 and beyond without overbuilding now
@@ -388,7 +388,7 @@ This schema is designed to support these early queries well:
 - list all people for the current user
 - show a single person's profile
 - show a single person's timeline
-- list recent interactions across the whole CRM
+- list recent interactions across the whole PRM
 - search people by name
 - filter people by category or status
 - find the most recent interaction for a person

@@ -6,7 +6,7 @@ If the repository’s authoring guide is checked in, it lives at [.agent/PLANS.m
 
 ## Purpose / Big Picture
 
-After this work, the database and application behave the same for real users, but the system is easier to trust: **each logged-in user can access only their own CRM data**—no other account, including another legitimate user of the same deployment, may read or change their people, notes, facts, reminders, or related rows. **Local development uses normal Supabase sign-in only**—the optional **local dev auth bypass** (service role client and `CRM_LOCAL_DEV_*` env vars) is **removed entirely**, so the app never holds a key that skips row level security for ordinary requests. Postgres functions follow Supabase security lint expectations, row-level security policies avoid per-row auth re-evaluation where possible, and foreign keys used in joins and deletes are indexed. A developer can run the Supabase database linter (or equivalent) and see these warning classes cleared or explicitly accepted with documented rationale.
+After this work, the database and application behave the same for real users, but the system is easier to trust: **each logged-in user can access only their own PRM data**—no other account, including another legitimate user of the same deployment, may read or change their people, notes, facts, reminders, or related rows. **Local development uses normal Supabase sign-in only**—the optional **local dev auth bypass** (service role client and `PRM_LOCAL_DEV_*` env vars) is **removed entirely**, so the app never holds a key that skips row level security for ordinary requests. Postgres functions follow Supabase security lint expectations, row-level security policies avoid per-row auth re-evaluation where possible, and foreign keys used in joins and deletes are indexed. A developer can run the Supabase database linter (or equivalent) and see these warning classes cleared or explicitly accepted with documented rationale.
 
 ## Architecture review summary (prioritized issues)
 
@@ -14,9 +14,9 @@ The list below merges static review of this repository with the Supabase linter 
 
 ### Critical
 
-**Remove local dev bypass.** The codebase currently supports an optional path where [src/lib/crm/context.ts](/src/lib/crm/context.ts) returns a **service role** Supabase client from [src/lib/db/service-role.ts](/src/lib/db/service-role.ts), which **does not enforce RLS**. That path is gated in [src/lib/env.ts](/src/lib/env.ts), but eliminating it removes an entire class of misconfiguration and tenancy bugs. This ExecPlan treats **removal of that feature** as mandatory, not optional.
+**Remove local dev bypass.** The codebase currently supports an optional path where [src/lib/prm/context.ts](/src/lib/prm/context.ts) returns a **service role** Supabase client from [src/lib/db/service-role.ts](/src/lib/db/service-role.ts), which **does not enforce RLS**. That path is gated in [src/lib/env.ts](/src/lib/env.ts), but eliminating it removes an entire class of misconfiguration and tenancy bugs. This ExecPlan treats **removal of that feature** as mandatory, not optional.
 
-After removal, every server request that touches CRM data uses the cookie-backed server client ([src/lib/db/server.ts](/src/lib/db/server.ts)) with the **anon** key and **RLS**, matching production behavior locally.
+After removal, every server request that touches PRM data uses the cookie-backed server client ([src/lib/db/server.ts](/src/lib/db/server.ts)) with the **anon** key and **RLS**, matching production behavior locally.
 
 ### High
 
@@ -30,7 +30,7 @@ After removal, every server request that touches CRM data uses the cookie-backed
 
 **4. Large server action surface.** [src/lib/actions/ai-memory.ts](/src/lib/actions/ai-memory.ts) is very large (hundreds of lines). That increases the chance of inconsistent authorization or error handling. Remediation: split by concern (extract facts, summaries, tasks, persistence) and keep a single internal “require AI context + ownership” gate.
 
-**5. Route protection model.** [middleware.ts](/middleware.ts) refreshes the Supabase session but does not redirect unauthenticated users; [src/app/(crm)/layout.tsx](/src/app/(crm)/layout.tsx) uses `requireCrmAccess`. That is acceptable if every sensitive route stays under `(crm)`. Remediation: document the convention; optionally add matcher-based redirects later—avoid duplicating logic in both places without a clear rule.
+**5. Route protection model.** [middleware.ts](/middleware.ts) refreshes the Supabase session but does not redirect unauthenticated users; [src/app/(prm)/layout.tsx](/src/app/(prm)/layout.tsx) uses `requirePrmAccess`. That is acceptable if every sensitive route stays under `(prm)`. Remediation: document the convention; optionally add matcher-based redirects later—avoid duplicating logic in both places without a clear rule.
 
 ### Low
 
@@ -42,11 +42,11 @@ After removal, every server request that touches CRM data uses the cookie-backed
 
 This is a **non-negotiable product requirement**, not an implementation detail. **Only the currently authenticated user may read or write their own tenant data in Postgres.** Another person with a valid account on the same app must not see or modify the first user’s rows by using the UI, crafted requests, or guessed UUIDs in URLs or forms.
 
-**Primary enforcement: row level security (RLS).** Supabase attaches the signed-in user’s identity to the database session as `auth.uid()`. Policies on user-scoped tables must continue to allow access only when that identity matches the row’s owner (typically `user_id`, or indirect ownership through joins to `people` / `interactions` as already used for `contact_methods` and `interaction_people`). Any new table that stores per-user CRM data must ship with RLS enabled and matching policies in the same migration. Removing the dev bypass ensures routine app traffic always goes through a client subject to these policies.
+**Primary enforcement: row level security (RLS).** Supabase attaches the signed-in user’s identity to the database session as `auth.uid()`. Policies on user-scoped tables must continue to allow access only when that identity matches the row’s owner (typically `user_id`, or indirect ownership through joins to `people` / `interactions` as already used for `contact_methods` and `interaction_people`). Any new table that stores per-user PRM data must ship with RLS enabled and matching policies in the same migration. Removing the dev bypass ensures routine app traffic always goes through a client subject to these policies.
 
-**Application layer.** Server Components, server actions, and API route handlers must obtain the Supabase client and effective `userId` from [src/lib/crm/context.ts](/src/lib/crm/context.ts) (or the same session pattern), not from unvalidated client input. On insert and update, set `user_id` from that server-derived `userId`. On actions that accept entity ids (`person_id`, `interaction_id`, and so on), scope queries with `.eq('user_id', ctx.userId)` or equivalent joins so another user’s ids yield empty results or generic “not found” errors—never another user’s payload.
+**Application layer.** Server Components, server actions, and API route handlers must obtain the Supabase client and effective `userId` from [src/lib/prm/context.ts](/src/lib/prm/context.ts) (or the same session pattern), not from unvalidated client input. On insert and update, set `user_id` from that server-derived `userId`. On actions that accept entity ids (`person_id`, `interaction_id`, and so on), scope queries with `.eq('user_id', ctx.userId)` or equivalent joins so another user’s ids yield empty results or generic “not found” errors—never another user’s payload.
 
-**API routes.** Every handler under [src/app/api](/src/app/api) that touches CRM data or user-specific AI features must require an authenticated CRM context (the same pattern as [src/app/api/transcribe/route.ts](/src/app/api/transcribe/route.ts) using `getCrmSupabaseContext()`) before performing work. Do not add routes that use a service role key for end-user traffic.
+**API routes.** Every handler under [src/app/api](/src/app/api) that touches PRM data or user-specific AI features must require an authenticated PRM context (the same pattern as [src/app/api/transcribe/route.ts](/src/app/api/transcribe/route.ts) using `getPrmSupabaseContext()`) before performing work. Do not add routes that use a service role key for end-user traffic.
 
 **Verification.** After bypass removal, run a **two-account manual test**: create data as user A, sign in as user B, and confirm that lists, detail URLs, and server actions cannot surface or mutate A’s rows. Optionally, in Supabase SQL, run `set role authenticated` and `set request.jwt.claim.sub` to B’s uuid (per Supabase docs for local testing) and confirm `select` on tenant tables returns only B’s rows.
 
@@ -55,11 +55,11 @@ This is a **non-negotiable product requirement**, not an implementation detail. 
 ## Progress
 
 - [ ] (2026-04-05) Record baseline: export current Supabase linter output after migrations applied (re-run in Supabase dashboard or CLI and attach JSON when convenient).
-- [x] (2026-04-05) **Remove local dev bypass:** deleted `src/lib/db/service-role.ts`; stripped bypass env/helpers from `src/lib/env.ts` and the fourth setup-status row; `getCrmSupabaseContext` always uses the cookie server client; updated `app-nav`, `user-menu`, `profile` action/page, `.env.example`, and `README.md`. Historical plan docs may still mention bypass for archive context.
+- [x] (2026-04-05) **Remove local dev bypass:** deleted `src/lib/db/service-role.ts`; stripped bypass env/helpers from `src/lib/env.ts` and the fourth setup-status row; `getPrmSupabaseContext` always uses the cookie server client; updated `app-nav`, `user-menu`, `profile` action/page, `.env.example`, and `README.md`. Historical plan docs may still mention bypass for archive context.
 - [x] (2026-04-05) Migration `20260411140000_supabase_security_hardening.sql`: `set search_path = public` on `set_updated_at`, `enforce_person_category_owner`, `enforce_interaction_type_owner`, `enforce_connection_type_owner`, `enforce_person_connection_people_owner`; applied with `npx supabase db push --local`.
 - [x] (2026-04-05) Same migration: RLS policies recreated with `(select auth.uid())` on all tenant tables listed in the plan; re-run DB linter to confirm `auth_rls_initplan` is clear.
 - [x] (2026-04-05) Same migration: btree indexes for `connection_types.inverse_type_id`, `interactions.interaction_type_id`, `people.category_id`, and `person_connections` FK columns.
-- [x] (2026-04-05) **Data isolation audit (static):** all user-scoped `public` tables from migrations have RLS + own-row policies; CRM server actions and `src/app/api/transcribe/route.ts` gate on `getCrmSupabaseContext()` / session. **Two-account manual test:** not run in this session—perform before release and record below.
+- [x] (2026-04-05) **Data isolation audit (static):** all user-scoped `public` tables from migrations have RLS + own-row policies; PRM server actions and `src/app/api/transcribe/route.ts` gate on `getPrmSupabaseContext()` / session. **Two-account manual test:** not run in this session—perform before release and record below.
 - [x] (2026-04-05) Optional: junction-table helper refactor — `src/lib/interactions/interaction-people-queries.ts` (`interactions!inner(user_id)`); wired through loaders, interaction actions, last-touch, category audit, timeline and person pages, and AI summary/suggest paths.
 - [x] (2026-04-05) Optional: split AI memory actions into `src/lib/actions/ai-memory/*` (`constants`, `types`, `guard`, `loaders`, `extract-suggest`, `facts`, `reminders`, `summaries`). Client imports reference concrete modules (Next.js disallows `use server` barrel re-exports).
 
@@ -73,7 +73,7 @@ This is a **non-negotiable product requirement**, not an implementation detail. 
 ## Decision Log
 
 - Decision: Treat Supabase INFO-level unused-index hints as non-actionable until validated against realistic traffic.
-  Rationale: Indexes support planned filters and cost little on a small personal CRM until proven otherwise.
+  Rationale: Indexes support planned filters and cost little on a small Tether deployment until proven otherwise.
   Date/Author: 2026-04-05 / architecture review
 
 - Decision: Remove local dev auth bypass entirely; local development will use normal Supabase sign-in.
@@ -81,23 +81,23 @@ This is a **non-negotiable product requirement**, not an implementation detail. 
   Date/Author: 2026-04-05 / product owner request (recorded in ExecPlan)
 
 - Decision: Treat **per-user data isolation** as an explicit acceptance criterion: RLS plus server-derived `user_id`, verified by a two-account manual test.
-  Rationale: The product stores sensitive relationship data; “only I can see my CRM” must be demonstrable, not assumed.
+  Rationale: The product stores sensitive relationship data; “only I can see my PRM” must be demonstrable, not assumed.
   Date/Author: 2026-04-05 / product owner request (recorded in ExecPlan)
 
 ## Outcomes & Retrospective
 
 - **Shipped:** Local dev auth bypass removed; single migration covers function `search_path`, RLS initplan form, and FK indexes. Junction-table reads use shared helpers; AI memory server actions live under `src/lib/actions/ai-memory/`. `npm run lint` and `npm run build` succeed.
-- **Middleware:** Documented in-code that `(crm)` layout owns auth redirects (`middleware.ts` comment).
+- **Middleware:** Documented in-code that `(prm)` layout owns auth redirects (`middleware.ts` comment).
 - **Linter:** Re-run Supabase database linter after deploy to confirm warning classes cleared; unused-index INFO remains waived per Decision Log.
 - **Two-account cross-tenant test:** Pending manual verification by the owner (create data as user A, sign in as B, confirm no leakage via lists, URLs, or actions).
 
 ## Context and Orientation
 
-This app is a Next.js App Router project under [src/app](/src/app). Authenticated CRM pages live under `src/app/(crm)` and receive a Supabase client plus effective `userId` from [src/lib/crm/context.ts](/src/lib/crm/context.ts) via [src/lib/crm/guard.ts](/src/lib/crm/guard.ts). Schema changes belong in [supabase/migrations](/supabase/migrations) as timestamped SQL files. **Row level security** means Postgres filters rows for the anon/authenticated role so one user cannot read or write another’s data even if the app mis-scopes a query. After bypass removal, the app **does not** use a Supabase service role key in application code for user requests; local and production both rely on the server client and RLS. The combination of RLS and server-derived `user_id` on writes is what enforces **single-tenant data isolation per account**.
+This app is a Next.js App Router project under [src/app](/src/app). Authenticated PRM pages live under `src/app/(prm)` and receive a Supabase client plus effective `userId` from [src/lib/prm/context.ts](/src/lib/prm/context.ts) via [src/lib/prm/guard.ts](/src/lib/prm/guard.ts). Schema changes belong in [supabase/migrations](/supabase/migrations) as timestamped SQL files. **Row level security** means Postgres filters rows for the anon/authenticated role so one user cannot read or write another’s data even if the app mis-scopes a query. After bypass removal, the app **does not** use a Supabase service role key in application code for user requests; local and production both rely on the server client and RLS. The combination of RLS and server-derived `user_id` on writes is what enforces **single-tenant data isolation per account**.
 
 ## Plan of Work
 
-First, **remove the local dev bypass** end to end so no code path imports [src/lib/db/service-role.ts](/src/lib/db/service-role.ts) and `getCrmSupabaseContext` never returns a service role client. Follow the file list in `Progress` above. After edits, `npm run build` must succeed and signing in locally must be the only way to use CRM routes.
+First, **remove the local dev bypass** end to end so no code path imports [src/lib/db/service-role.ts](/src/lib/db/service-role.ts) and `getPrmSupabaseContext` never returns a service role client. Follow the file list in `Progress` above. After edits, `npm run build` must succeed and signing in locally must be the only way to use PRM routes.
 
 Second, add a forward-only migration that replaces the five trigger functions to include an explicit `set search_path` clause, using `create or replace function` with the same signatures and bodies as today. Prefer `set search_path = public` to match existing seed triggers.
 
@@ -113,7 +113,7 @@ Sixth, optionally refactor junction-table reads into small server-only helpers f
 
 From the repository root, with Supabase CLI available:
 
-1. Implement **Remove local dev bypass** per the `Progress` checklist (TypeScript/React/env/docs). Run `npm run lint` and `npm run build` after this step; confirm CRM flows only work when signed in.
+1. Implement **Remove local dev bypass** per the `Progress` checklist (TypeScript/React/env/docs). Run `npm run lint` and `npm run build` after this step; confirm PRM flows only work when signed in.
 2. Create a new file under `supabase/migrations/` with a timestamp after existing files, containing the SQL for function `search_path`, policy updates, and indexes (or split into separate migrations if you prefer smaller steps).
 3. Apply to local database: `npx supabase db push --local` (or your team’s standard command from AGENTS.md).
 4. Run the app: `npm run dev` (once dependencies are installed). Sign in with Supabase auth and exercise timeline, person detail, and AI memory flows (no bypass path).
@@ -123,7 +123,7 @@ Re-run the Supabase database linter in the dashboard or CLI and compare to the b
 
 ## Validation and Acceptance
 
-Behavioral acceptance: as a signed-in user, create a person, add an interaction with a note, run any AI memory action if configured, and open the timeline; all data remains scoped to that user. Unauthenticated access to `(crm)` routes redirects to login. There is no way to enable a no-sign-in mode via environment variables.
+Behavioral acceptance: as a signed-in user, create a person, add an interaction with a note, run any AI memory action if configured, and open the timeline; all data remains scoped to that user. Unauthenticated access to `(prm)` routes redirects to login. There is no way to enable a no-sign-in mode via environment variables.
 
 **Cross-tenant acceptance:** with two distinct accounts, user A creates identifiable records; while signed in as user B, those records never appear in lists or searches, person or interaction URLs for A’s ids do not reveal A’s data (for example `notFound` or empty), and server actions invoked with A’s ids do not succeed for B. This proves **only the logged-in user can access their own data**; everyone else is excluded.
 
@@ -139,7 +139,7 @@ Supabase remediation references (external, for humans): [Function search path](h
 
 ## Interfaces and Dependencies
 
-No new npm dependencies are required. SQL targets Postgres as provided by Supabase. After bypass removal, `CrmSupabaseContext` should no longer include a `bypass` flag; navigation and profile UI assume a normal session (email/metadata from Supabase auth when available). Optional application helpers should live under `src/lib/` with `import "server-only"` where appropriate, accept `SupabaseClient<Database>` and `userId: string`, and return typed results or error objects consistent with existing action patterns. **Tenancy rule:** any code path that writes or reads tenant tables must remain consistent with the guarantee that **only the session user’s rows are visible or mutable**—RLS is the backstop; application scoping is the primary ergonomic layer.
+No new npm dependencies are required. SQL targets Postgres as provided by Supabase. After bypass removal, `PrmSupabaseContext` should no longer include a `bypass` flag; navigation and profile UI assume a normal session (email/metadata from Supabase auth when available). Optional application helpers should live under `src/lib/` with `import "server-only"` where appropriate, accept `SupabaseClient<Database>` and `userId: string`, and return typed results or error objects consistent with existing action patterns. **Tenancy rule:** any code path that writes or reads tenant tables must remain consistent with the guarantee that **only the session user’s rows are visible or mutable**—RLS is the backstop; application scoping is the primary ergonomic layer.
 
 ---
 

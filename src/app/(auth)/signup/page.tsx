@@ -2,10 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/app/site-footer";
 import { SignupForm } from "@/components/auth/signup-form";
-import { getCrmSupabaseContext } from "@/lib/crm/context";
+import { getPrmSupabaseContext } from "@/lib/prm/context";
 
 export default async function SignupPage() {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (ctx) {
     redirect("/people");
   }
@@ -17,7 +17,7 @@ export default async function SignupPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">Start quietly</p>
         <h1 className="mt-3 font-display text-3xl tracking-tight">Create your account</h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          This is a personal CRM for friends first. Your notes and history belong only to you.
+          This is Tether for friends first. Your notes and history belong only to you.
         </p>
         <div className="mt-8">
           <SignupForm />

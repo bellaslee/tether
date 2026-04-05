@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getCrmSupabaseContext } from '@/lib/crm/context';
+import { getPrmSupabaseContext } from '@/lib/prm/context';
 
 function optionalNotes(raw: FormDataEntryValue | null): string | null {
   if (raw == null || typeof raw !== 'string') return null;
@@ -19,7 +19,7 @@ export async function createPersonConnection(
   connectionTypeId: string,
   notesRaw?: string | null,
 ): Promise<CreatePersonConnectionResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }
@@ -101,7 +101,7 @@ export type DeletePersonConnectionResult =
 export async function deletePersonConnection(
   connectionId: string,
 ): Promise<DeletePersonConnectionResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }

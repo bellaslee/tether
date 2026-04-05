@@ -5,7 +5,7 @@ import { InteractionNotePreview } from '@/components/interactions/interaction-no
 import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
 import { InteractionDeleteButton } from '@/components/interactions/interaction-delete-button';
 import { InteractionMetaChips } from '@/components/interactions/interaction-meta-chips';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { requirePrmAccess } from '@/lib/prm/guard';
 import { toDatetimeLocalInputValue } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
@@ -30,7 +30,7 @@ type PersonChip = {
 };
 
 export default async function TimelinePage() {
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
 
   const { data: interactionTypeRows, error: typesError } = await ctx.client
     .from('interaction_types')
@@ -116,10 +116,10 @@ export default async function TimelinePage() {
   }
 
   return (
-    <main className="crm-page">
+    <main className="prm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="crm-eyebrow">Across your circle</p>
+          <p className="prm-eyebrow">Across your circle</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
             Plans you are looking forward to and moments you have already shared.

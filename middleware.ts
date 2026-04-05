@@ -34,8 +34,8 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse;
 }
 
-/** Refreshes the Supabase session cookie. CRM routes under `src/app/(crm)` enforce
- *  sign-in via `requireCrmAccess()` in the layout, not here. */
+/** Refreshes the Supabase session cookie. PRM routes under `src/app/(prm)` enforce
+ *  sign-in via `requirePrmAccess()` in the layout, not here. */
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",

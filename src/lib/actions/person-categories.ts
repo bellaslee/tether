@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getCrmSupabaseContext } from '@/lib/crm/context';
+import { getPrmSupabaseContext } from '@/lib/prm/context';
 
 export type CreateCategoryResult =
   | { ok: true; id: string; name: string }
@@ -10,7 +10,7 @@ export type CreateCategoryResult =
 export async function createPersonCategory(
   nameRaw: string,
 ): Promise<CreateCategoryResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }
@@ -67,7 +67,7 @@ export async function updatePersonCategory(
   categoryId: string,
   nameRaw: string,
 ): Promise<UpdateCategoryResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }
@@ -125,7 +125,7 @@ const UUID_RE =
 export async function reorderPersonCategories(
   orderedIds: string[],
 ): Promise<ReorderCategoriesResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }

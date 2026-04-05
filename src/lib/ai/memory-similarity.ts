@@ -22,7 +22,7 @@ function tokenSet(normalized: string): Set<string> {
 }
 
 /**
- * Whether two strings are near-duplicates for CRM memory (don't re-suggest).
+ * Whether two strings are near-duplicates for PRM memory (don't re-suggest).
  */
 export function memoryTextsSimilar(a: string, b: string): boolean {
   const na = normalizeMemoryText(a);

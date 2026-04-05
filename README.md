@@ -1,8 +1,8 @@
 # Tether
 
-A personal relationship CRM focused on friends first and networking second:
+A personal relationship PRM focused on friends first and networking second:
 remember who people are, how you know them, what changed recently, and what to
-follow up on—without sales-CRM vibes.
+follow up on—without sales-PRM vibes.
 
 ## Stack
 
@@ -23,7 +23,7 @@ see [AGENTS.md](./AGENTS.md).
 - **People:** list, detail, create, edit; categories; how-you-met; connection
   types and person-to-person links.
 - **Interactions:** quick capture and timeline views (including by type).
-- **Reminders:** tasks from the CRM data model (including AI-suggested items).
+- **Reminders:** tasks from the PRM data model (including AI-suggested items).
 - **Settings** and app shell with primary navigation.
 - **AI memory layer (Phase 2):** candidate facts, relationship summaries, and
   suggested tasks driven by server-side pipelines in `src/lib/ai` (human review
@@ -32,8 +32,8 @@ see [AGENTS.md](./AGENTS.md).
   plus follow-on migrations for categories, interactions, connections, and the
   AI tables). All changes go through SQL migrations.
 
-The marketing-style home page at `/` includes setup hints; signed-in CRM routes
-live under the `(crm)` route group (e.g. `/people`, `/timeline`).
+The marketing-style home page at `/` includes setup hints; signed-in PRM routes
+live under the `(prm)` route group (e.g. `/people`, `/timeline`).
 
 ## Getting started
 

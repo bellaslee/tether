@@ -1,4 +1,4 @@
-# Initialize the personal CRM project with Next.js, Supabase, and OpenAI foundations
+# Initialize the Tether project with Next.js, Supabase, and OpenAI foundations
 
 This ExecPlan is a living document. The sections `Progress`, `Surprises & Discoveries`, `Decision Log`, and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
@@ -61,7 +61,7 @@ The full initialization plan is now validated end to end. `npx supabase start` c
 
 ## Context and Orientation
 
-The current repository contains planning documents but no application code. The key files that currently exist are `AGENTS.md`, `docs/personal-crm-user-stories.md`, and `docs/phase-1-mvp-schema-design.md`. The Phase 1 schema document defines the initial relational model for `people`, `contact_methods`, `interactions`, and `interaction_people`. The user stories document defines the MVP behavior for authentication, person profiles, interaction capture, and timeline views.
+The current repository contains planning documents but no application code. The key files that currently exist are `AGENTS.md`, `docs/personal-prm-user-stories.md`, and `docs/phase-1-mvp-schema-design.md`. The Phase 1 schema document defines the initial relational model for `people`, `contact_methods`, `interactions`, and `interaction_people`. The user stories document defines the MVP behavior for authentication, person profiles, interaction capture, and timeline views.
 
 Next.js App Router is the current routing system for Next.js applications. In this repository it should be used to define pages under `src/app`, where each route is represented by a `page.tsx` file. A Server Component is a React component rendered on the server by default in this model; it should remain the default unless browser-only behavior requires `'use client'`.
 
@@ -75,7 +75,7 @@ The intended top-level layout after initialization should include `src/app`, `sr
 
 Begin by scaffolding the Next.js application in the repository root using the App Router, TypeScript, and Tailwind CSS. The generated structure should be adapted to match the project conventions in `AGENTS.md`: route files should live under `src/app`, reusable UI should live under `src/components` or route-local `_components`, and utility logic should live under `src/lib`.
 
-Once the app exists, add a minimal application shell page in `src/app/page.tsx`. This page does not need final product UI. It should clearly confirm that the project is initialized, explain the planned CRM routes, and show whether required environment variables are present in server context. This gives a novice a visible way to verify that Next.js is wired correctly.
+Once the app exists, add a minimal application shell page in `src/app/page.tsx`. This page does not need final product UI. It should clearly confirm that the project is initialized, explain the planned PRM routes, and show whether required environment variables are present in server context. This gives a novice a visible way to verify that Next.js is wired correctly.
 
 Next, initialize Supabase locally in the repository. Create the standard local configuration files under `supabase/` and add the first migration file under `supabase/migrations/`. That migration should implement the Phase 1 schema from `docs/phase-1-mvp-schema-design.md`, including `people`, `contact_methods`, `interactions`, and `interaction_people`, with constraints, indexes, and ownership columns. Keep this migration additive and limited to the current MVP scope.
 
@@ -151,7 +151,7 @@ Validation status from this implementation session:
     Applying migration 20260404190722_phase_1_initial_schema.sql
     Finished supabase db reset on branch main
 
-    $ docker exec supabase_db_personal-crm psql -U postgres -d postgres -c "select tablename ..."
+    $ docker exec supabase_db_personal-prm psql -U postgres -d postgres -c "select tablename ..."
     contact_methods
     interaction_people
     interactions
@@ -160,7 +160,7 @@ Validation status from this implementation session:
 Expected browser outcome after opening `http://localhost:3000`:
 
     A simple page loads successfully.
-    The page identifies the project as the personal relationship CRM.
+    The page identifies the project as the personal relationship PRM.
     The page shows that the application shell is working.
     If environment variables are missing, the page or logs explain what needs to be configured instead of failing silently.
 
@@ -176,7 +176,7 @@ Acceptance is complete when a novice can perform the following observable checks
 
 First, from the repository root, run `npm install`, `npx supabase start`, `npx supabase db reset`, `npm run lint`, and `npm run build` without encountering unresolved configuration errors beyond missing local secrets that are clearly documented.
 
-Second, run `npm run dev`, open `http://localhost:3000`, and observe a rendered page that identifies the CRM project and confirms the app shell is running. The page does not need to contain real CRM features yet, but it must prove that the stack has been initialized successfully.
+Second, run `npm run dev`, open `http://localhost:3000`, and observe a rendered page that identifies the PRM project and confirms the app shell is running. The page does not need to contain real PRM features yet, but it must prove that the stack has been initialized successfully.
 
 Third, inspect the local database through Supabase tooling and confirm that the tables `people`, `contact_methods`, `interactions`, and `interaction_people` exist with the expected ownership columns, constraints, and indexes. This can be verified by a successful `npx supabase db reset` and optional SQL inspection.
 
@@ -218,7 +218,7 @@ The most useful artifacts to capture during implementation are short command tra
     $ curl -I http://localhost:3000
     HTTP/1.1 200 OK
 
-    $ docker exec supabase_db_personal-crm psql -U postgres -d postgres -c "select tablename ..."
+    $ docker exec supabase_db_personal-prm psql -U postgres -d postgres -c "select tablename ..."
     contact_methods
     interaction_people
     interactions

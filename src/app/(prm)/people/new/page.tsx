@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { PersonForm } from "@/components/people/person-form";
-import { requireCrmAccess } from "@/lib/crm/guard";
+import { requirePrmAccess } from "@/lib/prm/guard";
 
 export default async function NewPersonPage() {
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
   const { data: categories, error } = await ctx.client
     .from("person_categories")
     .select("id, name")
@@ -15,12 +15,12 @@ export default async function NewPersonPage() {
   }
 
   return (
-    <main className="crm-form-shell max-w-4xl">
+    <main className="prm-form-shell max-w-4xl">
       <div>
         <Link href="/people" className="text-sm font-semibold text-muted underline-offset-4 hover:underline">
           ← Back to people
         </Link>
-        <p className="crm-eyebrow mt-4">Your circle</p>
+        <p className="prm-eyebrow mt-4">Your circle</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">Add someone</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
           Capture the basics now; you can always deepen the story later with notes and moments.

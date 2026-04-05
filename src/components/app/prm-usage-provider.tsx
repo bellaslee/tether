@@ -11,7 +11,7 @@ import {
 import { usePathname } from 'next/navigation';
 import type { Json } from '@/lib/db/database.types';
 import { createSupabaseBrowserClient } from '@/lib/db/browser';
-import { isCrmUsageTrackingEnabled } from '@/lib/env';
+import { isPrmUsageTrackingEnabled } from '@/lib/env';
 import {
   insertUsageEvents,
   insertUsageEventsKeepAlive,
@@ -44,11 +44,11 @@ function toJsonProps(raw?: Record<string, unknown>): Json {
   }
 }
 
-export function CrmUsageProvider({
+export function PrmUsageProvider({
   children,
 }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
-  const enabled = isCrmUsageTrackingEnabled();
+  const enabled = isPrmUsageTrackingEnabled();
   const queueRef = useRef<PendingUsageEvent[]>([]);
   const pathRef = useRef<string | null>(null);
   const visibleAccumMsRef = useRef(0);

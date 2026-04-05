@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getCrmSupabaseContext } from '@/lib/crm/context';
+import { getPrmSupabaseContext } from '@/lib/prm/context';
 
 export type CreateInteractionTypeResult =
   | { ok: true; id: string; name: string }
@@ -10,7 +10,7 @@ export type CreateInteractionTypeResult =
 export async function createInteractionType(
   nameRaw: string,
 ): Promise<CreateInteractionTypeResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }
@@ -66,7 +66,7 @@ export async function updateInteractionType(
   typeId: string,
   nameRaw: string,
 ): Promise<UpdateInteractionTypeResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }

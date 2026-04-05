@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import type { CrmSupabaseContext } from '@/lib/crm/context';
+import type { PrmSupabaseContext } from '@/lib/prm/context';
 import { UserMenu } from '@/components/app/user-menu';
 
 type AppNavProps = {
-  context: Pick<CrmSupabaseContext, 'accountEmail' | 'accountDisplayName'>;
+  context: Pick<PrmSupabaseContext, 'accountEmail' | 'accountDisplayName'>;
 };
 
 export function AppNav({ context }: AppNavProps) {

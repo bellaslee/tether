@@ -6,5 +6,5 @@ export function logAiRequestDebug(label: string, payload: Record<string, unknown
   if (!isAiDebugPromptsEnabled()) {
     return;
   }
-  console.info(`[crm-ai-debug] ${label}`, payload);
+  console.info(`[prm-ai-debug] ${label}`, payload);
 }

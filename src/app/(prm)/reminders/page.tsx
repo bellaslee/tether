@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { TaskReviewForms } from '@/components/ai/task-review-forms';
 import { updateCrmTask } from '@/lib/actions/ai-memory/reminders';
 import type { CrmTaskStatus, Tables } from '@/lib/db/database.types';
-import { requireCrmAccess } from '@/lib/crm/guard';
+import { requirePrmAccess } from '@/lib/prm/guard';
 import { personShownName } from '@/lib/people/list-name';
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ function statusSortRank(status: CrmTaskStatus): number {
 }
 
 export default async function RemindersPage() {
-  const ctx = await requireCrmAccess();
+  const ctx = await requirePrmAccess();
 
   const { data: taskRows, error: tasksError } = await ctx.client
     .from('tasks')
@@ -91,10 +91,10 @@ export default async function RemindersPage() {
   ).length;
 
   return (
-    <main className="crm-page">
+    <main className="prm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="crm-eyebrow">Follow through</p>
+          <p className="prm-eyebrow">Follow through</p>
           <h1 className="mt-2 font-display text-4xl tracking-tight">Reminders</h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
             Open loops from your notes and anything you added yourself—sorted

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { InteractionDirection } from '@/lib/db/database.types';
-import { getCrmSupabaseContext } from '@/lib/crm/context';
+import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
 import {
@@ -26,7 +26,7 @@ function isDirection(value: string): value is InteractionDirection {
 }
 
 async function assertOwnsPeople(personIds: string[]) {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.', ctx: null };
   }
@@ -46,7 +46,7 @@ async function assertOwnsPeople(personIds: string[]) {
 }
 
 async function assertOwnsInteractionType(
-  ctx: NonNullable<Awaited<ReturnType<typeof getCrmSupabaseContext>>>,
+  ctx: NonNullable<Awaited<ReturnType<typeof getPrmSupabaseContext>>>,
   interactionTypeId: string,
 ): Promise<{ ok: true } | { error: string }> {
   const { data, error } = await ctx.client
@@ -247,7 +247,7 @@ export async function updateInteraction(
     return { error: 'Invalid interaction.' };
   }
 
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }
@@ -374,7 +374,7 @@ export async function updateInteraction(
 export async function deleteInteraction(
   interactionId: string,
 ): Promise<ActionResult> {
-  const ctx = await getCrmSupabaseContext();
+  const ctx = await getPrmSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }

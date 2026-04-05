@@ -5,14 +5,14 @@ import {
 } from "@/lib/ai/llm-rate-limit";
 import { tryCreateOpenAiClient } from "@/lib/ai/openai";
 import { transcribeAudioFile, TRANSCRIBE_MODEL } from "@/lib/ai/transcribe-audio";
-import { getCrmSupabaseContext } from "@/lib/crm/context";
+import { getPrmSupabaseContext } from "@/lib/prm/context";
 import { recordLlmUsage } from "@/lib/usage/record-usage-event";
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
 export async function POST(request: Request) {
-  const crm = await getCrmSupabaseContext();
-  if (!crm) {
+  const prm = await getPrmSupabaseContext();
+  if (!prm) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   }
 
   const rateLimit = await enforceLlmRateLimits({
-    userId: crm.userId,
+    userId: prm.userId,
     clientIp: getLlmRateLimitClientIpFromRequest(request),
   });
   if (!rateLimit.ok) {
@@ -61,13 +61,13 @@ export async function POST(request: Request) {
 
   try {
     const text = await transcribeAudioFile(openai, audio);
-    recordLlmUsage(crm.client, "transcribe", {
+    recordLlmUsage(prm.client, "transcribe", {
       model: TRANSCRIBE_MODEL,
       ok: true,
     });
     return NextResponse.json({ text });
   } catch (err) {
-    recordLlmUsage(crm.client, "transcribe", {
+    recordLlmUsage(prm.client, "transcribe", {
       model: TRANSCRIBE_MODEL,
       ok: false,
       error_code: "transcribe_failed",
