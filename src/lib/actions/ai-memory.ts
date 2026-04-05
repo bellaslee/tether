@@ -222,6 +222,19 @@ export async function suggestTasksForInteraction(
   return { ok: true };
 }
 
+/** Fire-and-forget friendly: skips when no API key; ignores model/loader errors. */
+export async function runAutoMemorySuggestForInteraction(
+  interactionId: string,
+): Promise<void> {
+  if (!isUuid(interactionId) || !hasOpenAiApiKey()) {
+    return;
+  }
+  const formData = new FormData();
+  formData.set('interaction_id', interactionId);
+  await extractFactsForInteraction({}, formData);
+  await suggestTasksForInteraction({}, formData);
+}
+
 export async function extractFactsFromPersonRecentNotes(
   _prev: AiMemoryActionResult,
   formData: FormData,

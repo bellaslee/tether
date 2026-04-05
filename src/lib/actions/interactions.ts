@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import type { InteractionDirection } from '@/lib/db/database.types';
+import { runAutoMemorySuggestForInteraction } from '@/lib/actions/ai-memory';
 import { getCrmSupabaseContext } from '@/lib/crm/context';
 import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
@@ -141,6 +143,13 @@ export async function createInteractionFromPerson(
   revalidatePath('/timeline');
   revalidatePath(`/people/${primaryPersonId}`);
   allIds.forEach((id) => revalidatePath(`/people/${id}`));
+
+  after(() => {
+    void runAutoMemorySuggestForInteraction(interaction.id).catch(() => {
+      /* Best-effort AI; interaction is already saved. */
+    });
+  });
+
   return { ok: true };
 }
 
@@ -232,6 +241,13 @@ export async function createGlobalInteraction(
 
   revalidatePath('/timeline');
   allIds.forEach((id) => revalidatePath(`/people/${id}`));
+
+  after(() => {
+    void runAutoMemorySuggestForInteraction(interaction.id).catch(() => {
+      /* Best-effort AI; interaction is already saved. */
+    });
+  });
+
   redirect('/timeline');
 }
 
@@ -364,6 +380,13 @@ export async function updateInteraction(
 
   revalidatePath('/timeline');
   touchIds.forEach((pid) => revalidatePath(`/people/${pid}`));
+
+  after(() => {
+    void runAutoMemorySuggestForInteraction(interactionId).catch(() => {
+      /* Best-effort AI; interaction is already saved. */
+    });
+  });
+
   return { ok: true };
 }
 
