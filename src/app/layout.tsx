@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Manrope, Newsreader } from 'next/font/google';
+import { PrivacyPolicyProvider } from '@/components/app/privacy-policy-context';
 import './globals.css';
 
 const bodyFont = Manrope({
@@ -29,7 +30,9 @@ export default function RootLayout({
       lang="en"
       className={`${bodyFont.variable} ${displayFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <PrivacyPolicyProvider>{children}</PrivacyPolicyProvider>
+      </body>
     </html>
   );
 }

@@ -4,8 +4,9 @@ import {
   getLlmRateLimitClientIpFromRequest,
 } from "@/lib/ai/llm-rate-limit";
 import { tryCreateOpenAiClient } from "@/lib/ai/openai";
-import { transcribeAudioFile } from "@/lib/ai/transcribe-audio";
+import { transcribeAudioFile, TRANSCRIBE_MODEL } from "@/lib/ai/transcribe-audio";
 import { getCrmSupabaseContext } from "@/lib/crm/context";
+import { recordLlmUsage } from "@/lib/usage/record-usage-event";
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
@@ -60,8 +61,17 @@ export async function POST(request: Request) {
 
   try {
     const text = await transcribeAudioFile(openai, audio);
+    recordLlmUsage(crm.client, "transcribe", {
+      model: TRANSCRIBE_MODEL,
+      ok: true,
+    });
     return NextResponse.json({ text });
   } catch (err) {
+    recordLlmUsage(crm.client, "transcribe", {
+      model: TRANSCRIBE_MODEL,
+      ok: false,
+      error_code: "transcribe_failed",
+    });
     console.error("transcribe:", err);
     return NextResponse.json(
       { error: "Transcription failed" },

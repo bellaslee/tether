@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SiteFooter } from "@/components/app/site-footer";
 import { SignupForm } from "@/components/auth/signup-form";
 import { getCrmSupabaseContext } from "@/lib/crm/context";
 
@@ -10,6 +11,7 @@ export default async function SignupPage() {
   }
 
   return (
+    <>
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
       <div className="card-surface rounded-[2rem] border border-border-soft p-8 sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">Start quietly</p>
@@ -28,5 +30,7 @@ export default async function SignupPage() {
         </p>
       </div>
     </main>
+    <SiteFooter />
+    </>
   );
 }

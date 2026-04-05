@@ -1,3 +1,4 @@
+import { SiteFooter } from '@/components/app/site-footer';
 import { ButtonLink } from '@/components/ui/button';
 import { redirect } from 'next/navigation';
 import { SetupStatus } from '@/components/home/setup-status';
@@ -70,6 +71,7 @@ export default async function Home() {
   const setupStatus = getSetupStatus();
 
   return (
+    <>
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-8 sm:px-10 lg:px-12">
       <section className="card-surface overflow-hidden rounded-[2rem] border border-border-soft">
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_1fr] lg:px-12 lg:py-12">
@@ -249,5 +251,7 @@ export default async function Home() {
         </div>
       </section>
     </main>
+    <SiteFooter />
+    </>
   );
 }
