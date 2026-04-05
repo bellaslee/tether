@@ -8,9 +8,11 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] add relationship strength indicator (Cold, Warm, Hot)
 - [x] ability to sort people cards by interaction date, added date, and met the person date. This should appear under the description for the people home page.
 - [x] ability to filter by relationship strength
-- [ ] one combined participant control with an explicit “mark as main” on one row for the interaction edit UI
+- [/] one combined participant control with an explicit “mark as main” on one row for the interaction edit UI
+- [/] voice to text
 - [ ] dark mode
 - [ ] sort panel should line up with first card, not first heading
+- [ ] allow user to select view: list by category or grid
 
 ## User settings
 
