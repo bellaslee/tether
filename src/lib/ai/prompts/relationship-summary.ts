@@ -1,32 +1,23 @@
 import type { RelationshipSummaryKind } from '@/lib/db/database.types';
 
-export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 1;
+export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 2;
 
 function kindInstructions(kind: RelationshipSummaryKind) {
   if (kind === 'profile_brief') {
-    return [
-      'Write a warm, compact profile-style brief: who they are to the user, what matters lately, and stable context.',
-      'Use neutral language; do not guess private details. Ground claims in the provided facts and note snippets only.',
-    ].join('\n');
+    return 'profile_brief: Warm, compact—who they are to the note author, what matters lately, stable context. Ground only in supplied facts and snippets.';
   }
-  return [
-    'Write a practical next-meeting brief: what to ask about, open threads, and anything worth remembering for the next conversation.',
-    'Stay grounded in the supplied facts and recent notes. Do not invent contact information.',
-    'The brief should be a numbered list of five suggested conversation topics, each on a new line.',
-  ].join('\n');
+  return 'next_meeting: Prep for the next conversation—threads to pick up, what to ask, what to remember. Five numbered lines, one topic per line. Ground only in supplied facts and snippets.';
 }
 
 export function buildRelationshipSummaryInstructions(
   kind: RelationshipSummaryKind,
 ) {
   return [
-    'You help a personal relationship PRM. The subject person is identified only by UUID.',
-    'You receive accepted facts (text only, no names required) and recent interaction snippets with [person:<uuid>] placeholders.',
-    'Never include structured PII (phone, email, exact address, birth dates).',
-    "Treat the UUIDs as the person's name gramatically, as they will be converted to display names locally in the UI.",
-    "Do not use the word 'UUID' or anything related to it in the output.",
+    'Personal relationship management tool brief. Audience: the user who captured these notes—private, first-person utility.',
+    'Subject as UUID only; input uses [person:<uuid>] in snippets. Use those tokens grammatically as names; never say "UUID" in output (UI substitutes names).',
+    'No structured PII (phone, email, street address, birth dates). No guessing beyond the supplied material.',
     kindInstructions(kind),
-    'Output only JSON with a single "content" string field.',
+    'Output JSON: single field "content" (string).',
   ].join('\n');
 }
 
@@ -42,19 +33,12 @@ export function buildRelationshipSummaryUserPayload(input: {
     redacted_note: string | null;
   }>;
 }) {
-  return [
-    'Input JSON:',
-    JSON.stringify(
-      {
-        subject_person_id: input.subjectPersonId,
-        category_id: input.categoryId,
-        person_status: input.status,
-        summary_kind: input.kind,
-        accepted_facts: input.acceptedFactLines,
-        recent_interactions: input.recentNotes,
-      },
-      null,
-      2,
-    ),
-  ].join('\n');
+  return `Input JSON:\n${JSON.stringify({
+    subject_person_id: input.subjectPersonId,
+    category_id: input.categoryId,
+    person_status: input.status,
+    summary_kind: input.kind,
+    accepted_facts: input.acceptedFactLines,
+    recent_interactions: input.recentNotes,
+  })}`;
 }
