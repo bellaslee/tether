@@ -1,6 +1,7 @@
 import { forwardRef, type ReactNode } from 'react';
 import { FieldError } from '@/components/ui/field-error';
 import { FormTextarea, type FormTextareaProps } from '@/components/ui/form-textarea';
+import { RequiredMark } from '@/components/ui/required-mark';
 import type { FormControlSize } from '@/components/ui/form-control-classes';
 
 /** Labeled textarea using {@link FormTextarea} (voice-to-text is on by default; pass `voiceInput={false}` to hide). */
@@ -25,6 +26,7 @@ export const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>
       fieldSize,
       containerClassName,
       className,
+      required,
       ...textareaProps
     },
     ref,
@@ -38,6 +40,7 @@ export const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>
       >
         <label htmlFor={id} className={labelClassName}>
           {label}
+          {required ? <RequiredMark /> : null}
         </label>
         {hint ? <p className="text-xs text-muted">{hint}</p> : null}
         <FormTextarea
@@ -47,6 +50,7 @@ export const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>
           className={className}
           aria-invalid={fieldError ? true : undefined}
           aria-describedby={errId}
+          required={required}
           {...textareaProps}
         />
         {fieldError ? (

@@ -1,6 +1,7 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
 import {
   formControlClassName,
+  isTemporalFormInputType,
   type FormControlSize,
 } from '@/components/ui/form-control-classes';
 
@@ -9,11 +10,22 @@ export type FormInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'size'>
 };
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-  function FormInput({ fieldSize = 'default', className = '', ...props }, ref) {
+  function FormInput(
+    { fieldSize = 'default', className = '', type, ...props },
+    ref,
+  ) {
+    const temporal = isTemporalFormInputType(
+      typeof type === 'string' ? type : undefined,
+    );
     return (
       <input
         ref={ref}
-        className={formControlClassName({ size: fieldSize, className })}
+        type={type}
+        className={formControlClassName({
+          size: fieldSize,
+          temporal,
+          className,
+        })}
         {...props}
       />
     );

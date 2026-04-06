@@ -1,6 +1,7 @@
 import { forwardRef, type ReactNode } from 'react';
 import { FieldError } from '@/components/ui/field-error';
 import { FormInput, type FormInputProps } from '@/components/ui/form-input';
+import { RequiredMark } from '@/components/ui/required-mark';
 import type { FormControlSize } from '@/components/ui/form-control-classes';
 
 export type TextFieldProps = Omit<FormInputProps, 'id'> & {
@@ -27,6 +28,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       fieldSize,
       containerClassName,
       className,
+      required,
       ...inputProps
     },
     ref,
@@ -40,6 +42,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       >
         <label htmlFor={id} className={labelClassName}>
           {label}
+          {required ? <RequiredMark /> : null}
         </label>
         {hint ? <p className="text-xs text-muted">{hint}</p> : null}
         <FormInput
@@ -49,6 +52,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           className={className}
           aria-invalid={fieldError ? true : undefined}
           aria-describedby={errId}
+          required={required}
           {...inputProps}
         />
         {hintAfter ? <p className="text-xs text-muted">{hintAfter}</p> : null}

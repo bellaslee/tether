@@ -6,6 +6,7 @@ import type { ActionResult } from '@/lib/actions/people';
 import { createPerson, updatePersonFormAction } from '@/lib/actions/people';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { formatStatus } from '@/lib/domain/labels';
+import { MetAtMonthYearField } from '@/components/people/met-at-month-year-field';
 import {
   PersonCategoryField,
   type PersonCategoryOption,
@@ -13,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 import { formControlClassName } from '@/components/ui/form-control-classes';
+import { RequiredMark } from '@/components/ui/required-mark';
 import { TextField } from '@/components/ui/text-field';
 import { TextareaField } from '@/components/ui/textarea-field';
 
@@ -52,7 +54,6 @@ export function PersonForm(props: PersonFormProps) {
           id="display_name"
           name="display_name"
           label="Display name"
-          hint="Optional — used in lists, timeline, and pickers. Profile still shows full name."
           defaultValue={person?.display_name ?? ''}
         />
         <TextField
@@ -71,6 +72,7 @@ export function PersonForm(props: PersonFormProps) {
         <div className="space-y-2">
           <label htmlFor="status" className="text-sm font-semibold">
             Status
+            <RequiredMark />
           </label>
           <select
             id="status"
@@ -93,12 +95,9 @@ export function PersonForm(props: PersonFormProps) {
           label="Birthday"
           defaultValue={person?.birthday ? person.birthday.slice(0, 10) : ''}
         />
-        <TextField
-          id="met_at"
-          name="met_at"
-          type="month"
-          label="Date met"
-          defaultValue={person?.met_at ? person.met_at.slice(0, 7) : ''}
+        <MetAtMonthYearField
+          key={person?.id ?? 'create'}
+          defaultMetAt={person?.met_at}
         />
         <TextField
           id="location"

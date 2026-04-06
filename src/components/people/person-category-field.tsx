@@ -8,6 +8,7 @@ import {
 } from '@/lib/actions/person-categories';
 import { Button } from '@/components/ui/button';
 import { formControlClassName } from '@/components/ui/form-control-classes';
+import { RequiredMark } from '@/components/ui/required-mark';
 import { FormInput } from '@/components/ui/form-input';
 
 export type PersonCategoryOption = { id: string; name: string };
@@ -86,6 +87,7 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <label htmlFor="category_select" className="text-sm font-semibold">
             Category
+            <RequiredMark />
           </label>
           <Link
             href="/settings#categories"
