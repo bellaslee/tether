@@ -32,7 +32,10 @@ export function InteractionMemorySuggestButton({
   }, [state.ok, router]);
 
   return (
-    <form action={formAction} className="flex w-full flex-col items-stretch gap-2 sm:items-end">
+    <form
+      action={formAction}
+      className="flex w-full flex-col items-center gap-2 sm:items-end"
+    >
       <input type="hidden" name="interaction_id" value={interactionId} />
       {state.error && !alreadySuggested ? (
         <FieldError size="compact">{state.error}</FieldError>

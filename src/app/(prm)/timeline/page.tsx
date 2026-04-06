@@ -246,7 +246,7 @@ function GlobalTimelineRow({
 
   return (
     <li className={cardClass}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted">
@@ -290,7 +290,7 @@ function GlobalTimelineRow({
             </div>
           ) : null}
         </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:max-w-md sm:items-end">
+        <div className="flex w-full shrink-0 flex-col items-center gap-2 min-w-0 sm:w-auto sm:max-w-md sm:items-end">
           {showMemorySuggestSlot ? (
             <InteractionMemorySuggestButton
               interactionId={interaction.id}
