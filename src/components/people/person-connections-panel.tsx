@@ -12,6 +12,7 @@ import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';
 import { formControlClassName } from '@/components/ui/form-control-classes';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
+import { panelTopAccentAt } from '@/lib/ui/panel-top-accent';
 
 export type PersonConnectionListItem = {
   id: string;
@@ -39,6 +40,8 @@ type PersonConnectionsPanelProps = {
   connectionTypes: PersonConnectionTypeOption[];
   defaultConnectionTypeId: string;
   className?: string;
+  /** Rotates sun / sky / coral top border with other person-detail panels. */
+  topAccentIndex?: number;
 };
 
 function ConnectionRow(props: {
@@ -245,13 +248,16 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
     connectionTypes,
     defaultConnectionTypeId,
     className = '',
+    topAccentIndex,
   } = props;
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const topAccent =
+    topAccentIndex !== undefined ? ` ${panelTopAccentAt(topAccentIndex)}` : '';
 
   return (
     <div
-      className={`card-surface flex min-h-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${className}`}
+      className={`card-surface flex min-h-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8${topAccent} ${className}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3 shrink-0">
         <div>

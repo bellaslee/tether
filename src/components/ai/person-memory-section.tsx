@@ -6,6 +6,7 @@ import {
 } from '@/components/ai/person-memory-card-panels';
 import { RelationshipBriefCard } from '@/components/ai/relationship-brief-card';
 import { SummaryRefreshForm } from '@/components/ai/summary-refresh-forms';
+import { panelTopAccentAt } from '@/lib/ui/panel-top-accent';
 
 type SummaryRow = Tables<'relationship_summaries'>;
 
@@ -17,6 +18,8 @@ type BriefsProps = {
   aiEnabled: boolean;
   summaries: SummaryRow[];
   interactionLabels: Map<string, string>;
+  /** Index into rotating sun / sky / coral top border (optional). */
+  topAccentIndex?: number;
 };
 
 export function PersonBriefsSection({
@@ -24,14 +27,17 @@ export function PersonBriefsSection({
   aiEnabled,
   summaries,
   interactionLabels,
+  topAccentIndex,
 }: BriefsProps) {
   const profileBrief = summaries.find((s) => s.kind === 'profile_brief');
   const nextMeeting = summaries.find((s) => s.kind === 'next_meeting');
   const interactionLabelRecord = Object.fromEntries(interactionLabels);
+  const accent =
+    topAccentIndex !== undefined ? ` ${panelTopAccentAt(topAccentIndex)}` : '';
 
   return (
     <section
-      className={memoryCardClass}
+      className={`${memoryCardClass}${accent}`}
       aria-labelledby="person-memory-briefs-heading"
     >
       <h2

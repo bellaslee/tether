@@ -13,8 +13,7 @@ import { PeopleFiltersSidebar } from '@/components/people/people-filters-sidebar
 import { PeopleListPreferencesSync } from '@/components/people/people-list-preferences-sync';
 import { PeopleViewSortBar } from '@/components/people/people-view-sort-bar';
 import type { PeopleViewOption } from '@/components/people/people-view-control';
-import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
-import { formatDateInTimeZone } from '@/lib/datetime';
+import { PeopleListItem } from '@/components/people/people-list-item';
 
 const PAGE_COPY = {
   hero: {
@@ -30,9 +29,6 @@ const PAGE_COPY = {
   },
   list: {
     uncategorized: 'Uncategorized',
-    categoryPlaceholder: '—',
-    lastTouch: 'Last touch',
-    noInteractionsYet: 'No interactions yet',
   },
 } as const;
 
@@ -123,65 +119,6 @@ type PersonListRow = Pick<
 > & {
   person_categories: { name: string } | null;
 };
-
-function PeopleListItem({
-  person,
-  displayTimeZone,
-  variant = 'row',
-}: {
-  person: PersonListRow;
-  displayTimeZone: string;
-  /** `stacked`: chips below name (grid). `row`: name and chips side by side (list by category). */
-  variant?: 'row' | 'stacked';
-}) {
-  const stacked = variant === 'stacked';
-  return (
-    <li className="flex min-h-0 min-w-0">
-      <Link
-        href={`/people/${person.id}`}
-        className={`card-surface flex w-full gap-3 rounded-[1.25rem] border border-border-soft p-4 transition hover:-translate-y-0.5 ${
-          stacked
-            ? 'flex-col items-stretch'
-            : 'flex-col items-stretch sm:flex-row sm:items-start sm:justify-between'
-        }`}
-      >
-        <div className={stacked ? 'min-w-0' : 'min-w-0 sm:flex-1'}>
-          <p className="font-display text-lg leading-snug tracking-tight [overflow-wrap:anywhere]">
-            {personShownName(person)}
-          </p>
-        </div>
-        <div
-          className={`flex w-full flex-wrap gap-1.5 text-xs text-muted sm:w-auto ${
-            stacked ? 'justify-start' : 'justify-start sm:shrink-0 sm:justify-end'
-          }`}
-        >
-          <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
-            {person.person_categories?.name ?? PAGE_COPY.list.categoryPlaceholder}
-          </span>
-          <RelationshipWarmthChip
-            lastInteractionAt={person.last_interaction_at}
-            metAt={person.met_at}
-            createdAt={person.created_at}
-            size="compact"
-          />
-          {person.last_interaction_at ? (
-            <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-              {PAGE_COPY.list.lastTouch}{' '}
-              {formatDateInTimeZone(
-                person.last_interaction_at,
-                displayTimeZone,
-              )}
-            </span>
-          ) : (
-            <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-              {PAGE_COPY.list.noInteractionsYet}
-            </span>
-          )}
-        </div>
-      </Link>
-    </li>
-  );
-}
 
 type PeopleSortKey = 'name' | 'last_interaction' | 'created' | 'met';
 

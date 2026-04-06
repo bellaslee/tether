@@ -18,6 +18,7 @@ import { FormTextarea } from '@/components/ui/form-textarea';
 import { WallClockTimeZoneField } from '@/components/interactions/wall-clock-time-zone-field';
 import { toDatetimeLocalInputValueInZone } from '@/lib/datetime';
 import { isValidIanaTimeZone } from '@/lib/timezones';
+import { randomPanelTopAccentClass } from '@/lib/ui/panel-top-accent';
 
 const initial: ActionResult = {};
 
@@ -50,6 +51,7 @@ export function InteractionEditDisclosure({
   interactionTypes,
 }: InteractionEditDisclosureProps) {
   const [open, setOpen] = useState(false);
+  const [editTopAccent, setEditTopAccent] = useState('');
 
   if (!open) {
     return (
@@ -57,7 +59,10 @@ export function InteractionEditDisclosure({
         type="button"
         variant="link"
         size="sm"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setEditTopAccent(randomPanelTopAccentClass());
+          setOpen(true);
+        }}
       >
         Edit
       </Button>
@@ -65,7 +70,9 @@ export function InteractionEditDisclosure({
   }
 
   return (
-    <div className="w-full max-w-xl space-y-3 rounded-2xl border border-border-soft bg-white/80 p-4 sm:p-5">
+    <div
+      className={`w-full max-w-xl space-y-3 rounded-2xl border border-border-soft bg-white/80 p-4 sm:p-5 ${editTopAccent}`}
+    >
       <InteractionEditForm
         interactionId={interactionId}
         occurredAtIso={occurredAtIso}

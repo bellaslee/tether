@@ -11,9 +11,17 @@ import {
 import { TaskReviewForms } from '@/components/ai/task-review-forms';
 import { Button } from '@/components/ui/button';
 import type { Tables } from '@/lib/db/database.types';
+import { panelTopAccentAt } from '@/lib/ui/panel-top-accent';
 
 const memoryCardClass =
   'card-surface flex h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
+
+function memoryCardClassWithAccent(topAccentIndex?: number) {
+  if (topAccentIndex === undefined) {
+    return memoryCardClass;
+  }
+  return `${memoryCardClass} ${panelTopAccentAt(topAccentIndex)}`;
+}
 
 type FactRow = Tables<'facts'>;
 type TaskRow = Tables<'tasks'>;
@@ -24,11 +32,13 @@ const TASKS_INITIAL_VISIBLE = 3;
 type FactsProps = {
   personId: string;
   facts: FactRow[];
+  topAccentIndex?: number;
 };
 
 export function PersonFactsMemorySection({
   personId,
   facts,
+  topAccentIndex,
 }: FactsProps) {
   const [factsExpanded, setFactsExpanded] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -41,7 +51,7 @@ export function PersonFactsMemorySection({
 
   return (
     <section
-      className={memoryCardClass}
+      className={memoryCardClassWithAccent(topAccentIndex)}
       aria-labelledby="person-memory-facts-heading"
     >
       <header className="flex shrink-0 flex-row items-start justify-between gap-4">
@@ -130,11 +140,13 @@ export function PersonFactsMemorySection({
 type RemindersProps = {
   personId: string;
   tasks: TaskRow[];
+  topAccentIndex?: number;
 };
 
 export function PersonRemindersMemorySection({
   personId,
   tasks,
+  topAccentIndex,
 }: RemindersProps) {
   const [tasksExpanded, setTasksExpanded] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
@@ -147,7 +159,7 @@ export function PersonRemindersMemorySection({
 
   return (
     <section
-      className={memoryCardClass}
+      className={memoryCardClassWithAccent(topAccentIndex)}
       aria-labelledby="person-memory-tasks-heading"
     >
       <header className="flex shrink-0 flex-row items-start justify-between gap-4">

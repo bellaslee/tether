@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { ButtonLink } from '@/components/ui/button';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
 import { ContactMethodRow } from '@/components/people/contact-method-row';
 import type { PersonOption } from '@/components/people/attendee-picker';
@@ -49,6 +50,8 @@ import {
   fetchInteractionPeopleLinksForUserInteractions,
   fetchInteractionRolesForUserPerson,
 } from '@/lib/interactions/interaction-people-queries';
+import { personShownName } from '@/lib/people/list-name';
+import { panelTopAccentAt } from '@/lib/ui/panel-top-accent';
 
 const PAGE_COPY = {
   meta: {
@@ -141,6 +144,14 @@ type PersonWithCategory = Tables<'people'> & {
 
 type InteractionWithType = Tables<'interactions'> & {
   interaction_types: { name: string } | null;
+};
+
+/** Matches global timeline: one entry per interaction_people row, in link order. */
+type PersonInteractionChip = {
+  id: string;
+  full_name: string;
+  display_name: string | null;
+  role: string;
 };
 
 export async function generateMetadata(props: {
@@ -293,6 +304,7 @@ export default async function PersonDetailPage(props: PageProps) {
     string,
     { primaryPersonId: string; attendeeIds: string[] }
   >();
+  const peopleChipsByInteraction = new Map<string, PersonInteractionChip[]>();
 
   let timelineRows: Array<{
     interaction: InteractionWithType;
@@ -328,6 +340,24 @@ export default async function PersonDetailPage(props: PageProps) {
         primaryPersonId,
         attendeeIds,
       });
+    }
+
+    const personById = new Map((allPeople ?? []).map((p) => [p.id, p]));
+    for (const [intId, plist] of grouped) {
+      const chips: PersonInteractionChip[] = [];
+      for (const entry of plist) {
+        const p = personById.get(entry.person_id);
+        if (!p) {
+          continue;
+        }
+        chips.push({
+          id: p.id,
+          full_name: p.full_name,
+          display_name: p.display_name,
+          role: entry.role,
+        });
+      }
+      peopleChipsByInteraction.set(intId, chips);
     }
 
     const { data: interactions, error: timelineError } = await ctx.client
@@ -504,7 +534,7 @@ export default async function PersonDetailPage(props: PageProps) {
         <div className="flex min-w-0 flex-col gap-8">
           <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch lg:gap-8">
             <section
-              className="card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
+              className={`card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(0)}`}
               aria-label={PAGE_COPY.overview.context.ariaLabel}
             >
               <h2 className="shrink-0 font-display text-2xl">
@@ -579,16 +609,25 @@ export default async function PersonDetailPage(props: PageProps) {
               aiEnabled={aiEnabled}
               summaries={summaryRows}
               interactionLabels={interactionLabels}
+              topAccentIndex={1}
             />
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2 lg:items-stretch">
-            <PersonFactsSection personId={person.id} facts={factRows} />
-            <PersonRemindersSection personId={person.id} tasks={taskRows} />
+            <PersonFactsSection
+              personId={person.id}
+              facts={factRows}
+              topAccentIndex={2}
+            />
+            <PersonRemindersSection
+              personId={person.id}
+              tasks={taskRows}
+              topAccentIndex={3}
+            />
           </div>
 
           <section
-            className="card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
+            className={`card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(4)}`}
             aria-labelledby={PAGE_COPY.overview.timeline.headingId}
           >
             <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -641,6 +680,10 @@ export default async function PersonDetailPage(props: PageProps) {
                           key={interaction.id}
                           interaction={interaction}
                           role={role}
+                          viewerPersonId={person.id}
+                          interactionPeople={
+                            peopleChipsByInteraction.get(interaction.id) ?? []
+                          }
                           isUpcoming
                           displayTimeZone={displayTimeZone}
                           sessionTimeZone={ctx.accountTimeZone}
@@ -676,6 +719,10 @@ export default async function PersonDetailPage(props: PageProps) {
                           key={interaction.id}
                           interaction={interaction}
                           role={role}
+                          viewerPersonId={person.id}
+                          interactionPeople={
+                            peopleChipsByInteraction.get(interaction.id) ?? []
+                          }
                           isUpcoming={false}
                           displayTimeZone={displayTimeZone}
                           sessionTimeZone={ctx.accountTimeZone}
@@ -702,7 +749,9 @@ export default async function PersonDetailPage(props: PageProps) {
           className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
           aria-label={PAGE_COPY.details.sectionAria}
         >
-          <div className="card-surface flex min-h-0 h-full flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
+          <div
+            className={`card-surface flex min-h-0 h-full flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(0)}`}
+          >
             <h2 className="shrink-0 font-display text-2xl">
               {PAGE_COPY.details.stayInTouch}
             </h2>
@@ -734,6 +783,7 @@ export default async function PersonDetailPage(props: PageProps) {
             otherPeople={otherPeopleOptions}
             connectionTypes={connectionTypeOptions}
             defaultConnectionTypeId={defaultConnectionTypeId}
+            topAccentIndex={1}
           />
         </section>
       )}
@@ -745,6 +795,8 @@ export default async function PersonDetailPage(props: PageProps) {
 function PersonTimelineRow({
   interaction,
   role,
+  viewerPersonId,
+  interactionPeople,
   isUpcoming,
   displayTimeZone,
   sessionTimeZone,
@@ -755,6 +807,8 @@ function PersonTimelineRow({
 }: {
   interaction: InteractionWithType;
   role: string;
+  viewerPersonId: string;
+  interactionPeople: PersonInteractionChip[];
   isUpcoming: boolean;
   displayTimeZone: string;
   sessionTimeZone: string | null;
@@ -773,6 +827,12 @@ function PersonTimelineRow({
   const memorySuggestAlreadyDone = interactionMemorySuggestionsAlreadyApplied(
     interaction.raw_note,
     interaction.memory_ai_input_hash,
+  );
+
+  const primaryPersonId =
+    interactionPeople.find((p) => p.role === 'primary')?.id ?? '';
+  const otherPeopleInInteraction = interactionPeople.filter(
+    (p) => p.id !== viewerPersonId,
   );
 
   const cardClass = isUpcoming
@@ -812,6 +872,22 @@ function PersonTimelineRow({
               note={interaction.raw_note}
               interactionId={interaction.id}
             />
+          ) : null}
+          {otherPeopleInInteraction.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {otherPeopleInInteraction.map((person) => (
+                <ButtonLink
+                  key={`${interaction.id}-${person.id}`}
+                  href={`/people/${person.id}`}
+                  variant={
+                    person.id === primaryPersonId ? 'primary' : 'secondary'
+                  }
+                  size="chip"
+                >
+                  {personShownName(person)}
+                </ButtonLink>
+              ))}
+            </div>
           ) : null}
         </div>
         <div className="flex w-full shrink-0 flex-col items-center gap-2 min-w-0 sm:w-auto sm:max-w-md sm:items-end">
