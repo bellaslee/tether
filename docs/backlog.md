@@ -17,7 +17,19 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] calendar time selection in increments of 5 only
 - [ ] search interactions
 - [ ] keyboard shortcuts
-- [ ] command enter not working on fact and task edit save
+- [x] command enter not working on fact and task edit save
+- [ ] ability to differentiate between upcoming vs. done on reminders view
+- [ ] if not main attendee, show the chip of the main attendee on interaction in people view
+- [ ] ability to delete people
+- [x] ability to sort also there people by relationship warmth
+- [ ] change copy for people to be less confusing
+- [x] ability to collapse relationship briefs if already generated
+- [x] ability to edit relationship briefs
+- [ ] refactor all content out of pages
+- [ ] make sure picklist is a component and fix carat location
+- [ ] for prompts, pass in occupation and pronouns
+- [ ] fix edit/delete button on mobile to stack on interactions
+- [ ] ability to view upcoming birthdays, connection anniversaries, upcoming events, and open tasks on a dashboard view
 
 ## User settings
 

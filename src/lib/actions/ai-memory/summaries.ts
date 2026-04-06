@@ -21,6 +21,73 @@ import { recordLlmUsage } from '@/lib/usage/record-usage-event';
 import { requireCrmForAiAction, requireOpenAiPipeline } from './guard';
 import type { AiMemoryActionResult } from './types';
 
+function mergeSummaryMetadata(
+  existing: unknown,
+): Record<string, unknown> {
+  if (
+    existing &&
+    typeof existing === 'object' &&
+    !Array.isArray(existing)
+  ) {
+    return { ...(existing as Record<string, unknown>) };
+  }
+  return {};
+}
+
+export async function updateRelationshipSummaryContent(
+  _prev: AiMemoryActionResult,
+  formData: FormData,
+): Promise<AiMemoryActionResult> {
+  const summaryId = String(formData.get('summary_id') ?? '').trim();
+  const contentRaw = String(formData.get('content') ?? '');
+  const content = contentRaw.trim();
+  if (!isUuid(summaryId)) {
+    return { error: 'Invalid brief.' };
+  }
+  if (!content) {
+    return { error: 'Brief text cannot be empty.' };
+  }
+
+  const session = await requireCrmForAiAction();
+  if (!session.ctx) {
+    return { error: session.error };
+  }
+  const { ctx } = session;
+
+  const { data: row, error: fetchErr } = await ctx.client
+    .from('relationship_summaries')
+    .select('id, person_id, model_metadata')
+    .eq('id', summaryId)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (fetchErr) {
+    return { error: fetchErr.message };
+  }
+  if (!row) {
+    return { error: 'Brief not found.' };
+  }
+
+  const model_metadata = {
+    ...mergeSummaryMetadata(row.model_metadata),
+    user_edited: true,
+    last_user_edit_at: new Date().toISOString(),
+  };
+
+  const { error: updErr } = await ctx.client
+    .from('relationship_summaries')
+    .update({ content, model_metadata })
+    .eq('id', summaryId)
+    .eq('user_id', ctx.userId);
+
+  if (updErr) {
+    return { error: updErr.message };
+  }
+
+  revalidatePath(`/people/${row.person_id}`);
+  return { ok: true };
+}
+
 export async function generateRelationshipSummary(
   _prev: AiMemoryActionResult,
   formData: FormData,
