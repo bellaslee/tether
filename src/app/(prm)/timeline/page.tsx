@@ -15,6 +15,7 @@ import {
   interactionHasMemorySuggestNote,
   interactionMemorySuggestionsAlreadyApplied,
 } from '@/lib/interactions/memory-suggest-visibility';
+import type { PersonOption } from '@/components/people/attendee-picker';
 import { personShownName } from '@/lib/people/list-name';
 import { fetchInteractionPeopleLinksForUserInteractions } from '@/lib/interactions/interaction-people-queries';
 
@@ -49,9 +50,8 @@ export default async function TimelinePage() {
 
   const { data: allPeopleRows, error: allPeopleError } = await ctx.client
     .from('people')
-    .select('id, full_name, display_name')
-    .eq('user_id', ctx.userId)
-    .order('full_name', { ascending: true });
+    .select('id, full_name, display_name, last_interaction_at, met_at, created_at')
+    .eq('user_id', ctx.userId);
 
   if (allPeopleError) {
     throw new Error(allPeopleError.message);
@@ -221,11 +221,7 @@ function GlobalTimelineRow({
   displayTimeZone: string;
   sessionTimeZone: string | null;
   peopleByInteraction: Map<string, PersonChip[]>;
-  allPeople: Array<{
-    id: string;
-    full_name: string;
-    display_name: string | null;
-  }>;
+  allPeople: PersonOption[];
   interactionTypeOptions: InteractionTypeOption[];
   memorySuggestAvailable: boolean;
 }) {

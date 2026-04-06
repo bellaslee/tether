@@ -1,6 +1,7 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { Fragment, useId, useMemo, useState } from 'react';
+import { comparePeopleByRelationshipWarmth } from '@/lib/people/compare-by-relationship-warmth';
 import { personShownName } from '@/lib/people/list-name';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/form-input';
@@ -10,7 +11,18 @@ export type PersonOption = {
   id: string;
   full_name: string;
   display_name: string | null;
+  last_interaction_at: string | null;
+  met_at: string | null;
+  created_at: string;
 };
+
+type ParticipantSortMode = 'warmth' | 'name';
+
+function comparePeopleByName(a: PersonOption, b: PersonOption): number {
+  return personShownName(a).localeCompare(personShownName(b), undefined, {
+    sensitivity: 'base',
+  });
+}
 
 function personMatchesSearch(person: PersonOption, q: string) {
   if (!q) {
@@ -75,7 +87,9 @@ export function InteractionParticipantPicker({
   );
   const [query, setQuery] = useState('');
   const [listRevealed, setListRevealed] = useState(() => autoRevealList);
+  const [sortMode, setSortMode] = useState<ParticipantSortMode>('warmth');
   const searchFieldId = useId();
+  const sortLabelId = useId();
 
   const attendeeValue = useMemo(() => {
     const ids = [...selectedIds].filter((id) => id !== primaryId);
@@ -83,19 +97,29 @@ export function InteractionParticipantPicker({
     return ids.join(',');
   }, [selectedIds, primaryId]);
 
+  const orderedPeople = useMemo(() => {
+    const copy = [...people];
+    if (sortMode === 'name') {
+      copy.sort(comparePeopleByName);
+    } else {
+      copy.sort(comparePeopleByRelationshipWarmth);
+    }
+    return copy;
+  }, [people, sortMode]);
+
   const visiblePeople = useMemo(() => {
     if (!listRevealed) {
       return [];
     }
     const q = query.trim().toLowerCase();
     if (!q) {
-      return people;
+      return orderedPeople;
     }
-    return people.filter(
+    return orderedPeople.filter(
       (person) =>
         selectedIds.has(person.id) || personMatchesSearch(person, q),
     );
-  }, [people, query, listRevealed, selectedIds]);
+  }, [orderedPeople, query, listRevealed, selectedIds]);
 
   function revealList() {
     setListRevealed(true);
@@ -164,6 +188,49 @@ export function InteractionParticipantPicker({
           </p>
         ) : null}
       </div>
+
+      {listRevealed ? (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <p
+            id={sortLabelId}
+            className="shrink-0 font-semibold uppercase tracking-wide text-muted"
+          >
+            Sort by
+          </p>
+          <div
+            role="group"
+            aria-labelledby={sortLabelId}
+            className="flex flex-wrap items-center gap-x-1.5"
+          >
+            {(
+              [
+                { mode: 'warmth' as const, label: 'Warmth' },
+                { mode: 'name' as const, label: 'Name' },
+              ] as const
+            ).map((opt, index) => (
+              <Fragment key={opt.mode}>
+                {index > 0 ? (
+                  <span className="select-none text-muted/50" aria-hidden>
+                    ·
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setSortMode(opt.mode)}
+                  aria-current={sortMode === opt.mode ? 'true' : undefined}
+                  className={`cursor-pointer border-0 bg-transparent p-0 text-left shadow-none focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                    sortMode === opt.mode
+                      ? 'font-normal text-accent'
+                      : 'font-normal text-muted underline-offset-4 transition hover:text-foreground hover:underline'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              </Fragment>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {listRevealed && visiblePeople.length === 0 ? (
         <p className="text-sm text-muted">No one matches your search.</p>

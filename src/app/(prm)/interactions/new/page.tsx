@@ -12,9 +12,8 @@ export default async function NewInteractionPage() {
 
   const { data: people, error } = await ctx.client
     .from('people')
-    .select('id, full_name, display_name')
-    .eq('user_id', ctx.userId)
-    .order('full_name', { ascending: true });
+    .select('id, full_name, display_name, last_interaction_at, met_at, created_at')
+    .eq('user_id', ctx.userId);
 
   if (error) {
     throw new Error(error.message);

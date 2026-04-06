@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
 import { ContactMethodRow } from '@/components/people/contact-method-row';
+import type { PersonOption } from '@/components/people/attendee-picker';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
 import { PersonDetailHeader } from '@/components/people/person-detail-header';
 import {
@@ -125,9 +126,8 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const { data: allPeople } = await ctx.client
     .from('people')
-    .select('id, full_name, display_name')
-    .eq('user_id', ctx.userId)
-    .order('full_name', { ascending: true });
+    .select('id, full_name, display_name, last_interaction_at, met_at, created_at')
+    .eq('user_id', ctx.userId);
 
   const { data: interactionTypeRows } = await ctx.client
     .from('interaction_types')
@@ -667,11 +667,7 @@ function PersonTimelineRow({
   displayTimeZone: string;
   sessionTimeZone: string | null;
   participants: { primaryPersonId: string; attendeeIds: string[] };
-  allPeople: Array<{
-    id: string;
-    full_name: string;
-    display_name: string | null;
-  }>;
+  allPeople: PersonOption[];
   interactionTypeOptions: InteractionTypeOption[];
   memorySuggestAvailable: boolean;
 }) {
