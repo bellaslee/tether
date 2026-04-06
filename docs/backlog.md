@@ -17,6 +17,7 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] calendar time selection in increments of 5 only
 - [ ] search interactions
 - [ ] keyboard shortcuts
+- [ ] command enter not working on fact and task edit save
 
 ## User settings
 
