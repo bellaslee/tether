@@ -19,6 +19,31 @@ import type { PersonOption } from '@/components/people/attendee-picker';
 import { personShownName } from '@/lib/people/list-name';
 import { fetchInteractionPeopleLinksForUserInteractions } from '@/lib/interactions/interaction-people-queries';
 
+const PAGE_COPY = {
+  hero: {
+    eyebrow: 'Across your circle',
+    title: 'Timeline',
+    description:
+      'Plans you are looking forward to and moments you have already shared. People listed together were part of the same entry — it lives once in the database.',
+  },
+  logInteraction: 'Log interaction',
+  empty: {
+    lead: "Nothing logged yet. Start from a person's page or",
+    addMomentLink: 'add a multi-person moment',
+    trailing: '.',
+  },
+  sections: {
+    upcoming: {
+      id: 'timeline-upcoming-heading',
+      title: 'Upcoming',
+    },
+    past: {
+      id: 'timeline-past-heading',
+      title: 'Past',
+    },
+  },
+} as const;
+
 type InteractionWithType = Tables<'interactions'> & {
   interaction_types: { name: string } | null;
 };
@@ -120,41 +145,41 @@ export default async function TimelinePage() {
     <main className="prm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="prm-eyebrow">Across your circle</p>
-          <h1 className="mt-2 font-display text-4xl tracking-tight">Timeline</h1>
+          <p className="prm-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
+          <h1 className="mt-2 font-display text-4xl tracking-tight">
+            {PAGE_COPY.hero.title}
+          </h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-            Plans you are looking forward to and moments you have already shared.
-            People listed together were part of the same entry — it lives once in
-            the database.
+            {PAGE_COPY.hero.description}
           </p>
         </div>
         <ButtonLink href="/interactions/new" variant="primary" size="lg">
-          Log interaction
+          {PAGE_COPY.logInteraction}
         </ButtonLink>
       </header>
 
       {interactionList.length === 0 ? (
         <ol className="space-y-5">
           <li className="card-surface rounded-[1.75rem] border border-border-soft p-8 text-sm text-muted">
-            Nothing logged yet. Start from a person&apos;s page or{' '}
+            {PAGE_COPY.empty.lead}{' '}
             <Link
               href="/interactions/new"
               className="font-semibold text-accent underline-offset-4 hover:underline"
             >
-              add a multi-person moment
+              {PAGE_COPY.empty.addMomentLink}
             </Link>
-            .
+            {PAGE_COPY.empty.trailing}
           </li>
         </ol>
       ) : (
         <div className="space-y-10">
           {upcoming.length > 0 ? (
-            <section aria-labelledby="timeline-upcoming-heading">
+            <section aria-labelledby={PAGE_COPY.sections.upcoming.id}>
               <h2
-                id="timeline-upcoming-heading"
+                id={PAGE_COPY.sections.upcoming.id}
                 className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
               >
-                Upcoming
+                {PAGE_COPY.sections.upcoming.title}
               </h2>
               <ol className="space-y-6">
                 {upcoming.map((interaction) => (
@@ -174,13 +199,13 @@ export default async function TimelinePage() {
             </section>
           ) : null}
           {past.length > 0 ? (
-            <section aria-labelledby="timeline-past-heading">
+            <section aria-labelledby={PAGE_COPY.sections.past.id}>
               {upcoming.length > 0 ? (
                 <h2
-                  id="timeline-past-heading"
+                  id={PAGE_COPY.sections.past.id}
                   className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
                 >
-                  Past
+                  {PAGE_COPY.sections.past.title}
                 </h2>
               ) : null}
               <ol className="space-y-6">

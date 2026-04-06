@@ -5,6 +5,18 @@ import { PersonForm } from '@/components/people/person-form';
 import { requirePrmAccess } from '@/lib/prm/guard';
 import { personShownName } from '@/lib/people/list-name';
 
+const PAGE_COPY = {
+  backLink: '← Back to profile',
+  hero: {
+    eyebrow: 'Profile',
+    titlePrefix: 'Edit ',
+    description:
+      'Keep this feeling honest — tweak what helps you show up thoughtfully next time.',
+  },
+  categoriesLoading:
+    'Categories are still loading for your account. Refresh in a moment or sign out and back in.',
+} as const;
+
 type PageProps = { params: Promise<{ id: string }> };
 
 export default async function EditPersonPage(props: PageProps) {
@@ -42,22 +54,20 @@ export default async function EditPersonPage(props: PageProps) {
           href={`/people/${person.id}`}
           className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
         >
-          ← Back to profile
+          {PAGE_COPY.backLink}
         </Link>
-        <p className="prm-eyebrow mt-4">Profile</p>
+        <p className="prm-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
-          Edit {personShownName(person)}
+          {PAGE_COPY.hero.titlePrefix}
+          {personShownName(person)}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-          Keep this feeling honest — tweak what helps you show up thoughtfully
-          next time.
+          {PAGE_COPY.hero.description}
         </p>
       </div>
       <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
         {(categories ?? []).length === 0 ? (
-          <p className="text-sm text-muted">
-            Categories are still loading for your account. Refresh in a moment or sign out and back in.
-          </p>
+          <p className="text-sm text-muted">{PAGE_COPY.categoriesLoading}</p>
         ) : (
           <PersonForm mode="edit" person={person} categories={categories ?? []} />
         )}

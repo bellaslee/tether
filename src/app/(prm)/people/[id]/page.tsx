@@ -50,6 +50,77 @@ import {
   fetchInteractionRolesForUserPerson,
 } from '@/lib/interactions/interaction-people-queries';
 
+const PAGE_COPY = {
+  meta: {
+    titleUnauthed: 'Person · Tether',
+    titlePersonOnly: 'Person',
+    titleSuffix: ' · Tether',
+  },
+  nav: {
+    profileSectionsAria: 'Profile sections',
+    tabOverview: 'Overview',
+    tabDetails: 'Contact and Connections',
+  },
+  header: {
+    backToPeople: '← People',
+    eyebrow: 'Profile',
+    categoryPlaceholder: '—',
+  },
+  overview: {
+    context: {
+      ariaLabel: 'Relationship context',
+      title: 'Context',
+      labels: {
+        pronouns: 'Pronouns',
+        birthday: 'Birthday',
+        met: 'Met',
+        location: 'Location',
+        occupation: 'Occupation',
+        company: 'Company',
+        lastInteraction: 'Last interaction',
+      },
+      howYouMet: 'How you met',
+      relationshipContext: 'Relationship context',
+    },
+    timeline: {
+      headingId: 'person-timeline-heading',
+      title: 'Timeline',
+      description:
+        'Plans you are looking forward to and moments you have already shared.',
+      empty: {
+        lead: 'Nothing logged yet. Use',
+        logInteractionEmphasis: 'Log interaction',
+        mid: 'in the header or beside this section when you remember something, or',
+        addMomentLink: 'add a multi-person moment',
+        trailing: '.',
+      },
+      upcoming: {
+        headingId: 'person-timeline-upcoming-heading',
+        title: 'Upcoming',
+      },
+      past: {
+        headingId: 'person-timeline-past-heading',
+        title: 'Past',
+      },
+    },
+  },
+  details: {
+    sectionAria: 'Contact and Connections',
+    stayInTouch: 'Stay in touch',
+    noContactMethods: 'No contact methods yet.',
+  },
+  timelineRow: {
+    primaryInMemory: 'Primary in this memory',
+  },
+  connections: {
+    unknownRelated: 'Unknown',
+    typeFallback: '—',
+  },
+  placeholders: {
+    emptyField: '—',
+  },
+} as const;
+
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 type PageProps = {
@@ -78,7 +149,7 @@ export async function generateMetadata(props: {
   const { id } = await props.params;
   const ctx = await getPrmSupabaseContext();
   if (!ctx) {
-    return { title: 'Person · Tether' };
+    return { title: PAGE_COPY.meta.titleUnauthed };
   }
   const { data } = await ctx.client
     .from('people')
@@ -87,9 +158,9 @@ export async function generateMetadata(props: {
     .eq('user_id', ctx.userId)
     .maybeSingle();
   if (!data) {
-    return { title: 'Person' };
+    return { title: PAGE_COPY.meta.titlePersonOnly };
   }
-  return { title: `${data.full_name} · Tether` };
+  return { title: `${data.full_name}${PAGE_COPY.meta.titleSuffix}` };
 }
 
 export default async function PersonDetailPage(props: PageProps) {
@@ -193,10 +264,10 @@ export default async function PersonDetailPage(props: PageProps) {
     const row = raw as unknown as ConnectionRowDb;
     const rel = row.related_person;
     const label =
-      rel?.display_name?.trim() || rel?.full_name || 'Unknown';
+      rel?.display_name?.trim() || rel?.full_name || PAGE_COPY.connections.unknownRelated;
     return {
       id: row.id,
-      typeName: row.connection_types?.name ?? '—',
+      typeName: row.connection_types?.name ?? PAGE_COPY.connections.typeFallback,
       relatedId: rel?.id ?? '',
       relatedLabel: label,
       notes: row.notes,
@@ -378,19 +449,19 @@ export default async function PersonDetailPage(props: PageProps) {
         afterTitle={
           <nav
             className="flex w-full flex-wrap gap-x-8 gap-y-3"
-            aria-label="Profile sections"
+            aria-label={PAGE_COPY.nav.profileSectionsAria}
           >
             <Link
               href={`/people/${person.id}`}
               className={tab === 'overview' ? tabLinkActive : tabLinkInactive}
             >
-              Overview
+              {PAGE_COPY.nav.tabOverview}
             </Link>
             <Link
               href={`/people/${person.id}?tab=details`}
               className={tab === 'details' ? tabLinkActive : tabLinkInactive}
             >
-              Contact and Connections
+              {PAGE_COPY.nav.tabDetails}
             </Link>
           </nav>
         }
@@ -407,15 +478,15 @@ export default async function PersonDetailPage(props: PageProps) {
             href="/people"
             className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
           >
-            ← People
+            {PAGE_COPY.header.backToPeople}
           </Link>
-          <p className="prm-eyebrow mt-4">Profile</p>
+          <p className="prm-eyebrow mt-4">{PAGE_COPY.header.eyebrow}</p>
           <div className="mt-2 flex min-w-0 flex-wrap items-center gap-3">
             <h1 className="max-w-full font-display text-4xl tracking-tight text-balance [overflow-wrap:anywhere]">
               {person.full_name}
             </h1>
             <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-              {person.person_categories?.name ?? '—'}
+              {person.person_categories?.name ?? PAGE_COPY.header.categoryPlaceholder}
             </span>
             <span className="rounded-full border border-border-soft px-3 py-1 text-xs font-semibold text-muted">
               {formatStatus(person.status)}
@@ -434,14 +505,19 @@ export default async function PersonDetailPage(props: PageProps) {
           <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch lg:gap-8">
             <section
               className="card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
-              aria-label="Relationship context"
+              aria-label={PAGE_COPY.overview.context.ariaLabel}
             >
-              <h2 className="shrink-0 font-display text-2xl">Context</h2>
+              <h2 className="shrink-0 font-display text-2xl">
+                {PAGE_COPY.overview.context.title}
+              </h2>
               <div className="mt-6 min-h-0 flex-1">
                 <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                  <DetailItem label="Pronouns" value={person.pronouns} />
                   <DetailItem
-                    label="Birthday"
+                    label={PAGE_COPY.overview.context.labels.pronouns}
+                    value={person.pronouns}
+                  />
+                  <DetailItem
+                    label={PAGE_COPY.overview.context.labels.birthday}
                     value={
                       person.birthday
                         ? formatCalendarDateOnly(person.birthday)
@@ -449,16 +525,25 @@ export default async function PersonDetailPage(props: PageProps) {
                     }
                   />
                   <DetailItem
-                    label="Met"
+                    label={PAGE_COPY.overview.context.labels.met}
                     value={
                       person.met_at ? formatMonthYear(person.met_at) : null
                     }
                   />
-                  <DetailItem label="Location" value={person.location} />
-                  <DetailItem label="Occupation" value={person.occupation} />
-                  <DetailItem label="Company" value={person.company} />
                   <DetailItem
-                    label="Last interaction"
+                    label={PAGE_COPY.overview.context.labels.location}
+                    value={person.location}
+                  />
+                  <DetailItem
+                    label={PAGE_COPY.overview.context.labels.occupation}
+                    value={person.occupation}
+                  />
+                  <DetailItem
+                    label={PAGE_COPY.overview.context.labels.company}
+                    value={person.company}
+                  />
+                  <DetailItem
+                    label={PAGE_COPY.overview.context.labels.lastInteraction}
                     value={
                       person.last_interaction_at
                         ? formatDateTimeInTimeZone(
@@ -470,18 +555,19 @@ export default async function PersonDetailPage(props: PageProps) {
                   />
                   <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      How you met
+                      {PAGE_COPY.overview.context.howYouMet}
                     </p>
                     <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
-                      {person.how_you_met ?? '—'}
+                      {person.how_you_met ?? PAGE_COPY.placeholders.emptyField}
                     </p>
                   </div>
                   <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      Relationship context
+                      {PAGE_COPY.overview.context.relationshipContext}
                     </p>
                     <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
-                      {person.relationship_context ?? '—'}
+                      {person.relationship_context ??
+                        PAGE_COPY.placeholders.emptyField}
                     </p>
                   </div>
                 </div>
@@ -503,19 +589,18 @@ export default async function PersonDetailPage(props: PageProps) {
 
           <section
             className="card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
-            aria-labelledby="person-timeline-heading"
+            aria-labelledby={PAGE_COPY.overview.timeline.headingId}
           >
             <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
               <div className="min-w-0 flex-1">
                 <h2
-                  id="person-timeline-heading"
+                  id={PAGE_COPY.overview.timeline.headingId}
                   className="font-display text-2xl tracking-tight"
                 >
-                  Timeline
+                  {PAGE_COPY.overview.timeline.title}
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-                  Plans you are looking forward to and moments you have already
-                  shared.
+                  {PAGE_COPY.overview.timeline.description}
                 </p>
               </div>
               <div className="flex shrink-0 justify-end sm:pt-1">
@@ -525,29 +610,30 @@ export default async function PersonDetailPage(props: PageProps) {
 
             {timelineRows.length === 0 ? (
               <p className="rounded-2xl border border-border-soft bg-white/50 px-6 py-8 text-sm text-muted">
-                Nothing logged yet. Use{' '}
+                {PAGE_COPY.overview.timeline.empty.lead}{' '}
                 <span className="font-semibold text-foreground">
-                  Log interaction
+                  {PAGE_COPY.overview.timeline.empty.logInteractionEmphasis}
                 </span>{' '}
-                in the header or beside this section when you remember something,
-                or{' '}
+                {PAGE_COPY.overview.timeline.empty.mid}{' '}
                 <Link
                   href="/interactions/new"
                   className="font-semibold text-accent underline-offset-4 hover:underline"
                 >
-                  add a multi-person moment
+                  {PAGE_COPY.overview.timeline.empty.addMomentLink}
                 </Link>
-                .
+                {PAGE_COPY.overview.timeline.empty.trailing}
               </p>
             ) : (
               <div className="space-y-10">
                 {upcomingTimelineRows.length > 0 ? (
-                  <div aria-labelledby="person-timeline-upcoming-heading">
+                  <div
+                    aria-labelledby={PAGE_COPY.overview.timeline.upcoming.headingId}
+                  >
                     <h3
-                      id="person-timeline-upcoming-heading"
+                      id={PAGE_COPY.overview.timeline.upcoming.headingId}
                       className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
                     >
-                      Upcoming
+                      {PAGE_COPY.overview.timeline.upcoming.title}
                     </h3>
                     <ol className="space-y-6">
                       {upcomingTimelineRows.map(({ interaction, role }) => (
@@ -573,13 +659,15 @@ export default async function PersonDetailPage(props: PageProps) {
                   </div>
                 ) : null}
                 {pastTimelineRows.length > 0 ? (
-                  <div aria-labelledby="person-timeline-past-heading">
+                  <div
+                    aria-labelledby={PAGE_COPY.overview.timeline.past.headingId}
+                  >
                     {upcomingTimelineRows.length > 0 ? (
                       <h3
-                        id="person-timeline-past-heading"
+                        id={PAGE_COPY.overview.timeline.past.headingId}
                         className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
                       >
-                        Past
+                        {PAGE_COPY.overview.timeline.past.title}
                       </h3>
                     ) : null}
                     <ol className="space-y-6">
@@ -612,13 +700,17 @@ export default async function PersonDetailPage(props: PageProps) {
       ) : (
         <section
           className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
-          aria-label="Contact and Connections"
+          aria-label={PAGE_COPY.details.sectionAria}
         >
           <div className="card-surface flex min-h-0 h-full flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-            <h2 className="shrink-0 font-display text-2xl">Stay in touch</h2>
+            <h2 className="shrink-0 font-display text-2xl">
+              {PAGE_COPY.details.stayInTouch}
+            </h2>
             <ul className="mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto">
               {(contactMethods ?? []).length === 0 ? (
-                <li className="text-sm text-muted">No contact methods yet.</li>
+                <li className="text-sm text-muted">
+                  {PAGE_COPY.details.noContactMethods}
+                </li>
               ) : (
                 (contactMethods ?? []).map((method) => (
                   <ContactMethodRow
@@ -705,7 +797,7 @@ function PersonTimelineRow({
             />
             {role === 'primary' ? (
               <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[0.65rem] text-accent">
-                Primary in this memory
+                {PAGE_COPY.timelineRow.primaryInMemory}
               </span>
             ) : null}
           </div>
@@ -758,7 +850,7 @@ function DetailItem({ label, value }: { label: string; value: string | null }) {
         {label}
       </p>
       <p className="mt-1 font-medium [overflow-wrap:anywhere]">
-        {value && value.length > 0 ? value : '—'}
+        {value && value.length > 0 ? value : PAGE_COPY.placeholders.emptyField}
       </p>
     </div>
   );

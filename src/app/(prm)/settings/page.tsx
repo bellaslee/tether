@@ -5,8 +5,45 @@ import { ManageConnectionTypesPanel } from '@/components/people/manage-connectio
 import { ManageInteractionTypesPanel } from '@/components/timeline/manage-interaction-types-panel';
 import { requirePrmAccess } from '@/lib/prm/guard';
 
+const PAGE_COPY = {
+  meta: {
+    title: 'Label settings · Tether',
+  },
+  backLink: '← People',
+  hero: {
+    eyebrow: 'Your workspace',
+    title: 'Label settings',
+    description:
+      'Labels and types you use across people and the timeline. Changes apply everywhere right away.',
+  },
+  nav: {
+    ariaLabel: 'Label settings sections',
+    jumpTo: 'Jump to',
+    personCategories: 'Person categories',
+    connectionTypes: 'Connection types',
+    timelineTypes: 'Timeline types',
+  },
+  sections: {
+    categories: {
+      title: 'Person categories',
+      description:
+        'How someone fits in your life — used in profiles, filters, and the order of groups on the People page.',
+    },
+    connectionTypes: {
+      title: 'Connection types',
+      description:
+        'How one person relates to another — partner, sibling, coworker, or anything you add.',
+    },
+    timelineTypes: {
+      title: 'Timeline types',
+      description:
+        "Kinds of moments on the timeline — plus a reserved type for category changes on someone's profile.",
+    },
+  },
+} as const;
+
 export const metadata: Metadata = {
-  title: 'Label settings · Tether',
+  title: PAGE_COPY.meta.title,
 };
 
 export default async function SettingsPage() {
@@ -48,22 +85,21 @@ export default async function SettingsPage() {
           href="/people"
           className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
         >
-          ← People
+          {PAGE_COPY.backLink}
         </Link>
-        <p className="prm-eyebrow mt-4">Your workspace</p>
+        <p className="prm-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
-          Label settings
+          {PAGE_COPY.hero.title}
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          Labels and types you use across people and the timeline. Changes apply
-          everywhere right away.
+          {PAGE_COPY.hero.description}
         </p>
         <nav
-          aria-label="Label settings sections"
+          aria-label={PAGE_COPY.nav.ariaLabel}
           className="card-surface mt-6 rounded-2xl border border-border-soft p-4 sm:p-5"
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Jump to
+            {PAGE_COPY.nav.jumpTo}
           </p>
           <ul className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-1 sm:gap-y-2">
             <li className="sm:after:mx-2 sm:after:text-muted sm:after:content-['·'] sm:last:after:content-none">
@@ -71,7 +107,7 @@ export default async function SettingsPage() {
                 href="#categories"
                 className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
               >
-                Person categories
+                {PAGE_COPY.nav.personCategories}
               </a>
             </li>
             <li className="sm:after:mx-2 sm:after:text-muted sm:after:content-['·'] sm:last:after:content-none">
@@ -79,7 +115,7 @@ export default async function SettingsPage() {
                 href="#connection-types"
                 className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
               >
-                Connection types
+                {PAGE_COPY.nav.connectionTypes}
               </a>
             </li>
             <li>
@@ -87,7 +123,7 @@ export default async function SettingsPage() {
                 href="#timeline-types"
                 className="text-sm font-semibold text-accent underline-offset-4 hover:underline"
               >
-                Timeline types
+                {PAGE_COPY.nav.timelineTypes}
               </a>
             </li>
           </ul>
@@ -97,11 +133,10 @@ export default async function SettingsPage() {
       <section id="categories" className="scroll-mt-6 space-y-4">
         <div>
           <h2 className="font-display text-2xl tracking-tight">
-            Person categories
+            {PAGE_COPY.sections.categories.title}
           </h2>
           <p className="mt-2 text-sm leading-7 text-muted">
-            How someone fits in your life — used in profiles, filters, and the
-            order of groups on the People page.
+            {PAGE_COPY.sections.categories.description}
           </p>
         </div>
         <ManageCategoriesPanel categories={categoriesRes.data ?? []} />
@@ -110,11 +145,10 @@ export default async function SettingsPage() {
       <section id="connection-types" className="scroll-mt-6 space-y-4">
         <div>
           <h2 className="font-display text-2xl tracking-tight">
-            Connection types
+            {PAGE_COPY.sections.connectionTypes.title}
           </h2>
           <p className="mt-2 text-sm leading-7 text-muted">
-            How one person relates to another — partner, sibling, coworker, or
-            anything you add.
+            {PAGE_COPY.sections.connectionTypes.description}
           </p>
         </div>
         <ManageConnectionTypesPanel types={connectionTypesRes.data ?? []} />
@@ -123,11 +157,10 @@ export default async function SettingsPage() {
       <section id="timeline-types" className="scroll-mt-6 space-y-4">
         <div>
           <h2 className="font-display text-2xl tracking-tight">
-            Timeline types
+            {PAGE_COPY.sections.timelineTypes.title}
           </h2>
           <p className="mt-2 text-sm leading-7 text-muted">
-            Kinds of moments on the timeline — plus a reserved type for category
-            changes on someone&apos;s profile.
+            {PAGE_COPY.sections.timelineTypes.description}
           </p>
         </div>
         <ManageInteractionTypesPanel types={interactionTypesRes.data ?? []} />

@@ -7,6 +7,21 @@ import {
   type InteractionTypeOption,
 } from '@/lib/interactions/type-options';
 
+const PAGE_COPY = {
+  backLink: '← Timeline',
+  hero: {
+    eyebrow: 'Shared moments',
+    title: 'Log a shared moment',
+    description:
+      'Optionally name who this was mainly about, then add everyone who was part of it under Also there. One entry keeps every timeline in sync.',
+  },
+  emptyPeople: {
+    lead: 'Add at least one person before logging interactions.',
+    createLink: 'Create someone',
+    trailing: '.',
+  },
+} as const;
+
 export default async function NewInteractionPage() {
   const ctx = await requirePrmAccess();
 
@@ -47,28 +62,27 @@ export default async function NewInteractionPage() {
           href="/timeline"
           className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
         >
-          ← Timeline
+          {PAGE_COPY.backLink}
         </Link>
-        <p className="prm-eyebrow mt-4">Shared moments</p>
+        <p className="prm-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
-          Log a shared moment
+          {PAGE_COPY.hero.title}
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted max-sm:leading-8">
-          Optionally name who this was mainly about, then add everyone who was
-          part of it under Also there. One entry keeps every timeline in sync.
+          {PAGE_COPY.hero.description}
         </p>
       </div>
 
       {(people ?? []).length === 0 ? (
         <div className="card-surface rounded-[1.75rem] border border-border-soft p-8 text-sm text-muted">
-          Add at least one person before logging interactions.{' '}
+          {PAGE_COPY.emptyPeople.lead}{' '}
           <Link
             href="/people/new"
             className="font-semibold text-accent underline-offset-4 hover:underline"
           >
-            Create someone
+            {PAGE_COPY.emptyPeople.createLink}
           </Link>
-          .
+          {PAGE_COPY.emptyPeople.trailing}
         </div>
       ) : (
         <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">

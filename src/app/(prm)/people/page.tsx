@@ -16,6 +16,26 @@ import type { PeopleViewOption } from '@/components/people/people-view-control';
 import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
 import { formatDateInTimeZone } from '@/lib/datetime';
 
+const PAGE_COPY = {
+  hero: {
+    eyebrow: 'Your circle',
+    title: 'People',
+    description: "Details you don't want to forget. Let them know you care.",
+  },
+  addSomeone: 'Add someone',
+  empty: {
+    lead: 'No one here yet, or nothing matches your filters.',
+    addFirstPerson: 'Add your first person',
+    trailing: '.',
+  },
+  list: {
+    uncategorized: 'Uncategorized',
+    categoryPlaceholder: '—',
+    lastTouch: 'Last touch',
+    noInteractionsYet: 'No interactions yet',
+  },
+} as const;
+
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 const UUID_RE =
@@ -136,7 +156,7 @@ function PeopleListItem({
           }`}
         >
           <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
-            {person.person_categories?.name ?? '—'}
+            {person.person_categories?.name ?? PAGE_COPY.list.categoryPlaceholder}
           </span>
           <RelationshipWarmthChip
             lastInteractionAt={person.last_interaction_at}
@@ -146,7 +166,7 @@ function PeopleListItem({
           />
           {person.last_interaction_at ? (
             <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-              Last touch{' '}
+              {PAGE_COPY.list.lastTouch}{' '}
               {formatDateInTimeZone(
                 person.last_interaction_at,
                 displayTimeZone,
@@ -154,7 +174,7 @@ function PeopleListItem({
             </span>
           ) : (
             <span className="rounded-full border border-border-soft px-2.5 py-0.5">
-              No interactions yet
+              {PAGE_COPY.list.noInteractionsYet}
             </span>
           )}
         </div>
@@ -345,14 +365,16 @@ export default async function PeoplePage(props: {
     <main className="prm-page">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="prm-eyebrow">Your circle</p>
-          <h1 className="mt-2 font-display text-4xl tracking-tight">People</h1>
+          <p className="prm-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
+          <h1 className="mt-2 font-display text-4xl tracking-tight">
+            {PAGE_COPY.hero.title}
+          </h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
-            Details you don’t want to forget. Let them know you care.
+            {PAGE_COPY.hero.description}
           </p>
         </div>
         <ButtonLink href="/people/new" variant="primary" size="lg">
-          Add someone
+          {PAGE_COPY.addSomeone}
         </ButtonLink>
       </header>
 
@@ -395,14 +417,14 @@ export default async function PeoplePage(props: {
         <section className="order-3 min-w-0 lg:order-none lg:col-start-2 lg:row-start-2">
           {warmthFiltered.length === 0 ? (
             <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
-              No one here yet, or nothing matches your filters.{' '}
+              {PAGE_COPY.empty.lead}{' '}
               <Link
                 href="/people/new"
                 className="font-semibold text-accent underline-offset-4 hover:underline"
               >
-                Add your first person
+                {PAGE_COPY.empty.addFirstPerson}
               </Link>
-              .
+              {PAGE_COPY.empty.trailing}
             </div>
           ) : viewKey === 'grid' ? (
             <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -422,7 +444,7 @@ export default async function PeoplePage(props: {
                 const sectionTitle =
                   categoryMetaById.get(categoryId)?.name ??
                   sectionPeople[0]?.person_categories?.name ??
-                  'Uncategorized';
+                  PAGE_COPY.list.uncategorized;
                 return (
                   <section key={categoryId} className="space-y-3">
                     <h2 className="font-display text-xl tracking-tight text-muted">

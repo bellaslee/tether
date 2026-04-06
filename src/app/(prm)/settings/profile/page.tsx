@@ -5,8 +5,28 @@ import { requirePrmAccess } from '@/lib/prm/guard';
 import { createSupabaseServerClient } from '@/lib/db/server';
 import { listIanaTimeZones } from '@/lib/timezones';
 
+const PAGE_COPY = {
+  meta: {
+    title: 'Profile settings · Tether',
+  },
+  backLink: '← People',
+  hero: {
+    eyebrow: 'Your account',
+    title: 'Profile settings',
+    description: 'Update how you appear, your time zone, and your password.',
+  },
+  email: {
+    label: 'Email',
+    helper:
+      'Email sign-in is managed by your auth provider. Contact support or your project admin if you need to change it.',
+  },
+  errors: {
+    notSignedIn: 'Not signed in.',
+  },
+} as const;
+
 export const metadata: Metadata = {
-  title: 'Profile settings · Tether',
+  title: PAGE_COPY.meta.title,
 };
 
 export default async function ProfileSettingsPage() {
@@ -19,7 +39,7 @@ export default async function ProfileSettingsPage() {
   } = await client.auth.getUser();
 
   if (error || !user) {
-    throw new Error(error?.message ?? 'Not signed in.');
+    throw new Error(error?.message ?? PAGE_COPY.errors.notSignedIn);
   }
 
   const meta = user.user_metadata as Record<string, unknown> | undefined;
@@ -44,26 +64,25 @@ export default async function ProfileSettingsPage() {
           href="/people"
           className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
         >
-          ← People
+          {PAGE_COPY.backLink}
         </Link>
-        <p className="prm-eyebrow mt-4">Your account</p>
+        <p className="prm-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
         <h1 className="mt-2 font-display text-4xl tracking-tight">
-          Profile settings
+          {PAGE_COPY.hero.title}
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          Update how you appear, your time zone, and your password.
+          {PAGE_COPY.hero.description}
         </p>
       </div>
 
       {user.email ? (
         <div className="rounded-2xl border border-border-soft bg-white/60 px-4 py-3 sm:px-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Email
+            {PAGE_COPY.email.label}
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">{user.email}</p>
           <p className="mt-2 text-xs leading-relaxed text-muted">
-            Email sign-in is managed by your auth provider. Contact support or
-            your project admin if you need to change it.
+            {PAGE_COPY.email.helper}
           </p>
         </div>
       ) : null}
