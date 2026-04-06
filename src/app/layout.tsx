@@ -1,18 +1,18 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/react';
-import { Manrope, Newsreader } from 'next/font/google';
+import { Fraunces, Nunito } from 'next/font/google';
 import { PrivacyPolicyProvider } from '@/components/app/privacy-policy-context';
 import './globals.css';
 
-const bodyFont = Manrope({
-  variable: '--font-manrope',
+const bodyFont = Nunito({
+  variable: '--font-nunito',
   subsets: ['latin'],
 });
 
-const displayFont = Newsreader({
-  variable: '--font-newsreader',
+const displayFont = Fraunces({
+  variable: '--font-fraunces',
   subsets: ['latin'],
-  style: ['normal', 'italic'],
+  axes: ['SOFT', 'WONK', 'opsz'],
 });
 
 export const metadata: Metadata = {

@@ -1,17 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4ede4;
-  --foreground: #2d241d;
-  --surface: rgba(255, 252, 246, 0.85);
-  --surface-strong: rgba(255, 250, 242, 0.96);
-  --border-soft: rgba(89, 66, 47, 0.14);
-  --muted: #6b5a4c;
-  --accent: #ae5d3d;
-  --accent-soft: rgba(174, 93, 61, 0.12);
-  --success: #2e7d5a;
-  --warning: #9d6631;
-  --shadow: 0 24px 80px rgba(66, 42, 26, 0.12);
+  --background: #fff8f0;
+  --foreground: #2a2624;
+  --surface: rgba(255, 253, 248, 0.88);
+  --surface-strong: rgba(255, 251, 244, 0.96);
+  --border-soft: rgba(42, 38, 36, 0.12);
+  --muted: #5c6570;
+  --accent: #d9483b;
+  --accent-soft: rgba(217, 72, 59, 0.14);
+  /** Playful accents (borders, chips) — coral stays primary interactive via --accent */
+  --accent-sun: #e2c230;
+  --accent-sky: #4eb0e0;
+  --accent-sun-soft: rgba(226, 194, 48, 0.22);
+  --accent-sky-soft: rgba(78, 176, 224, 0.2);
+  --success: #2a8f5c;
+  --warning: #c27830;
+  /** Offset drop shadow (down + right), no blur. */
+  --shadow-depth: rgba(42, 38, 50, 0.13);
+  --shadow-depth-soft: rgba(42, 38, 50, 0.07);
+  --shadow: 4px 5px 0 var(--shadow-depth);
+  --shadow-lift: 2px 3px 0 var(--shadow-depth-soft);
+  /** Shared with `body` and sticky chrome — viewport-locked via `background-attachment: fixed` where used. */
+  --page-wash-image:
+    radial-gradient(circle at 0% 0%, rgba(255, 232, 150, 0.16), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(170, 220, 255, 0.14), transparent 52%),
+    linear-gradient(180deg, #fff8f0 0%, #fff7f4 48%, #faf9fc 100%);
 }
 
 @theme inline {
@@ -23,27 +37,37 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-sun: var(--accent-sun);
+  --color-accent-sky: var(--accent-sky);
+  --color-accent-sun-soft: var(--accent-sun-soft);
+  --color-accent-sky-soft: var(--accent-sky-soft);
   --color-success: var(--success);
   --color-warning: var(--warning);
-  --font-sans: var(--font-manrope);
-  --font-display: var(--font-newsreader);
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-fraunces);
 }
 
 * {
   box-sizing: border-box;
 }
 
+/**
+ * Page wash is painted on `body` (not `html`): otherwise a solid body fill
+ * covers the viewport and hides gradients on the root element.
+ */
 html {
-  background:
-    radial-gradient(circle at top left, rgba(245, 189, 113, 0.22), transparent 32%),
-    radial-gradient(circle at top right, rgba(153, 99, 74, 0.16), transparent 28%),
-    linear-gradient(180deg, #f8f2ea 0%, #f0e7dd 45%, #efe4d7 100%);
+  background-color: var(--background);
+  height: 100%;
 }
 
 body {
-  background: var(--background);
+  min-height: 100%;
   color: var(--foreground);
-  font-family: var(--font-manrope), sans-serif;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  background-color: var(--background);
+  background-image: var(--page-wash-image);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 a {
@@ -72,13 +96,21 @@ summary {
 }
 
 ::selection {
-  background: rgba(174, 93, 61, 0.22);
+  background: rgba(217, 72, 59, 0.22);
 }
 
 .card-surface {
   background: var(--surface);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow);
+}
+
+/** Person detail sticky header — same wash as the page, locked to the viewport. */
+.prm-person-sticky-header {
+  background-color: var(--background);
+  background-image: var(--page-wash-image);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /** Shared PRM page shells — keep list views and form flows visually aligned. */

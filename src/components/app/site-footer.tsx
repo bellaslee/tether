@@ -6,7 +6,7 @@ export function SiteFooter() {
   const { openPrivacyPolicy } = usePrivacyPolicy();
 
   return (
-    <footer className="mt-auto border-t border-border-soft bg-surface-strong/40 py-6">
+    <footer className="mt-auto border-t border-accent-sun/30 bg-surface-strong/40 py-6">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-2 px-6 text-sm text-muted sm:px-10 lg:px-12">
         <button
           type="button"

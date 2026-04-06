@@ -8,7 +8,7 @@ type AppNavProps = {
 
 export function AppNav({ context }: AppNavProps) {
   return (
-    <header className="relative z-[101] border-b border-border-soft bg-surface-strong/80 backdrop-blur-md">
+    <header className="relative z-[101] border-b border-accent-sky/35 bg-surface-strong/80 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4 sm:px-10 lg:px-12">
         <div className="flex flex-wrap items-center gap-6">
           <Link

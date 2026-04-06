@@ -90,7 +90,7 @@ export function ConfirmLightbox({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="card-surface w-full max-w-md rounded-[1.75rem] border border-border-soft p-6 shadow-[var(--shadow)] sm:p-8"
+        className="card-surface w-full max-w-md rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <h2

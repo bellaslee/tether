@@ -22,7 +22,7 @@ const BASE =
 
 /** Lift + warm shadow on hover (pill controls) — kept subtle. */
 const HOVER_LIFT_PILL =
-  'hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(66,42,26,0.09)] disabled:hover:translate-y-0 disabled:hover:shadow-none';
+  'hover:-translate-y-px hover:shadow-[var(--shadow-lift)] disabled:hover:translate-y-0 disabled:hover:shadow-none';
 
 /** Barely-there lift for text-style controls. */
 const HOVER_LIFT_TEXT =

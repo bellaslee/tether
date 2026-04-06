@@ -67,7 +67,7 @@ export function UserMenu({
           id={menuId}
           role="menu"
           aria-orientation="vertical"
-          className="card-surface absolute right-0 z-50 mt-2 min-w-[12.5rem] rounded-2xl border border-border-soft py-2 shadow-[0_12px_40px_rgba(66,42,26,0.12)]"
+          className="card-surface absolute right-0 z-50 mt-2 min-w-[12.5rem] rounded-2xl border border-border-soft py-2"
         >
           {accountEmail ? (
             <p

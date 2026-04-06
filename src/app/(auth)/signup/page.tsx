@@ -13,7 +13,7 @@ export default async function SignupPage() {
   return (
     <>
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
-      <div className="card-surface rounded-[2rem] border border-border-soft p-8 sm:p-10">
+      <div className="card-surface rounded-[2rem] border border-border-soft border-t-2 border-t-accent-sun/50 p-8 sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">Start quietly</p>
         <h1 className="mt-3 font-display text-3xl tracking-tight">Create your account</h1>
         <p className="mt-2 text-sm leading-7 text-muted">

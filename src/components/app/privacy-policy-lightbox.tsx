@@ -44,7 +44,7 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="card-surface max-h-[min(90dvh,48rem)] w-full max-w-3xl overflow-y-auto rounded-[1.75rem] border border-border-soft p-6 shadow-[var(--shadow)] sm:p-8"
+        className="card-surface max-h-[min(90dvh,48rem)] w-full max-w-3xl overflow-y-auto rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-wrap items-start justify-between gap-3">

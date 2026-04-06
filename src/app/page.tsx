@@ -62,11 +62,11 @@ export default async function Home() {
   return (
     <>
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-8 sm:px-10 lg:px-12">
-      <section className="card-surface overflow-hidden rounded-[2rem] border border-border-soft">
+      <section className="card-surface overflow-hidden rounded-[2rem] border border-border-soft border-t-2 border-t-accent-sun/55">
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_1fr] lg:px-12 lg:py-12">
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center rounded-full border border-border-soft bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
+              <div className="inline-flex items-center rounded-full border border-accent-sky/50 bg-accent-sky-soft px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
                 Tether
               </div>
               <div className="inline-flex items-center rounded-full border border-accent-soft bg-accent-soft/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/80">
@@ -107,7 +107,7 @@ export default async function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">
               From conversation to clarity
             </p>
-            <div className="space-y-3 rounded-[1.5rem] border border-border-soft bg-white/72 p-5 sm:p-6">
+            <div className="space-y-3 rounded-[1.5rem] border border-border-soft border-l-[3px] border-l-accent-sky/75 bg-white/72 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
                 A quick note
               </p>
@@ -115,7 +115,7 @@ export default async function Home() {
                 {flowPreview.rawNote}
               </p>
             </div>
-            <div className="space-y-2 rounded-[1.5rem] border border-border-soft bg-white/72 p-5 sm:p-6">
+            <div className="space-y-2 rounded-[1.5rem] border border-border-soft border-l-[3px] border-l-accent-sun/75 bg-white/72 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
                 What you keep
               </p>
@@ -143,10 +143,16 @@ export default async function Home() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
-        {flowMoments.map((block) => (
+        {flowMoments.map((block, i) => (
           <article
             key={block.title}
-            className="card-surface flex flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
+            className={`card-surface flex flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${
+              i === 0
+                ? 'border-t-2 border-t-accent-sun/50'
+                : i === 1
+                  ? 'border-t-2 border-t-accent-sky/45'
+                  : 'border-t-2 border-t-accent/40'
+            }`}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
               {block.subtitle}
@@ -181,7 +187,7 @@ export default async function Home() {
           {upcomingFeatures.map((item) => (
             <article
               key={item.name}
-              className="rounded-[1.5rem] border border-border-soft bg-white/60 p-5"
+              className="rounded-[1.5rem] border border-accent-sky/25 bg-white/60 p-5"
             >
               <p className="text-sm font-semibold text-foreground">{item.name}</p>
               <p className="mt-3 text-sm leading-7 text-muted">

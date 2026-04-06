@@ -68,7 +68,7 @@ export function PersonDetailHeader({
               role="dialog"
               aria-modal="true"
               aria-labelledby="log-interaction-dialog-title"
-              className="card-surface max-h-[min(90dvh,48rem)] w-full max-w-3xl overflow-y-auto rounded-[1.75rem] border border-border-soft p-6 shadow-[var(--shadow)] sm:p-8"
+              className="card-surface max-h-[min(90dvh,48rem)] w-full max-w-3xl overflow-y-auto rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -114,7 +114,7 @@ export function PersonDetailHeader({
   // content under <main> so the sticky containing block spans the full scroll height.
   return (
     <>
-      <div className="sticky top-0 z-40 -mx-6 w-[calc(100%+3rem)] max-w-none bg-background/95 px-6 pt-2 backdrop-blur-md sm:-mx-10 sm:w-[calc(100%+5rem)] sm:px-10 lg:-mx-12 lg:w-[calc(100%+6rem)] lg:px-12">
+      <div className="prm-person-sticky-header sticky top-0 z-40 -mx-6 w-[calc(100%+3rem)] max-w-none px-6 pt-2 sm:-mx-10 sm:w-[calc(100%+5rem)] sm:px-10 lg:-mx-12 lg:w-[calc(100%+6rem)] lg:px-12">
         <div className="w-full space-y-4 border-b border-border-soft pb-3">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1">{children}</div>
