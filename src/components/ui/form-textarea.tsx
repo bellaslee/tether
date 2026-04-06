@@ -14,6 +14,7 @@ import {
   formControlClassName,
   type FormControlSize,
 } from '@/components/ui/form-control-classes';
+import { submitFormFromTextControl } from '@/components/ui/form-cmd-enter-submit';
 
 export type FormTextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   fieldSize?: FormControlSize;
@@ -353,13 +354,11 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       if (
         !e.defaultPrevented &&
         (e.metaKey || e.ctrlKey) &&
-        e.key === 'Enter'
+        e.key === 'Enter' &&
+        !e.nativeEvent.isComposing
       ) {
-        const form = e.currentTarget.form;
-        if (form) {
-          e.preventDefault();
-          form.requestSubmit();
-        }
+        e.preventDefault();
+        submitFormFromTextControl(e.currentTarget);
       }
     };
 

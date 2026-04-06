@@ -17,7 +17,7 @@ export default async function LoginPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">Welcome back</p>
         <h1 className="mt-3 font-display text-3xl tracking-tight">Sign in</h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          Access your private people and timeline. Everything stays in your workspace.
+          Access your people and timeline. Everything stays in your workspace.
         </p>
         <div className="mt-8">
           <LoginForm />
