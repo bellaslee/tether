@@ -356,8 +356,8 @@ export default async function PeoplePage(props: {
         </ButtonLink>
       </header>
 
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-        <section className="card-surface order-2 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:w-full lg:max-w-[22rem] lg:shrink-0">
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:items-start lg:gap-x-10 lg:gap-y-4">
+        <section className="card-surface order-2 min-w-0 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:w-full lg:max-w-none">
           <Suspense
             fallback={
               <div
@@ -378,7 +378,7 @@ export default async function PeoplePage(props: {
           </Suspense>
         </section>
 
-        <section className="order-1 min-w-0 flex-1 space-y-4">
+        <section className="order-1 min-w-0 lg:order-none lg:col-start-2 lg:row-start-1">
           <Suspense
             fallback={
               <div
@@ -390,6 +390,9 @@ export default async function PeoplePage(props: {
             <PeopleListPreferencesSync />
             <PeopleViewSortBar viewKey={viewKey} sortKey={sortKey} />
           </Suspense>
+        </section>
+
+        <section className="order-3 min-w-0 lg:order-none lg:col-start-2 lg:row-start-2">
           {warmthFiltered.length === 0 ? (
             <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
               No one here yet, or nothing matches your filters.{' '}
