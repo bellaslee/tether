@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { PersonDeleteSection } from '@/components/people/person-delete-section';
 import { PersonForm } from '@/components/people/person-form';
 import { requirePrmAccess } from '@/lib/prm/guard';
 import { personShownName } from '@/lib/people/list-name';
@@ -60,6 +61,12 @@ export default async function EditPersonPage(props: PageProps) {
         ) : (
           <PersonForm mode="edit" person={person} categories={categories ?? []} />
         )}
+      </div>
+      <div className="mt-8">
+        <PersonDeleteSection
+          personId={person.id}
+          personLabel={personShownName(person)}
+        />
       </div>
     </main>
   );

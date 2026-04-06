@@ -212,6 +212,48 @@ export async function updatePerson(
   redirect(`/people/${personId}`);
 }
 
+/** Removes the person and cascades related rows (contacts, facts, tasks, links, etc.). */
+export async function deletePerson(personId: string): Promise<ActionResult> {
+  const ctx = await getPrmSupabaseContext();
+  if (!ctx) {
+    return { error: 'You need to sign in again.' };
+  }
+  if (!isUuid(personId)) {
+    return { error: 'Something went wrong. Try again.' };
+  }
+
+  const { data: row, error: fetchError } = await ctx.client
+    .from('people')
+    .select('id')
+    .eq('id', personId)
+    .eq('user_id', ctx.userId)
+    .maybeSingle();
+
+  if (fetchError) {
+    return { error: fetchError.message };
+  }
+  if (!row) {
+    return { error: 'This person is no longer in your list.' };
+  }
+
+  const { error } = await ctx.client
+    .from('people')
+    .delete()
+    .eq('id', personId)
+    .eq('user_id', ctx.userId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/people', 'layout');
+  revalidatePath('/timeline');
+  revalidatePath('/reminders');
+  revalidatePath(`/people/${personId}`);
+  revalidatePath(`/people/${personId}/edit`);
+  return { ok: true };
+}
+
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? '').trim();
   return text.length > 0 ? text : null;
