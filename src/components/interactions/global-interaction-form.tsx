@@ -5,7 +5,6 @@ import type { ActionResult } from '@/lib/actions/interactions';
 import { createGlobalInteraction } from '@/lib/actions/interactions';
 import { WallClockTimeZoneField } from '@/components/interactions/wall-clock-time-zone-field';
 import { toNewInteractionDatetimeLocalInputValueInZone } from '@/lib/datetime';
-import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
   InteractionParticipantPicker,
@@ -104,19 +103,6 @@ export function GlobalInteractionForm({
             {interactionTypes.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
-              </option>
-            ))}
-          </Picklist>
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="direction" className="text-sm font-semibold">
-            Direction
-          </label>
-          <Picklist id="direction" name="direction">
-            <option value="">(optional)</option>
-            {INTERACTION_DIRECTIONS.map((d) => (
-              <option key={d} value={d}>
-                {d}
               </option>
             ))}
           </Picklist>

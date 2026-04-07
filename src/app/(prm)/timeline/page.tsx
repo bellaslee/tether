@@ -282,7 +282,6 @@ function GlobalTimelineRow({
             </span>
             <InteractionMetaChips
               typeName={interaction.interaction_types?.name}
-              direction={interaction.direction}
               showUpcoming={isUpcoming}
             />
           </div>
@@ -328,7 +327,6 @@ function GlobalTimelineRow({
               occurredAtIso={interaction.occurred_at}
               sessionTimeZone={sessionTimeZone}
               defaultInteractionTypeId={interaction.interaction_type_id}
-              defaultDirection={interaction.direction ?? ''}
               defaultTitle={interaction.title ?? ''}
               defaultRawNote={interaction.raw_note ?? ''}
               primaryPersonId={primaryPersonId}

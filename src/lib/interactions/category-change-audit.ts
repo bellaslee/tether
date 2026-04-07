@@ -137,7 +137,6 @@ export async function syncCategoryChangeTimelineEntry(
       user_id: userId,
       occurred_at: occurredAt,
       interaction_type_id: typeRow.id,
-      direction: null,
       title,
       raw_note: null,
       counts_toward_last_touch: false,

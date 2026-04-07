@@ -852,7 +852,6 @@ function PersonTimelineRow({
             </span>
             <InteractionMetaChips
               typeName={interaction.interaction_types?.name}
-              direction={interaction.direction}
               showUpcoming={isUpcoming}
             />
             {role === 'primary' ? (
@@ -903,7 +902,6 @@ function PersonTimelineRow({
               occurredAtIso={interaction.occurred_at}
               sessionTimeZone={sessionTimeZone}
               defaultInteractionTypeId={interaction.interaction_type_id}
-              defaultDirection={interaction.direction ?? ''}
               defaultTitle={interaction.title ?? ''}
               defaultRawNote={interaction.raw_note ?? ''}
               primaryPersonId={participants.primaryPersonId}

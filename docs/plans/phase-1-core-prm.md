@@ -122,7 +122,7 @@ On the person detail route, list `contact_methods` for that person. Support add,
 
 ### Milestone D — Interactions and `last_interaction_at`
 
-Add interaction creation from the person page: fields `occurred_at`, `type`, optional `direction`, optional `title`, `raw_note`. Insert `interactions` with the effective `user_id`, then insert `interaction_people` with the current person as `primary` and optional additional people.
+Add interaction creation from the person page: fields `occurred_at`, `type`, optional `title`, `raw_note`. Insert `interactions` with the effective `user_id`, then insert `interaction_people` with the current person as `primary` and optional additional people.
 
 Add a path to log a **multi-person** interaction (for example `/interactions/new` or a flow from the global timeline) where the user picks **one primary** and **N attendees**, creates one `interactions` row, and inserts one `interaction_people` row per selected person.
 

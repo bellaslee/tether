@@ -148,7 +148,6 @@ interactions
 - user_id uuid not null
 - occurred_at timestamptz not null
 - type text not null
-- direction text
 - title text
 - raw_note text
 - created_at timestamptz not null
@@ -159,7 +158,6 @@ Notes:
 
 - `occurred_at` is required so timelines work correctly.
 - `type` should exist now to support filtering and better summaries later.
-- `direction` is optional in Phase 1, but useful enough to keep.
 - `title` is optional because many entries will just be quick notes.
 - `raw_note` is the main captured memory field and should remain freeform.
 - Do not add AI fields like sentiment, extraction status, or source metadata yet.
@@ -174,12 +172,6 @@ Recommended `type` values:
 - `coffee_chat`
 - `meeting`
 - `other`
-
-Recommended `direction` values:
-
-- `inbound`
-- `outbound`
-- `mutual`
 
 ### 4. `interaction_people`
 
@@ -333,9 +325,6 @@ create table interactions (
   occurred_at timestamptz not null,
   type text not null check (
     type in ('hangout', 'text', 'call', 'dinner', 'party', 'coffee_chat', 'meeting', 'other')
-  ),
-  direction text check (
-    direction in ('inbound', 'outbound', 'mutual')
   ),
   title text,
   raw_note text,

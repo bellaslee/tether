@@ -2,11 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import type { InteractionDirection } from '@/lib/db/database.types';
 import { localWallTimeToUtcIso } from '@/lib/datetime';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { resolvePreferredIanaTimeZone } from '@/lib/timezones';
-import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
 import {
   countsTowardLastTouch,
@@ -21,10 +19,6 @@ const UUID_RE =
 
 function isUuid(value: string): boolean {
   return UUID_RE.test(value);
-}
-
-function isDirection(value: string): value is InteractionDirection {
-  return INTERACTION_DIRECTIONS.includes(value as InteractionDirection);
 }
 
 async function assertOwnsPeople(personIds: string[]) {
@@ -110,7 +104,6 @@ export async function createInteractionFromPerson(
       user_id: ctx.userId,
       occurred_at: payload.occurred_at,
       interaction_type_id: payload.interaction_type_id,
-      direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
       counts_toward_last_touch: countsTowardLastTouch(payload.occurred_at),
@@ -207,7 +200,6 @@ export async function createGlobalInteraction(
       user_id: ctx.userId,
       occurred_at: payload.occurred_at,
       interaction_type_id: payload.interaction_type_id,
-      direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
       counts_toward_last_touch: countsTowardLastTouch(payload.occurred_at),
@@ -338,7 +330,6 @@ export async function updateInteraction(
     .update({
       occurred_at: payload.occurred_at,
       interaction_type_id: payload.interaction_type_id,
-      direction: payload.direction,
       title: payload.title,
       raw_note: payload.raw_note,
       counts_toward_last_touch: countsToward,
@@ -439,14 +430,12 @@ function parseInteractionFields(
   | {
       occurred_at: string;
       interaction_type_id: string;
-      direction: InteractionDirection | null;
       title: string | null;
       raw_note: string | null;
     }
   | { error: string } {
   const occurredLocal = String(formData.get('occurred_at') ?? '').trim();
   const typeIdRaw = String(formData.get('interaction_type_id') ?? '').trim();
-  const directionRaw = String(formData.get('direction') ?? '').trim();
   const title = optionalString(formData.get('title'));
   const raw_note = optionalString(formData.get('raw_note'));
 
@@ -462,18 +451,9 @@ function parseInteractionFields(
     return { error: 'Use a valid date and time.' };
   }
 
-  let direction: InteractionDirection | null = null;
-  if (directionRaw) {
-    if (!isDirection(directionRaw)) {
-      return { error: 'Choose a valid direction.' };
-    }
-    direction = directionRaw;
-  }
-
   return {
     occurred_at,
     interaction_type_id: typeIdRaw,
-    direction,
     title,
     raw_note,
   };

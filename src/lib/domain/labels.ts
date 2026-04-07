@@ -1,8 +1,4 @@
-import type {
-  ContactMethodType,
-  InteractionDirection,
-  PersonStatus,
-} from "@/lib/db/database.types";
+import type { ContactMethodType, PersonStatus } from "@/lib/db/database.types";
 
 const statusLabels: Record<PersonStatus, string> = {
   active: "Active",
@@ -30,14 +26,4 @@ export function formatContactType(type: ContactMethodType) {
 
 export function formatInteractionTypeName(name: string) {
   return name;
-}
-
-const interactionDirectionLabels: Record<InteractionDirection, string> = {
-  inbound: "Inbound",
-  outbound: "Outbound",
-  mutual: "Mutual",
-};
-
-export function formatInteractionDirection(direction: InteractionDirection) {
-  return interactionDirectionLabels[direction];
 }

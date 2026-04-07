@@ -8,7 +8,6 @@ import {
   InteractionParticipantPicker,
   type PersonOption,
 } from '@/components/people/attendee-picker';
-import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
@@ -28,7 +27,6 @@ export type InteractionEditDisclosureProps = {
   /** Saved profile zone; when null, the browser zone is used for the edit field. */
   sessionTimeZone: string | null;
   defaultInteractionTypeId: string;
-  defaultDirection: string;
   defaultTitle: string;
   defaultRawNote: string;
   primaryPersonId: string;
@@ -42,7 +40,6 @@ export function InteractionEditDisclosure({
   occurredAtIso,
   sessionTimeZone,
   defaultInteractionTypeId,
-  defaultDirection,
   defaultTitle,
   defaultRawNote,
   primaryPersonId,
@@ -78,7 +75,6 @@ export function InteractionEditDisclosure({
         occurredAtIso={occurredAtIso}
         sessionTimeZone={sessionTimeZone}
         defaultInteractionTypeId={defaultInteractionTypeId}
-        defaultDirection={defaultDirection}
         defaultTitle={defaultTitle}
         defaultRawNote={defaultRawNote}
         primaryPersonId={primaryPersonId}
@@ -102,7 +98,6 @@ function InteractionEditForm({
   occurredAtIso,
   sessionTimeZone,
   defaultInteractionTypeId,
-  defaultDirection,
   defaultTitle,
   defaultRawNote,
   primaryPersonId,
@@ -214,26 +209,6 @@ function InteractionEditForm({
             {interactionTypes.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
-              </option>
-            ))}
-          </Picklist>
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor={`direction-${interactionId}`}
-            className="text-sm font-semibold"
-          >
-            Direction
-          </label>
-          <Picklist
-            id={`direction-${interactionId}`}
-            name="direction"
-            defaultValue={defaultDirection}
-          >
-            <option value="">(optional)</option>
-            {INTERACTION_DIRECTIONS.map((d) => (
-              <option key={d} value={d}>
-                {d}
               </option>
             ))}
           </Picklist>

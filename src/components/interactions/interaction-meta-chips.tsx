@@ -1,8 +1,4 @@
-import type { InteractionDirection } from '@/lib/db/database.types';
-import {
-  formatInteractionDirection,
-  formatInteractionTypeName,
-} from '@/lib/domain/labels';
+import { formatInteractionTypeName } from '@/lib/domain/labels';
 
 const CHIP_CLASS =
   'inline-flex shrink-0 items-center rounded-full border border-border-soft bg-white px-3 py-1 text-xs font-semibold text-foreground';
@@ -12,15 +8,10 @@ const UPCOMING_CHIP_CLASS =
 
 type Props = {
   typeName: string | null | undefined;
-  direction: InteractionDirection | null | undefined;
   showUpcoming?: boolean;
 };
 
-export function InteractionMetaChips({
-  typeName,
-  direction,
-  showUpcoming,
-}: Props) {
+export function InteractionMetaChips({ typeName, showUpcoming }: Props) {
   return (
     <>
       {showUpcoming ? (
@@ -29,11 +20,6 @@ export function InteractionMetaChips({
       <span className={CHIP_CLASS}>
         {formatInteractionTypeName(typeName ?? 'Moment')}
       </span>
-      {direction ? (
-        <span className={CHIP_CLASS}>
-          {formatInteractionDirection(direction)}
-        </span>
-      ) : null}
     </>
   );
 }

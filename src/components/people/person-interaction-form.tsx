@@ -4,7 +4,6 @@ import { useActionState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ActionResult } from '@/lib/actions/interactions';
 import { createInteractionFromPerson } from '@/lib/actions/interactions';
-import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import { WallClockTimeZoneField } from '@/components/interactions/wall-clock-time-zone-field';
 import { toNewInteractionDatetimeLocalInputValueInZone } from '@/lib/datetime';
 import { isValidIanaTimeZone } from '@/lib/timezones';
@@ -120,22 +119,6 @@ export function PersonInteractionForm({
             {interactionTypes.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
-              </option>
-            ))}
-          </Picklist>
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor={`direction-${personId}`}
-            className="text-sm font-semibold"
-          >
-            Direction
-          </label>
-          <Picklist id={`direction-${personId}`} name="direction">
-            <option value="">(optional)</option>
-            {INTERACTION_DIRECTIONS.map((d) => (
-              <option key={d} value={d}>
-                {d}
               </option>
             ))}
           </Picklist>

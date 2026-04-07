@@ -17,8 +17,6 @@ export type ContactMethodType =
   | 'address'
   | 'other';
 
-export type InteractionDirection = 'inbound' | 'outbound' | 'mutual';
-
 export type InteractionPersonRole = 'primary' | 'attendee';
 
 export type FactReviewStatus = 'candidate' | 'accepted' | 'dismissed';
@@ -256,7 +254,6 @@ export interface Database {
           user_id: string;
           occurred_at: string;
           interaction_type_id: string;
-          direction: InteractionDirection | null;
           title: string | null;
           raw_note: string | null;
           counts_toward_last_touch: boolean;
@@ -269,7 +266,6 @@ export interface Database {
           user_id: string;
           occurred_at: string;
           interaction_type_id: string;
-          direction?: InteractionDirection | null;
           title?: string | null;
           raw_note?: string | null;
           counts_toward_last_touch?: boolean;
@@ -282,7 +278,6 @@ export interface Database {
           user_id?: string;
           occurred_at?: string;
           interaction_type_id?: string;
-          direction?: InteractionDirection | null;
           title?: string | null;
           raw_note?: string | null;
           counts_toward_last_touch?: boolean;

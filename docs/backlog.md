@@ -39,7 +39,7 @@ Ideas and follow-ups that are not scheduled work yet.
       current local calendar day (timezone / date-boundary bug)
 - [x] fix: set the default "when" time to the current time
 - [x] fix: the date met field shows one year into the future
-- [ ] refactor: get rid of direction field in all interactions and the database
+- [x] refactor: get rid of direction field in all interactions and the database
 - [ ] feat: allow custom sorting of interaction types, like the categories
 - [x] enable timeline interaction editing
 - [x] one combined participant control with an explicit “mark as main” on one
