@@ -112,3 +112,65 @@ export async function updateInteractionType(
   revalidatePath('/timeline', 'layout');
   return { ok: true, name: data.name };
 }
+
+export type ReorderInteractionTypesResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export async function reorderInteractionTypes(
+  orderedIds: string[],
+): Promise<ReorderInteractionTypesResult> {
+  const ctx = await getPrmSupabaseContext();
+  if (!ctx) {
+    return { ok: false, error: 'You need to sign in again.' };
+  }
+
+  for (const id of orderedIds) {
+    if (!UUID_RE.test(id)) {
+      return { ok: false, error: 'Invalid type id.' };
+    }
+  }
+
+  const { data: rows, error: fetchError } = await ctx.client
+    .from('interaction_types')
+    .select('id')
+    .eq('user_id', ctx.userId);
+
+  if (fetchError) {
+    return { ok: false, error: fetchError.message };
+  }
+
+  const owned = new Set((rows ?? []).map((r) => r.id));
+  if (orderedIds.length !== owned.size) {
+    return {
+      ok: false,
+      error: 'Reorder list must include every timeline type exactly once.',
+    };
+  }
+  for (const id of orderedIds) {
+    if (!owned.has(id)) {
+      return { ok: false, error: 'Unknown type in list.' };
+    }
+  }
+
+  for (let i = 0; i < orderedIds.length; i++) {
+    const { error } = await ctx.client
+      .from('interaction_types')
+      .update({ sort_order: i })
+      .eq('id', orderedIds[i])
+      .eq('user_id', ctx.userId);
+
+    if (error) {
+      return { ok: false, error: error.message };
+    }
+  }
+
+  revalidatePath('/timeline', 'layout');
+  revalidatePath('/people', 'layout');
+  revalidatePath('/settings');
+  revalidatePath('/interactions/new');
+  return { ok: true };
+}

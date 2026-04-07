@@ -40,7 +40,7 @@ Ideas and follow-ups that are not scheduled work yet.
 - [x] fix: set the default "when" time to the current time
 - [x] fix: the date met field shows one year into the future
 - [x] refactor: get rid of direction field in all interactions and the database
-- [ ] feat: allow custom sorting of interaction types, like the categories
+- [x] feat: allow custom sorting of interaction types, like the categories
 - [x] enable timeline interaction editing
 - [x] one combined participant control with an explicit “mark as main” on one
       row for the interaction edit UI

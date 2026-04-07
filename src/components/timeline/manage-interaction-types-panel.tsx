@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   createInteractionType,
+  reorderInteractionTypes,
   updateInteractionType,
 } from '@/lib/actions/interaction-types';
 
@@ -23,9 +24,13 @@ type ManageInteractionTypesPanelProps = {
 
 function TypeRow(props: {
   row: ManageInteractionTypeRow;
+  index: number;
+  total: number;
+  reorderDisabled: boolean;
+  onMove: (index: number, delta: -1 | 1) => void;
   onUpdated: () => void;
 }) {
-  const { row, onUpdated } = props;
+  const { row, index, total, reorderDisabled, onMove, onUpdated } = props;
   const [name, setName] = useState(row.name);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,24 +67,51 @@ function TypeRow(props: {
           note per calendar day).
         </p>
       ) : null}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-        <FormInput
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={120}
-          fieldSize="dense"
-          aria-label={`Rename ${row.name}`}
-        />
-        <Button
-          type="button"
-          variant="secondary"
-          size="md"
-          onClick={() => void save()}
-          disabled={!canSave || pending}
-        >
-          {pending ? 'Saving…' : 'Save'}
-        </Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <div className="flex shrink-0 gap-2 sm:flex-col sm:gap-1.5">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="min-w-[4.5rem]"
+            aria-label={`Move ${row.name} up in list`}
+            disabled={reorderDisabled || index === 0}
+            onClick={() => onMove(index, -1)}
+          >
+            Up
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="min-w-[4.5rem]"
+            aria-label={`Move ${row.name} down in list`}
+            disabled={reorderDisabled || index >= total - 1}
+            onClick={() => onMove(index, 1)}
+          >
+            Down
+          </Button>
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <FormInput
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={120}
+            fieldSize="dense"
+            className="min-w-0 flex-1"
+            aria-label={`Rename ${row.name}`}
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            onClick={() => void save()}
+            disabled={!canSave || pending || reorderDisabled}
+          >
+            {pending ? 'Saving…' : 'Save'}
+          </Button>
+        </div>
       </div>
       {error ? (
         <p className="text-sm text-red-800" role="alert">
@@ -98,9 +130,32 @@ export function ManageInteractionTypesPanel(
   const [newName, setNewName] = useState('');
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
+  const [reorderError, setReorderError] = useState<string | null>(null);
 
   function refresh() {
     router.refresh();
+  }
+
+  async function moveType(index: number, delta: -1 | 1) {
+    const j = index + delta;
+    if (j < 0 || j >= types.length) {
+      return;
+    }
+    const next = [...types];
+    [next[index], next[j]] = [next[j], next[index]];
+    setReordering(true);
+    setReorderError(null);
+    try {
+      const result = await reorderInteractionTypes(next.map((t) => t.id));
+      if (!result.ok) {
+        setReorderError(result.error);
+        return;
+      }
+      refresh();
+    } finally {
+      setReordering(false);
+    }
   }
 
   async function addType() {
@@ -130,8 +185,14 @@ export function ManageInteractionTypesPanel(
         <h2 className="font-display text-xl tracking-tight">Your types</h2>
         <p className="text-sm leading-7 text-muted">
           Rename anytime — existing moments stay linked because each type keeps
-          the same id behind the scenes.
+          the same id behind the scenes. Order here matches dropdowns when you
+          log a moment (use Up / Down to change it).
         </p>
+        {reorderError ? (
+          <p className="text-sm text-red-800" role="alert">
+            {reorderError}
+          </p>
+        ) : null}
         {types.length === 0 ? (
           <p className="text-sm text-muted">
             No types yet. Add one below, or{' '}
@@ -142,8 +203,16 @@ export function ManageInteractionTypesPanel(
           </p>
         ) : (
           <ul className="space-y-3">
-            {types.map((t) => (
-              <TypeRow key={t.id} row={t} onUpdated={refresh} />
+            {types.map((t, index) => (
+              <TypeRow
+                key={t.id}
+                row={t}
+                index={index}
+                total={types.length}
+                reorderDisabled={reordering}
+                onMove={(i, d) => void moveType(i, d)}
+                onUpdated={refresh}
+              />
             ))}
           </ul>
         )}

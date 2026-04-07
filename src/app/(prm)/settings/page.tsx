@@ -37,7 +37,7 @@ const PAGE_COPY = {
     timelineTypes: {
       title: 'Timeline types',
       description:
-        "Kinds of moments on the timeline — plus a reserved type for category changes on someone's profile.",
+        "Kinds of moments on the timeline — plus a reserved type for category changes on someone's profile. You can reorder them like person categories; that order is used when logging a moment.",
     },
   },
 } as const;
