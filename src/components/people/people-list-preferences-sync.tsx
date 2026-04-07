@@ -3,16 +3,23 @@
 import { useLayoutEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
+  mergeStoredPeopleListFiltersIntoSearchParams,
+  peopleListFiltersForStorage,
+  peopleListFiltersPersistKey,
+} from '@/lib/people/people-list-filter-params';
+import {
   effectiveListSortFromSearchParams,
   effectiveListViewFromSearchParams,
   readStoredListSort,
   readStoredListView,
+  readStoredPeopleListFilters,
   writeStoredListPreferences,
+  writeStoredPeopleListFilters,
 } from '@/lib/people/list-preferences';
 
 /**
- * Merges saved list view / sort into the URL when those params are omitted,
- * only on first paint or when navigating onto /people from another route.
+ * Merges saved list view / sort / filters into the URL when those params are
+ * omitted, only on first paint or when navigating onto /people from another route.
  * While you stay on /people, the URL is authoritative so choosing default
  * view/sort (omitted params) is not overwritten from storage.
  *
@@ -47,6 +54,10 @@ export function PeopleListPreferencesSync() {
     let changed = false;
 
     if (shouldMergeFromStorage) {
+      if (mergeStoredPeopleListFiltersIntoSearchParams(sp, readStoredPeopleListFilters())) {
+        changed = true;
+      }
+
       if (!urlHasView) {
         const stored = readStoredListView();
         if (stored === 'grid') {
@@ -71,10 +82,11 @@ export function PeopleListPreferencesSync() {
 
     const view = effectiveListViewFromSearchParams(sp);
     const sort = effectiveListSortFromSearchParams(sp);
-    const persistKey = `${view}|${sort}`;
+    const persistKey = `${view}|${sort}|${peopleListFiltersPersistKey(sp)}`;
     if (lastPersisted.current !== persistKey) {
       lastPersisted.current = persistKey;
       writeStoredListPreferences(view, sort);
+      writeStoredPeopleListFilters(peopleListFiltersForStorage(sp));
     }
   }, [pathname, router, searchParams]);
 

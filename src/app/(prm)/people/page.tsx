@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { ButtonLink } from '@/components/ui/button';
-import type { PersonStatus, Tables } from '@/lib/db/database.types';
+import type { Tables } from '@/lib/db/database.types';
 import { requirePrmAccess } from '@/lib/prm/guard';
-import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { personShownName } from '@/lib/people/list-name';
 import {
-  computeRelationshipWarmth,
-  type RelationshipWarmth,
-} from '@/lib/people/relationship-warmth';
+  effectivePeopleListStatuses,
+  parsePeopleListCategoryIds,
+  parsePeopleListStatuses,
+  parsePeopleListWarmth,
+} from '@/lib/people/people-list-filter-params';
+import { computeRelationshipWarmth } from '@/lib/people/relationship-warmth';
 import { PeopleFiltersSidebar } from '@/components/people/people-filters-sidebar';
 import { PeopleListPreferencesSync } from '@/components/people/people-list-preferences-sync';
 import { PeopleViewSortBar } from '@/components/people/people-view-sort-bar';
@@ -34,76 +36,11 @@ const PAGE_COPY = {
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 function first(param: string | string[] | undefined) {
   if (Array.isArray(param)) {
     return param[0];
   }
   return param;
-}
-
-function searchParamToStrings(param: string | string[] | undefined): string[] {
-  if (param === undefined) {
-    return [];
-  }
-  return Array.isArray(param) ? param : [param];
-}
-
-function isCategoryIdFilter(value: string): value is string {
-  return UUID_RE.test(value);
-}
-
-function isStatus(value: string): value is PersonStatus {
-  return PERSON_STATUSES.includes(value as PersonStatus);
-}
-
-function parseCategoryIds(param: string | string[] | undefined): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of searchParamToStrings(param)) {
-    const id = raw.trim();
-    if (isCategoryIdFilter(id) && !seen.has(id)) {
-      seen.add(id);
-      out.push(id);
-    }
-  }
-  return out;
-}
-
-function parseStatuses(param: string | string[] | undefined): PersonStatus[] {
-  const seen = new Set<PersonStatus>();
-  const out: PersonStatus[] = [];
-  for (const raw of searchParamToStrings(param)) {
-    const s = raw.trim();
-    if (isStatus(s) && !seen.has(s)) {
-      seen.add(s);
-      out.push(s);
-    }
-  }
-  return out;
-}
-
-const RELATIONSHIP_WARMTH_FILTERS: RelationshipWarmth[] = ['hot', 'warm', 'cold'];
-
-function isWarmthFilter(value: string): value is RelationshipWarmth {
-  return RELATIONSHIP_WARMTH_FILTERS.includes(value as RelationshipWarmth);
-}
-
-function parseWarmthFilters(
-  param: string | string[] | undefined,
-): RelationshipWarmth[] {
-  const seen = new Set<RelationshipWarmth>();
-  const out: RelationshipWarmth[] = [];
-  for (const raw of searchParamToStrings(param)) {
-    const w = raw.trim().toLowerCase();
-    if (isWarmthFilter(w) && !seen.has(w)) {
-      seen.add(w);
-      out.push(w);
-    }
-  }
-  return out;
 }
 
 type PersonListRow = Pick<
@@ -186,12 +123,11 @@ export default async function PeoplePage(props: {
   const searchParams = await props.searchParams;
   const q = first(searchParams.q)?.trim() ?? '';
   const categoryInUrl = Object.hasOwn(searchParams, 'category');
-  const categoryIdsFromUrl = parseCategoryIds(searchParams.category);
+  const categoryIdsFromUrl = parsePeopleListCategoryIds(searchParams.category);
   const statusInUrl = Object.hasOwn(searchParams, 'status');
-  const statusFromUrl = parseStatuses(searchParams.status);
-  const statusValues: PersonStatus[] =
-    !statusInUrl && statusFromUrl.length === 0 ? ['active'] : statusFromUrl;
-  const warmthFilter = parseWarmthFilters(searchParams.warmth);
+  const statusFromUrl = parsePeopleListStatuses(searchParams.status);
+  const statusValues = effectivePeopleListStatuses(statusInUrl, statusFromUrl);
+  const warmthFilter = parsePeopleListWarmth(searchParams.warmth);
   const sortKey = parsePeopleSort(first(searchParams.sort));
   const viewKey = parsePeopleView(first(searchParams.view));
 
@@ -288,11 +224,6 @@ export default async function PeoplePage(props: {
     id: c.id,
     name: c.name,
   }));
-  const allCategoryIds = categoryOptionsList.map((c) => c.id);
-  const categorySelectionIds =
-    !categoryInUrl || categoryIdsFromUrl.length === 0
-      ? allCategoryIds
-      : categoryIdsFromUrl;
   const categoryFilterInitiallyOpen =
     categoryInUrl && categoryIdsFromUrl.length > 0;
   const statusFilterInitiallyOpen =
@@ -327,7 +258,7 @@ export default async function PeoplePage(props: {
           >
             <PeopleFiltersSidebar
               q={q}
-              categoryIds={categorySelectionIds}
+              categoryIds={categoryIdsFromUrl}
               categoryOptions={categoryOptionsList}
               categoryFilterInitiallyOpen={categoryFilterInitiallyOpen}
               statusValues={statusValues}

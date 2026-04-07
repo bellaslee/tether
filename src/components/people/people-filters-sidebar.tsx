@@ -1,20 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
+import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/form-input';
 import type { PersonStatus } from '@/lib/db/database.types';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { formatStatus } from '@/lib/domain/labels';
+import { applyPeopleListFilterFacetsToParams } from '@/lib/people/people-list-filter-params';
 import {
   relationshipWarmthLabel,
   type RelationshipWarmth,
 } from '@/lib/people/relationship-warmth';
-import { PeopleFilterDisclosure } from '@/components/people/people-filter-disclosure';
-
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const RELATIONSHIP_WARMTH_FILTERS: RelationshipWarmth[] = ['hot', 'warm', 'cold'];
 
@@ -39,68 +38,16 @@ function replacePath(
   router.replace(qs ? `${pathname}?${qs}` : pathname);
 }
 
-function parseCategoryIdsFromSearchParams(sp: URLSearchParams): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of sp.getAll('category')) {
-    const id = raw.trim();
-    if (UUID_RE.test(id) && !seen.has(id)) {
-      seen.add(id);
-      out.push(id);
-    }
-  }
-  return out;
-}
-
-function effectiveCategorySelection(
-  sp: URLSearchParams,
-  allOptionIds: string[],
-): Set<string> {
-  if (!sp.has('category')) {
-    return new Set(allOptionIds);
-  }
-  const parsed = parseCategoryIdsFromSearchParams(sp);
-  if (parsed.length === 0) {
-    return new Set(allOptionIds);
-  }
-  return new Set(parsed);
-}
-
-function parseStatusesFromSearchParams(sp: URLSearchParams): PersonStatus[] {
-  const seen = new Set<PersonStatus>();
-  const out: PersonStatus[] = [];
-  for (const raw of sp.getAll('status')) {
-    const s = raw.trim();
-    if (PERSON_STATUSES.includes(s as PersonStatus) && !seen.has(s as PersonStatus)) {
-      seen.add(s as PersonStatus);
-      out.push(s as PersonStatus);
-    }
-  }
-  return out;
-}
-
-function effectiveStatusValues(sp: URLSearchParams): PersonStatus[] {
-  const fromUrl = parseStatusesFromSearchParams(sp);
-  if (fromUrl.length === 0 && !sp.has('status')) {
-    return ['active'];
-  }
-  return fromUrl;
-}
-
-function parseWarmthFromSearchParams(sp: URLSearchParams): RelationshipWarmth[] {
-  const seen = new Set<RelationshipWarmth>();
-  const out: RelationshipWarmth[] = [];
-  for (const raw of sp.getAll('warmth')) {
-    const w = raw.trim().toLowerCase();
-    if (
-      RELATIONSHIP_WARMTH_FILTERS.includes(w as RelationshipWarmth) &&
-      !seen.has(w as RelationshipWarmth)
-    ) {
-      seen.add(w as RelationshipWarmth);
-      out.push(w as RelationshipWarmth);
-    }
-  }
-  return out;
+function appliedFacetsKey(
+  categoryIds: string[],
+  statusValues: PersonStatus[],
+  warmthFilter: RelationshipWarmth[],
+): string {
+  return [
+    [...categoryIds].sort().join(','),
+    [...statusValues].sort().join(','),
+    [...warmthFilter].sort().join(','),
+  ].join('|');
 }
 
 export function PeopleFiltersSidebar({
@@ -120,6 +67,27 @@ export function PeopleFiltersSidebar({
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+
+  const appliedKey = useMemo(
+    () => appliedFacetsKey(categoryIds, statusValues, warmthFilter),
+    [categoryIds, statusValues, warmthFilter],
+  );
+
+  const [draftCategoryIds, setDraftCategoryIds] = useState<Set<string>>(
+    () => new Set(categoryIds),
+  );
+  const [draftStatusValues, setDraftStatusValues] = useState<PersonStatus[]>(
+    () => [...statusValues],
+  );
+  const [draftWarmth, setDraftWarmth] = useState<RelationshipWarmth[]>(() => [
+    ...warmthFilter,
+  ]);
+
+  useEffect(() => {
+    setDraftCategoryIds(new Set(categoryIds));
+    setDraftStatusValues([...statusValues]);
+    setDraftWarmth([...warmthFilter]);
+  }, [appliedKey, categoryIds, statusValues, warmthFilter]);
 
   useEffect(() => {
     setQDraft(q);
@@ -169,70 +137,54 @@ export function PeopleFiltersSidebar({
     [syncSearchToUrl],
   );
 
-  const toggleCategory = useCallback(
-    (id: string, checked: boolean) => {
-      const allIds = categoryOptions.map((c) => c.id);
-      const allSet = new Set(allIds);
-      const current = effectiveCategorySelection(searchParams, allIds);
+  const toggleCategory = useCallback((id: string, checked: boolean) => {
+    setDraftCategoryIds((prev) => {
+      const next = new Set(prev);
       if (checked) {
-        current.add(id);
+        next.add(id);
       } else {
-        current.delete(id);
+        next.delete(id);
       }
-      const p = new URLSearchParams(searchParams.toString());
-      p.delete('category');
-      const fullySelected =
-        current.size === allSet.size &&
-        [...allSet].every((optionId) => current.has(optionId));
-      if (!fullySelected && current.size > 0) {
-        for (const cid of [...current].sort()) {
-          p.append('category', cid);
-        }
-      }
-      replacePath(router, pathname, p);
-    },
-    [categoryOptions, pathname, router, searchParams],
-  );
+      return next;
+    });
+  }, []);
 
-  const toggleStatus = useCallback(
-    (s: PersonStatus, checked: boolean) => {
-      const p = new URLSearchParams(searchParams.toString());
-      const effective = effectiveStatusValues(searchParams);
-      let next: PersonStatus[];
+  const toggleStatus = useCallback((s: PersonStatus, checked: boolean) => {
+    setDraftStatusValues((prev) => {
       if (checked) {
-        next = [...new Set([...effective, s])];
-      } else {
-        next = effective.filter((x) => x !== s);
+        return [...new Set([...prev, s])];
       }
-      p.delete('status');
-      const matchesDefaultActive = next.length === 1 && next[0] === 'active';
-      if (!matchesDefaultActive && next.length > 0) {
-        for (const st of next) {
-          p.append('status', st);
-        }
-      }
-      replacePath(router, pathname, p);
-    },
-    [pathname, router, searchParams],
-  );
+      return prev.filter((x) => x !== s);
+    });
+  }, []);
 
-  const toggleWarmth = useCallback(
-    (w: RelationshipWarmth, checked: boolean) => {
-      const p = new URLSearchParams(searchParams.toString());
-      p.delete('warmth');
-      const current = new Set(parseWarmthFromSearchParams(searchParams));
+  const toggleWarmth = useCallback((w: RelationshipWarmth, checked: boolean) => {
+    setDraftWarmth((prev) => {
       if (checked) {
-        current.add(w);
-      } else {
-        current.delete(w);
+        return [...new Set([...prev, w])];
       }
-      for (const x of [...current].sort()) {
-        p.append('warmth', x);
-      }
-      replacePath(router, pathname, p);
-    },
-    [pathname, router, searchParams],
-  );
+      return prev.filter((x) => x !== w);
+    });
+  }, []);
+
+  const applyFilters = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    applyPeopleListFilterFacetsToParams(p, {
+      categoryIds: draftCategoryIds,
+      allCategoryIds: categoryOptions.map((c) => c.id),
+      statusValues: draftStatusValues,
+      warmth: draftWarmth,
+    });
+    replacePath(router, pathname, p);
+  }, [
+    categoryOptions,
+    draftCategoryIds,
+    draftStatusValues,
+    draftWarmth,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -252,11 +204,16 @@ export function PeopleFiltersSidebar({
           aria-label="Search by name"
         />
       </div>
+      <Button
+        type="button"
+        variant="secondary"
+        className="w-full"
+        onClick={applyFilters}
+      >
+        Apply filters
+      </Button>
       <div className="flex flex-wrap justify-end gap-2 text-xs text-muted">
-        <Link
-          className="underline-offset-4 hover:underline"
-          href="/people"
-        >
+        <Link className="underline-offset-4 hover:underline" href="/people">
           Clear filters
         </Link>
       </div>
@@ -268,7 +225,7 @@ export function PeopleFiltersSidebar({
           label="Categories"
         >
           <p className="mb-2 text-xs text-muted">
-            Everyone shows when all are checked. Uncheck to hide a category.
+            Leave all unchecked to show every category.
           </p>
           <div className="flex max-h-40 flex-col gap-2 overflow-y-auto text-sm">
             {categoryOptions.length === 0 ? (
@@ -281,7 +238,7 @@ export function PeopleFiltersSidebar({
                 >
                   <input
                     type="checkbox"
-                    checked={categoryIds.includes(c.id)}
+                    checked={draftCategoryIds.has(c.id)}
                     onChange={(e) => toggleCategory(c.id, e.target.checked)}
                     className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
                   />
@@ -292,7 +249,7 @@ export function PeopleFiltersSidebar({
           </div>
         </PeopleFilterDisclosure>
         <PeopleFilterDisclosure
-          key={`status-filters-${statusValues.slice().sort().join('|')}`}
+          key="people-filter-status"
           initialOpen={statusFilterInitiallyOpen}
           labelId="people-filter-status-label"
           label="Status"
@@ -308,7 +265,7 @@ export function PeopleFiltersSidebar({
               >
                 <input
                   type="checkbox"
-                  checked={statusValues.includes(s)}
+                  checked={draftStatusValues.includes(s)}
                   onChange={(e) => toggleStatus(s, e.target.checked)}
                   className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
                 />
@@ -318,7 +275,7 @@ export function PeopleFiltersSidebar({
           </div>
         </PeopleFilterDisclosure>
         <PeopleFilterDisclosure
-          key={`warmth-filters-${warmthFilter.slice().sort().join('|')}`}
+          key="people-filter-warmth"
           initialOpen={warmthFilter.length > 0}
           labelId="people-filter-warmth-label"
           label="Relationship warmth"
@@ -335,7 +292,7 @@ export function PeopleFiltersSidebar({
               >
                 <input
                   type="checkbox"
-                  checked={warmthFilter.includes(w)}
+                  checked={draftWarmth.includes(w)}
                   onChange={(e) => toggleWarmth(w, e.target.checked)}
                   className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
                 />
