@@ -52,6 +52,11 @@ import {
 } from '@/lib/interactions/interaction-people-queries';
 import { personShownName } from '@/lib/people/list-name';
 import { panelTopAccentAt } from '@/lib/ui/panel-top-accent';
+import {
+  PersonDetailTabNav,
+  PersonDetailTabPanels,
+  PersonDetailTabsProvider,
+} from '@/components/people/person-detail-tabs';
 
 const PAGE_COPY = {
   meta: {
@@ -178,7 +183,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const { id } = await props.params;
   const searchParams = await props.searchParams;
   const tabParam = first(searchParams.tab);
-  const tab = tabParam === 'details' ? 'details' : 'overview';
+  const initialTab = tabParam === 'details' ? 'details' : 'overview';
 
   const ctx = await requirePrmAccess();
   const displayTimeZone = ctx.accountTimeZone ?? 'UTC';
@@ -199,46 +204,40 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const person = personRow as PersonWithCategory;
 
-  const { data: contactMethods } = await ctx.client
-    .from('contact_methods')
-    .select('*')
-    .eq('person_id', id)
-    .order('is_primary', { ascending: false })
-    .order('created_at', { ascending: true });
-
-  const { data: allPeople } = await ctx.client
-    .from('people')
-    .select('id, full_name, display_name, last_interaction_at, met_at, created_at')
-    .eq('user_id', ctx.userId);
-
-  const { data: interactionTypeRows } = await ctx.client
-    .from('interaction_types')
-    .select('id, name')
-    .eq('user_id', ctx.userId)
-    .order('sort_order', { ascending: true });
-
-  const interactionTypeOptions: InteractionTypeOption[] = (
-    interactionTypeRows ?? []
-  ).map((row) => ({ id: row.id, name: row.name }));
-  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
-    interactionTypeOptions,
-  );
-
-  const { data: connectionTypeRows } = await ctx.client
-    .from('connection_types')
-    .select('id, name')
-    .eq('user_id', ctx.userId)
-    .order('sort_order', { ascending: true });
-
-  const connectionTypeOptions: ConnectionTypeOption[] = (
-    connectionTypeRows ?? []
-  ).map((row) => ({ id: row.id, name: row.name }));
-  const defaultConnectionTypeId = pickDefaultConnectionTypeId(
-    connectionTypeOptions,
-  );
-
-  const { data: personConnectionRows, error: personConnectionsError } =
-    await ctx.client
+  const [
+    { data: contactMethods, error: contactMethodsError },
+    { data: allPeople, error: allPeopleError },
+    { data: interactionTypeRows, error: interactionTypesError },
+    { data: connectionTypeRows, error: connectionTypesError },
+    { data: personConnectionRows, error: personConnectionsError },
+    linksRes,
+    { data: factsData, error: factsError },
+    { data: summariesData, error: summariesError },
+    { data: tasksData, error: tasksError },
+  ] = await Promise.all([
+    ctx.client
+      .from('contact_methods')
+      .select('*')
+      .eq('person_id', id)
+      .order('is_primary', { ascending: false })
+      .order('created_at', { ascending: true }),
+    ctx.client
+      .from('people')
+      .select(
+        'id, full_name, display_name, last_interaction_at, met_at, created_at',
+      )
+      .eq('user_id', ctx.userId),
+    ctx.client
+      .from('interaction_types')
+      .select('id, name')
+      .eq('user_id', ctx.userId)
+      .order('sort_order', { ascending: true }),
+    ctx.client
+      .from('connection_types')
+      .select('id, name')
+      .eq('user_id', ctx.userId)
+      .order('sort_order', { ascending: true }),
+    ctx.client
       .from('person_connections')
       .select(
         `
@@ -254,11 +253,68 @@ export default async function PersonDetailPage(props: PageProps) {
       )
       .eq('person_id', id)
       .eq('user_id', ctx.userId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true }),
+    fetchInteractionRolesForUserPerson(ctx.client, ctx.userId, id),
+    ctx.client
+      .from('facts')
+      .select('*')
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .in('review_status', ['candidate', 'accepted'])
+      .order('created_at', { ascending: false }),
+    ctx.client
+      .from('relationship_summaries')
+      .select('*')
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .order('created_at', { ascending: false }),
+    ctx.client
+      .from('tasks')
+      .select('*')
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .neq('status', 'dismissed')
+      .order('created_at', { ascending: false }),
+  ]);
 
+  if (contactMethodsError) {
+    throw new Error(contactMethodsError.message);
+  }
+  if (allPeopleError) {
+    throw new Error(allPeopleError.message);
+  }
+  if (interactionTypesError) {
+    throw new Error(interactionTypesError.message);
+  }
+  if (connectionTypesError) {
+    throw new Error(connectionTypesError.message);
+  }
   if (personConnectionsError) {
     throw new Error(personConnectionsError.message);
   }
+  if (factsError) {
+    throw new Error(factsError.message);
+  }
+  if (summariesError) {
+    throw new Error(summariesError.message);
+  }
+  if (tasksError) {
+    throw new Error(tasksError.message);
+  }
+
+  const interactionTypeOptions: InteractionTypeOption[] = (
+    interactionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
+    interactionTypeOptions,
+  );
+
+  const connectionTypeOptions: ConnectionTypeOption[] = (
+    connectionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultConnectionTypeId = pickDefaultConnectionTypeId(
+    connectionTypeOptions,
+  );
 
   type ConnectionRowDb = {
     id: string;
@@ -285,11 +341,6 @@ export default async function PersonDetailPage(props: PageProps) {
     };
   });
 
-  const linksRes = await fetchInteractionRolesForUserPerson(
-    ctx.client,
-    ctx.userId,
-    id,
-  );
   if ('error' in linksRes) {
     throw new Error(linksRes.error);
   }
@@ -397,140 +448,37 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const aiEnabled = hasOpenAiApiKey();
 
-  let factRows: Tables<'facts'>[] = [];
-  let summaryRows: Tables<'relationship_summaries'>[] = [];
-  let taskRows: Tables<'tasks'>[] = [];
+  const factRows = factsData ?? [];
+  const summaryRows = summariesData ?? [];
+  const taskRows = tasksData ?? [];
   const interactionLabels = new Map<string, string>();
 
-  if (tab === 'overview') {
-    const { data: factsData, error: factsError } = await ctx.client
-      .from('facts')
-      .select('*')
-      .eq('person_id', id)
-      .eq('user_id', ctx.userId)
-      .in('review_status', ['candidate', 'accepted'])
-      .order('created_at', { ascending: false });
-
-    if (factsError) {
-      throw new Error(factsError.message);
-    }
-    factRows = factsData ?? [];
-
-    const { data: summariesData, error: summariesError } = await ctx.client
-      .from('relationship_summaries')
-      .select('*')
-      .eq('person_id', id)
-      .eq('user_id', ctx.userId)
-      .order('created_at', { ascending: false });
-
-    if (summariesError) {
-      throw new Error(summariesError.message);
-    }
-    summaryRows = summariesData ?? [];
-
-    const { data: tasksData, error: tasksError } = await ctx.client
-      .from('tasks')
-      .select('*')
-      .eq('person_id', id)
-      .eq('user_id', ctx.userId)
-      .neq('status', 'dismissed')
-      .order('created_at', { ascending: false });
-
-    if (tasksError) {
-      throw new Error(tasksError.message);
-    }
-    taskRows = tasksData ?? [];
-
-    const sourceInteractionIds = new Set<string>();
-    for (const s of summaryRows) {
-      for (const sid of s.source_interaction_ids ?? []) {
-        sourceInteractionIds.add(sid);
-      }
-    }
-
-    if (sourceInteractionIds.size > 0) {
-      const { data: intMeta, error: intMetaError } = await ctx.client
-        .from('interactions')
-        .select('id, occurred_at')
-        .eq('user_id', ctx.userId)
-        .in('id', [...sourceInteractionIds]);
-
-      if (intMetaError) {
-        throw new Error(intMetaError.message);
-      }
-      for (const row of intMeta ?? []) {
-        interactionLabels.set(
-          row.id,
-          formatDateTimeInTimeZone(row.occurred_at, displayTimeZone),
-        );
-      }
+  const sourceInteractionIds = new Set<string>();
+  for (const s of summaryRows) {
+    for (const sid of s.source_interaction_ids ?? []) {
+      sourceInteractionIds.add(sid);
     }
   }
 
-  const tabLinkBase =
-    'inline-flex border-b-2 px-1 pb-3 text-sm font-semibold transition sm:text-base';
-  const tabLinkActive = `${tabLinkBase} border-accent text-foreground`;
-  const tabLinkInactive = `${tabLinkBase} border-transparent text-muted hover:text-foreground/80`;
+  if (sourceInteractionIds.size > 0) {
+    const { data: intMeta, error: intMetaError } = await ctx.client
+      .from('interactions')
+      .select('id, occurred_at')
+      .eq('user_id', ctx.userId)
+      .in('id', [...sourceInteractionIds]);
 
-  return (
-    <main className="prm-page">
-      <PersonLogInteractionProvider>
-      <PersonDetailHeader
-        afterTitle={
-          <nav
-            className="flex w-full flex-wrap gap-x-8 gap-y-3"
-            aria-label={PAGE_COPY.nav.profileSectionsAria}
-          >
-            <Link
-              href={`/people/${person.id}`}
-              className={tab === 'overview' ? tabLinkActive : tabLinkInactive}
-            >
-              {PAGE_COPY.nav.tabOverview}
-            </Link>
-            <Link
-              href={`/people/${person.id}?tab=details`}
-              className={tab === 'details' ? tabLinkActive : tabLinkInactive}
-            >
-              {PAGE_COPY.nav.tabDetails}
-            </Link>
-          </nav>
-        }
-        editHref={`/people/${person.id}/edit`}
-        personId={person.id}
-        allPeople={allPeople ?? []}
-        defaultOccurredAt={defaultOccurredAt}
-        sessionTimeZone={ctx.accountTimeZone}
-        interactionTypes={interactionTypeOptions}
-        defaultInteractionTypeId={defaultInteractionTypeId}
-      >
-        <div>
-          <Link
-            href="/people"
-            className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
-          >
-            {PAGE_COPY.header.backToPeople}
-          </Link>
-          <p className="prm-eyebrow mt-4">{PAGE_COPY.header.eyebrow}</p>
-          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-3">
-            <h1 className="max-w-full font-display text-4xl tracking-tight text-balance [overflow-wrap:anywhere]">
-              {person.full_name}
-            </h1>
-            <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-              {person.person_categories?.name ?? PAGE_COPY.header.categoryPlaceholder}
-            </span>
-            <span className="rounded-full border border-border-soft px-3 py-1 text-xs font-semibold text-muted">
-              {formatStatus(person.status)}
-            </span>
-            <RelationshipWarmthChip
-              lastInteractionAt={person.last_interaction_at}
-              metAt={person.met_at}
-              createdAt={person.created_at}
-            />
-          </div>
-        </div>
-      </PersonDetailHeader>
+    if (intMetaError) {
+      throw new Error(intMetaError.message);
+    }
+    for (const row of intMeta ?? []) {
+      interactionLabels.set(
+        row.id,
+        formatDateTimeInTimeZone(row.occurred_at, displayTimeZone),
+      );
+    }
+  }
 
-      {tab === 'overview' ? (
+  const overviewPanel = (
         <div className="flex min-w-0 flex-col gap-8">
           <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch lg:gap-8">
             <section
@@ -744,7 +692,9 @@ export default async function PersonDetailPage(props: PageProps) {
             )}
           </section>
         </div>
-      ) : (
+  );
+
+  const detailsPanel = (
         <section
           className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
           aria-label={PAGE_COPY.details.sectionAria}
@@ -786,7 +736,63 @@ export default async function PersonDetailPage(props: PageProps) {
             topAccentIndex={1}
           />
         </section>
-      )}
+  );
+
+  return (
+    <main className="prm-page">
+      <PersonLogInteractionProvider>
+      <PersonDetailTabsProvider
+        personId={person.id}
+        initialTab={initialTab}
+      >
+      <PersonDetailHeader
+        afterTitle={
+          <PersonDetailTabNav
+            profileSectionsAria={PAGE_COPY.nav.profileSectionsAria}
+            tabOverview={PAGE_COPY.nav.tabOverview}
+            tabDetails={PAGE_COPY.nav.tabDetails}
+          />
+        }
+        editHref={`/people/${person.id}/edit`}
+        personId={person.id}
+        allPeople={allPeople ?? []}
+        defaultOccurredAt={defaultOccurredAt}
+        sessionTimeZone={ctx.accountTimeZone}
+        interactionTypes={interactionTypeOptions}
+        defaultInteractionTypeId={defaultInteractionTypeId}
+      >
+        <div>
+          <Link
+            href="/people"
+            className="text-sm font-semibold text-muted underline-offset-4 hover:underline"
+          >
+            {PAGE_COPY.header.backToPeople}
+          </Link>
+          <p className="prm-eyebrow mt-4">{PAGE_COPY.header.eyebrow}</p>
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-3">
+            <h1 className="max-w-full font-display text-4xl tracking-tight text-balance [overflow-wrap:anywhere]">
+              {person.full_name}
+            </h1>
+            <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+              {person.person_categories?.name ?? PAGE_COPY.header.categoryPlaceholder}
+            </span>
+            <span className="rounded-full border border-border-soft px-3 py-1 text-xs font-semibold text-muted">
+              {formatStatus(person.status)}
+            </span>
+            <RelationshipWarmthChip
+              lastInteractionAt={person.last_interaction_at}
+              metAt={person.met_at}
+              createdAt={person.created_at}
+            />
+          </div>
+        </div>
+      </PersonDetailHeader>
+
+      <PersonDetailTabPanels
+        overview={overviewPanel}
+        details={detailsPanel}
+      />
+      </PersonDetailTabsProvider>
       </PersonLogInteractionProvider>
     </main>
   );

@@ -16,7 +16,7 @@ The product is meant to help the user remember:
 - what open loops still exist
 
 The product should feel warm, respectful, and useful. It should not feel like a
-sales PRM.
+sales CRM.
 
 ## Product Philosophy
 
@@ -440,6 +440,14 @@ Philosophy** and **UX Guardrails**. Do not contradict those rules here.
 - Be mindful of bundle size when adding libraries
 - Each route should export `generateMetadata` when meaningful
 - Use descriptive page titles and concise descriptions
+- **Route loading UI:** App Router `loading.tsx` files (and shared helpers in
+  `src/components/app/route-loading-skeleton.tsx`) should mirror each page’s
+  layout—`prm-page` vs `prm-form-shell`, grids, sticky headers, and major
+  sections—so transitions feel coherent. When you change a page’s structure in a
+  meaningful way, check the matching `loading.tsx` for that segment (and add one
+  for new routes when the page is not instant). Prefer reusing
+  `RouteLoadingPulse`, `RouteLoadingMain`, and related exports instead of
+  one-off skeleton markup when it keeps things consistent.
 
 ## Testing and Validation
 
@@ -474,6 +482,9 @@ After meaningful code changes:
 - Confirm no unnecessary client boundaries were introduced
 - Confirm interactive elements have appropriate labels
 - Confirm new UI matches the app's warm, minimal, non-sales-oriented tone
+- When a **page layout** changes (or you add a non-trivial route), check whether
+  the corresponding `loading.tsx` (or `(prm)/loading.tsx` fallback) still matches;
+  update skeletons and add `loading.tsx` where applicable
 
 ## Decision Rules for Future Agents
 

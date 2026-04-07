@@ -1,0 +1,37 @@
+import {
+  RouteLoadingMain,
+  RouteLoadingPulse,
+} from '@/components/app/route-loading-skeleton';
+
+export default function EditPersonLoading() {
+  return (
+    <RouteLoadingMain
+      className="prm-form-shell max-w-4xl"
+      ariaLabel="Loading edit profile"
+    >
+      <div className="space-y-4">
+        <RouteLoadingPulse className="h-4 w-40" />
+        <RouteLoadingPulse className="h-4 w-24" />
+        <RouteLoadingPulse className="h-10 w-72 max-w-full" />
+        <RouteLoadingPulse className="h-4 w-full max-w-2xl" />
+      </div>
+      <div className="mt-8 card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
+        <div className="space-y-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <RouteLoadingPulse className="h-3 w-32" />
+              <RouteLoadingPulse className="h-11 w-full rounded-xl" />
+            </div>
+          ))}
+          <div className="flex flex-wrap gap-3 border-t border-border-soft pt-6">
+            <RouteLoadingPulse className="h-11 w-36 rounded-xl" />
+            <RouteLoadingPulse className="h-11 w-28 rounded-xl" />
+          </div>
+        </div>
+      </div>
+      <div className="mt-8">
+        <RouteLoadingPulse className="h-24 w-full max-w-md rounded-2xl" />
+      </div>
+    </RouteLoadingMain>
+  );
+}
