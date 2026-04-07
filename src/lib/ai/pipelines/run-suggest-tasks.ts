@@ -5,6 +5,7 @@ import { zodTextFormat } from 'openai/helpers/zod';
 import { defaultResponsesModel } from '@/lib/ai/model';
 import { enforceLlmRateLimits, type LlmRateLimitIdentity } from '@/lib/ai/llm-rate-limit';
 import { logAiRequestDebug } from '@/lib/ai/log-debug';
+import type { LinkedPersonProfileForPrompt } from '@/lib/ai/prompts/extract-facts';
 import {
   buildSuggestTasksInstructions,
   buildSuggestTasksUserPayload,
@@ -19,6 +20,7 @@ export async function runSuggestTasksModel(args: {
   rateLimitIdentity: LlmRateLimitIdentity;
   interactionId: string;
   allowedPersonIds: string[];
+  linkedPeopleProfile: LinkedPersonProfileForPrompt[];
   redactedNote: string;
   userDeclinedReminders?: Array<{ title: string; description: string | null }>;
   acceptedTasks?: Array<{ title: string; description: string | null }>;
@@ -33,6 +35,7 @@ export async function runSuggestTasksModel(args: {
   const userContent = buildSuggestTasksUserPayload({
     interactionId: args.interactionId,
     allowedPersonIds: args.allowedPersonIds,
+    linkedPeopleProfile: args.linkedPeopleProfile,
     redactedNote: args.redactedNote,
     userDeclinedReminders: args.userDeclinedReminders ?? [],
     acceptedTasks,

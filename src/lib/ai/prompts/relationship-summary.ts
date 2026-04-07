@@ -1,6 +1,6 @@
 import type { RelationshipSummaryKind } from '@/lib/db/database.types';
 
-export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 2;
+export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 3;
 
 function kindInstructions(kind: RelationshipSummaryKind) {
   if (kind === 'profile_brief') {
@@ -15,6 +15,7 @@ export function buildRelationshipSummaryInstructions(
   return [
     'Personal relationship management tool brief. Audience: the user who captured these notes—private, first-person utility.',
     'Subject as UUID only; input uses [person:<uuid>] in snippets. Use those tokens grammatically as names; never say "UUID" in output (UI substitutes names).',
+    'subject_pronouns and subject_occupation are optional profile hints for grammar and context only—ground claims in facts and snippets, not these fields alone.',
     'No structured PII (phone, email, street address, birth dates). No guessing beyond the supplied material.',
     kindInstructions(kind),
     'Output JSON: single field "content" (string).',
@@ -26,6 +27,8 @@ export function buildRelationshipSummaryUserPayload(input: {
   categoryId: string;
   status: string;
   kind: RelationshipSummaryKind;
+  subjectPronouns: string | null;
+  subjectOccupation: string | null;
   acceptedFactLines: string[];
   recentNotes: Array<{
     interaction_id: string;
@@ -38,6 +41,8 @@ export function buildRelationshipSummaryUserPayload(input: {
     category_id: input.categoryId,
     person_status: input.status,
     summary_kind: input.kind,
+    subject_pronouns: input.subjectPronouns,
+    subject_occupation: input.subjectOccupation,
     accepted_facts: input.acceptedFactLines,
     recent_interactions: input.recentNotes,
   })}`;

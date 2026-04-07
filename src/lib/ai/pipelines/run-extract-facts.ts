@@ -8,6 +8,7 @@ import { logAiRequestDebug } from '@/lib/ai/log-debug';
 import {
   buildExtractFactsInstructions,
   buildExtractFactsUserPayload,
+  type LinkedPersonProfileForPrompt,
 } from '@/lib/ai/prompts/extract-facts';
 import {
   extractFactsResultSchema,
@@ -19,6 +20,7 @@ export async function runExtractFactsModel(args: {
   rateLimitIdentity: LlmRateLimitIdentity;
   interactionId: string;
   allowedPersonIds: string[];
+  linkedPeopleProfile: LinkedPersonProfileForPrompt[];
   redactedNote: string;
   userDeclinedFacts?: string[];
   acceptedFacts?: string[];
@@ -33,6 +35,7 @@ export async function runExtractFactsModel(args: {
   const userContent = buildExtractFactsUserPayload({
     interactionId: args.interactionId,
     allowedPersonIds: args.allowedPersonIds,
+    linkedPeopleProfile: args.linkedPeopleProfile,
     redactedNote: args.redactedNote,
     userDeclinedFacts: args.userDeclinedFacts ?? [],
     acceptedFacts,

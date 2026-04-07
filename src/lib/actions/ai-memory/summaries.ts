@@ -119,7 +119,7 @@ export async function generateRelationshipSummary(
 
   const { data: person, error: pErr } = await ctx.client
     .from('people')
-    .select('id, user_id, category_id, status')
+    .select('id, user_id, category_id, status, pronouns, occupation')
     .eq('id', personId)
     .eq('user_id', ctx.userId)
     .maybeSingle();
@@ -231,6 +231,10 @@ export async function generateRelationshipSummary(
       subjectPersonId: person.id,
       categoryId: person.category_id,
       status: person.status,
+      subjectPronouns: person.pronouns?.trim() ? person.pronouns.trim() : null,
+      subjectOccupation: person.occupation?.trim()
+        ? person.occupation.trim()
+        : null,
       acceptedFactLines,
       recentNotes,
     });

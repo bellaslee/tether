@@ -15,6 +15,12 @@ export type PrmSupabaseContext = {
   accountTimeZone: string | null;
 };
 
+/** Supabase client + user id only—safe for LLM pipelines (excludes login email and other account profile fields). */
+export type PrmContextForLlmActions = Pick<
+  PrmSupabaseContext,
+  'client' | 'userId'
+>;
+
 export async function getPrmSupabaseContext(): Promise<PrmSupabaseContext | null> {
   if (!hasPublicSupabaseEnv()) {
     return null;

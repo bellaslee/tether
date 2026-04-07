@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/database.types";
+import type { LinkedPersonProfileForPrompt } from '@/lib/ai/prompts/extract-facts';
 import {
   buildAliasMapForPeople,
   buildPersonIdToDisplayLabelMap,
@@ -12,6 +13,20 @@ import {
   fetchInteractionPeopleForUserInteraction,
   fetchInteractionPeopleLinksForUserInteractions,
 } from '@/lib/interactions/interaction-people-queries';
+
+function buildLinkedPeopleProfileForPrompt(
+  rows: Array<{
+    id: string;
+    pronouns: string | null;
+    occupation: string | null;
+  }>,
+): LinkedPersonProfileForPrompt[] {
+  return rows.map((p) => ({
+    person_id: p.id,
+    pronouns: p.pronouns?.trim() ? p.pronouns.trim() : null,
+    occupation: p.occupation?.trim() ? p.occupation.trim() : null,
+  }));
+}
 
 export async function loadPlaceholderizedInteractionNote(
   client: SupabaseClient<Database>,
@@ -29,6 +44,7 @@ export async function loadPlaceholderizedInteractionNote(
        */
       memorySuggestionPersonIds: string[];
       personIdToDisplayLabel: Map<string, string>;
+      linkedPeopleProfile: LinkedPersonProfileForPrompt[];
     }
   | { error: string }
 > {
@@ -74,7 +90,7 @@ export async function loadPlaceholderizedInteractionNote(
 
   const { data: peopleRows, error: peopleErr } = await client
     .from('people')
-    .select('id, full_name, display_name')
+    .select('id, full_name, display_name, pronouns, occupation')
     .eq('user_id', userId)
     .in('id', linkedPersonIds);
 
@@ -88,6 +104,7 @@ export async function loadPlaceholderizedInteractionNote(
   const aliasMap = buildAliasMapForPeople(peopleRows);
   const personIdToDisplayLabel = buildPersonIdToDisplayLabelMap(peopleRows);
   const redactedNote = placeholderizeNote(rawNote, aliasMap);
+  const linkedPeopleProfile = buildLinkedPeopleProfileForPrompt(peopleRows);
 
   return {
     rawNote,
@@ -95,6 +112,7 @@ export async function loadPlaceholderizedInteractionNote(
     linkedPersonIds,
     memorySuggestionPersonIds,
     personIdToDisplayLabel,
+    linkedPeopleProfile,
   };
 }
 
@@ -163,6 +181,7 @@ export async function loadPlaceholderizedRecentNotesForPerson(
       primaryInteractionId: string;
       bundledInteractionIds: string[];
       personIdToDisplayLabel: Map<string, string>;
+      linkedPeopleProfile: LinkedPersonProfileForPrompt[];
     }
   | { error: string }
 > {
@@ -224,7 +243,7 @@ export async function loadPlaceholderizedRecentNotesForPerson(
 
   const { data: peopleRows, error: peopleErr } = await client
     .from('people')
-    .select('id, full_name, display_name')
+    .select('id, full_name, display_name, pronouns, occupation')
     .eq('user_id', userId)
     .in('id', linkedPersonIds);
 
@@ -237,6 +256,7 @@ export async function loadPlaceholderizedRecentNotesForPerson(
 
   const aliasMap = buildAliasMapForPeople(peopleRows);
   const personIdToDisplayLabel = buildPersonIdToDisplayLabelMap(peopleRows);
+  const linkedPeopleProfile = buildLinkedPeopleProfileForPrompt(peopleRows);
   const segments = bundle.map((row) => {
     const raw = row.raw_note!.trim();
     const redacted = placeholderizeNote(raw, aliasMap);
@@ -253,5 +273,6 @@ export async function loadPlaceholderizedRecentNotesForPerson(
     primaryInteractionId,
     bundledInteractionIds,
     personIdToDisplayLabel,
+    linkedPeopleProfile,
   };
 }

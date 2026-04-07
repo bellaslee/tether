@@ -16,6 +16,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { client, userId } = prm;
+
   const openai = tryCreateOpenAiClient();
   if (!openai) {
     return NextResponse.json(
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
   }
 
   const rateLimit = await enforceLlmRateLimits({
-    userId: prm.userId,
+    userId,
     clientIp: getLlmRateLimitClientIpFromRequest(request),
   });
   if (!rateLimit.ok) {
@@ -61,13 +63,13 @@ export async function POST(request: Request) {
 
   try {
     const text = await transcribeAudioFile(openai, audio);
-    recordLlmUsage(prm.client, "transcribe", {
+    recordLlmUsage(client, "transcribe", {
       model: TRANSCRIBE_MODEL,
       ok: true,
     });
     return NextResponse.json({ text });
   } catch (err) {
-    recordLlmUsage(prm.client, "transcribe", {
+    recordLlmUsage(client, "transcribe", {
       model: TRANSCRIBE_MODEL,
       ok: false,
       error_code: "transcribe_failed",

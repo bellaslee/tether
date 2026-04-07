@@ -22,6 +22,8 @@ export async function runRelationshipSummaryModel(args: {
   subjectPersonId: string;
   categoryId: string;
   status: string;
+  subjectPronouns: string | null;
+  subjectOccupation: string | null;
   acceptedFactLines: string[];
   recentNotes: Array<{
     interaction_id: string;
@@ -40,6 +42,8 @@ export async function runRelationshipSummaryModel(args: {
     categoryId: args.categoryId,
     status: args.status,
     kind: args.kind,
+    subjectPronouns: args.subjectPronouns,
+    subjectOccupation: args.subjectOccupation,
     acceptedFactLines: args.acceptedFactLines,
     recentNotes: args.recentNotes,
   });

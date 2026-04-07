@@ -2,6 +2,11 @@
  * Postgres-backed fields that must never appear in outbound LLM prompts.
  * Allowed identifiers: `people.id` (UUID), coarse enums like category/status when needed.
  *
+ * **Account login email:** The signed-in user's auth email (`PrmSupabaseContext.accountEmail`)
+ * must never be concatenated into LLM instructions, user messages, or metadata sent to the model.
+ * AI server actions use `PrmContextForLlmActions` (client + userId only) so email is not in scope.
+ * User-authored note text may still contain any string the user typed; do not inject the account email from session.
+ *
  * @see docs/plans/phase-2-ai-memory-layer.md
  */
 export const FORBIDDEN_PROMPT_PERSON_COLUMNS = [
@@ -9,8 +14,6 @@ export const FORBIDDEN_PROMPT_PERSON_COLUMNS = [
   'display_name',
   'birthday',
   'location',
-  'pronouns',
-  'occupation',
   'company',
   'how_you_met',
   'relationship_context',

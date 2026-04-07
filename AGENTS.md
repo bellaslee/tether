@@ -296,6 +296,9 @@ Avoid:
 - Minimize token usage by retrieving only the relevant notes, facts, or snippets
   needed for a task
 - Do not send unnecessary personal data to the model
+- Never pass the signed-in user's login (auth) email into LLM instructions or
+  text payloads; AI server actions should use `requireCrmForAiAction()` /
+  `PrmContextForLlmActions` so account email stays out of scope
 - Avoid background AI jobs that silently change user-visible relationship memory
   without traceability
 - Prefer deterministic or low-variance settings for extraction workflows and

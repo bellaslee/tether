@@ -1,9 +1,16 @@
-export const EXTRACT_FACTS_PROMPT_VERSION = 5;
+export const EXTRACT_FACTS_PROMPT_VERSION = 6;
+
+export type LinkedPersonProfileForPrompt = {
+  person_id: string;
+  pronouns: string | null;
+  occupation: string | null;
+};
 
 export function buildExtractFactsInstructions() {
   return [
     'Extract reviewable candidate facts for a personal relationship management tool from user-authored notes.',
     'Audience: the same user who wrote the notes—output is for their private review, not a third party.',
+    'linked_people_profile may list pronouns and occupation per person_id for grammar and work context only—do not emit as facts unless the note clearly states them.',
     'Multi-date notes OK. People use [person:<uuid>]. linked_person_ids is the main subject—facts for them only, not other attendees.',
     'Only what the text states or strongly supports—no inference, generalization, or note-summary-as-facts.',
     'One atomic idea per fact; person_id must be one linked_person_ids entry; one subject per fact (no multi-person facts unless schema allows).',
@@ -19,6 +26,7 @@ export function buildExtractFactsInstructions() {
 export function buildExtractFactsUserPayload(input: {
   interactionId: string;
   allowedPersonIds: string[];
+  linkedPeopleProfile: LinkedPersonProfileForPrompt[];
   redactedNote: string;
   userDeclinedFacts: string[];
   acceptedFacts: string[];
@@ -26,6 +34,7 @@ export function buildExtractFactsUserPayload(input: {
   return `Input JSON:\n${JSON.stringify({
     interaction_id: input.interactionId,
     linked_person_ids: input.allowedPersonIds,
+    linked_people_profile: input.linkedPeopleProfile,
     note_text_with_person_placeholders: input.redactedNote,
     user_declined_facts: input.userDeclinedFacts,
     accepted_facts: input.acceptedFacts,
