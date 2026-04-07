@@ -34,20 +34,14 @@ export function toDatetimeLocalInputValueInZone(
 }
 
 /**
- * Today in `timeZone`, at local 12:00, as a `datetime-local` string.
+ * `baseInstant` (default: now) as a `datetime-local` string in `timeZone`
+ * (date and local wall-clock time). Used for new interaction defaults.
  */
 export function toNewInteractionDatetimeLocalInputValueInZone(
   timeZone: string,
   baseInstant: Date = new Date(),
 ): string {
-  const dtf = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const map = intlPartsToRecord(dtf.formatToParts(baseInstant));
-  return `${map.year}-${map.month}-${map.day}T12:00`;
+  return toDatetimeLocalInputValueInZone(baseInstant, timeZone);
 }
 
 /** `datetime-local` string (no offset) → UTC ISO, interpreted in `timeZone`. */

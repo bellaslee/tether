@@ -13,14 +13,14 @@ Ideas and follow-ups that are not scheduled work yet.
 
 ### People list, relationship memory, and person detail
 
-- [ ] reduce perceived delay when switching person detail tabs (overview vs
-      contact and connections, and similar)
 - [ ] explain “relationship warmth” in the UI (what it measures and why it
       changes after interactions)
 - [ ] surface in product how the relationship / profile brief is produced (AI vs
       rules, editable, refresh behavior) so users are not guessing
 - [ ] ability to specify what kind of pre-meeting brief you want
 - [ ] for prompts, pass in occupation and pronouns
+- [x] reduce perceived delay when switching person detail tabs (overview vs
+      contact and connections, and similar)
 - [x] add relationship strength indicator (Cold, Warm, Hot)
 - [x] ability to sort people cards by interaction date, added date, and met the
       person date. This should appear under the description for the people home
@@ -35,10 +35,10 @@ Ideas and follow-ups that are not scheduled work yet.
 ### Interactions and timeline
 
 - [ ] feat: search interactions
-- [ ] fix: default “when” date on log interaction so it matches the user’s
+- [x] fix: default “when” date on log interaction so it matches the user’s
       current local calendar day (timezone / date-boundary bug)
-- [ ] fix: set the default "when" time to the current time
-- [ ] fix: the date met field shows one year into the future
+- [x] fix: set the default "when" time to the current time
+- [x] fix: the date met field shows one year into the future
 - [ ] refactor: get rid of direction field in all interactions and the database
 - [ ] feat: allow custom sorting of interaction types, like the categories
 - [x] enable timeline interaction editing

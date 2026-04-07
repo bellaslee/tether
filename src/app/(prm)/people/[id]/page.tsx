@@ -23,7 +23,6 @@ import {
   formatCalendarDateOnly,
   formatDateTimeInTimeZone,
   formatMonthYear,
-  toNewInteractionDatetimeLocalInputValueInZone,
 } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import {
@@ -432,12 +431,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
     partitionPersonTimelineRows(timelineRows);
 
-  const defaultOccurredAt = ctx.accountTimeZone
-    ? toNewInteractionDatetimeLocalInputValueInZone(
-        ctx.accountTimeZone,
-        new Date(person.created_at),
-      )
-    : '';
+  const defaultOccurredAt = '';
   const otherPeople = (allPeople ?? []).filter((p) => p.id !== person.id);
   const otherPeopleOptions = otherPeople.map((p) => ({
     id: p.id,

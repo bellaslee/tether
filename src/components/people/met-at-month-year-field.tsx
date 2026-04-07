@@ -24,7 +24,7 @@ function splitMetAt(iso: string | null | undefined): {
 }
 
 function yearRange(): number[] {
-  const end = new Date().getFullYear() + 1;
+  const end = new Date().getFullYear();
   const start = end - 100;
   const years: number[] = [];
   for (let y = end; y >= start; y -= 1) {

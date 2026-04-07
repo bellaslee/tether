@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { GlobalInteractionForm } from '@/components/interactions/global-interaction-form';
 import { requirePrmAccess } from '@/lib/prm/guard';
-import { toNewInteractionDatetimeLocalInputValueInZone } from '@/lib/datetime';
 import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
   type InteractionTypeOption,
@@ -51,9 +50,7 @@ export default async function NewInteractionPage() {
     interactionTypeOptions,
   );
 
-  const defaultOccurredAt = ctx.accountTimeZone
-    ? toNewInteractionDatetimeLocalInputValueInZone(ctx.accountTimeZone)
-    : '';
+  const defaultOccurredAt = '';
 
   return (
     <main className="prm-form-shell max-w-3xl">
