@@ -13,7 +13,7 @@ import {
 } from '@/components/people/person-category-field';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
-import { formControlClassName } from '@/components/ui/form-control-classes';
+import { Picklist } from '@/components/ui/picklist';
 import { RequiredMark } from '@/components/ui/required-mark';
 import { TextField } from '@/components/ui/text-field';
 import { TextareaField } from '@/components/ui/textarea-field';
@@ -74,19 +74,18 @@ export function PersonForm(props: PersonFormProps) {
             Status
             <RequiredMark />
           </label>
-          <select
+          <Picklist
             id="status"
             name="status"
             required
             defaultValue={person?.status ?? 'active'}
-            className={formControlClassName()}
           >
             {PERSON_STATUSES.map((s) => (
               <option key={s} value={s}>
                 {formatStatus(s)}
               </option>
             ))}
-          </select>
+          </Picklist>
         </div>
         <TextField
           id="birthday"

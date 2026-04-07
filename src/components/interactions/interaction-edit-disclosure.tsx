@@ -12,7 +12,7 @@ import { INTERACTION_DIRECTIONS } from '@/lib/domain/constants';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
-import { formControlClassName } from '@/components/ui/form-control-classes';
+import { Picklist } from '@/components/ui/picklist';
 import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import { WallClockTimeZoneField } from '@/components/interactions/wall-clock-time-zone-field';
@@ -205,19 +205,18 @@ function InteractionEditForm({
           <label htmlFor={`type-${interactionId}`} className="text-sm font-semibold">
             Type
           </label>
-          <select
+          <Picklist
             id={`type-${interactionId}`}
             name="interaction_type_id"
             required
             defaultValue={defaultInteractionTypeId}
-            className={formControlClassName()}
           >
             {interactionTypes.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
             ))}
-          </select>
+          </Picklist>
         </div>
         <div className="space-y-2">
           <label
@@ -226,11 +225,10 @@ function InteractionEditForm({
           >
             Direction
           </label>
-          <select
+          <Picklist
             id={`direction-${interactionId}`}
             name="direction"
             defaultValue={defaultDirection}
-            className={formControlClassName()}
           >
             <option value="">(optional)</option>
             {INTERACTION_DIRECTIONS.map((d) => (
@@ -238,7 +236,7 @@ function InteractionEditForm({
                 {d}
               </option>
             ))}
-          </select>
+          </Picklist>
         </div>
         <div className="space-y-2 sm:col-span-2">
           <label htmlFor={`title-${interactionId}`} className="text-sm font-semibold">

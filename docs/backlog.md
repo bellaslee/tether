@@ -34,7 +34,7 @@ Ideas and follow-ups that are not scheduled work yet.
 
 ### Interactions and timeline
 
-- [ ] search interactions
+- [ ] feat: search interactions
 - [ ] fix: default “when” date on log interaction so it matches the user’s
       current local calendar day (timezone / date-boundary bug)
 - [ ] fix: set the default "when" time to the current time
@@ -59,9 +59,9 @@ Ideas and follow-ups that are not scheduled work yet.
 
 ### App-wide UX and components
 
-- [ ] dark mode
-- [ ] make sure picklist is a component and fix carat location
-- [ ] keyboard shortcuts
+- [ ] ui: dark mode
+- [x] ui: make sure picklist is a component and fix carat location
+- [ ] ui: keyboard shortcuts
 - [x] command enter not working on fact and task edit save
 - [x] fix edit/delete button on mobile to stack on interactions
 

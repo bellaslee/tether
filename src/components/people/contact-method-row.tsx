@@ -13,7 +13,7 @@ import { formatContactType } from "@/lib/domain/labels";
 import { Button } from "@/components/ui/button";
 import { ConfirmLightbox } from "@/components/ui/confirm-lightbox";
 import { FieldError } from "@/components/ui/field-error";
-import { formControlClassName } from "@/components/ui/form-control-classes";
+import { Picklist } from "@/components/ui/picklist";
 import { FormInput } from "@/components/ui/form-input";
 import { listRowCardClassName } from "@/components/ui/list-row-card";
 
@@ -45,19 +45,19 @@ export function ContactMethodRow({ personId, method }: ContactMethodRowProps) {
               <label className="text-xs font-semibold text-muted" htmlFor={`edit-type-${method.id}`}>
                 Type
               </label>
-              <select
+              <Picklist
                 id={`edit-type-${method.id}`}
                 name="type"
                 required
                 defaultValue={method.type}
-                className={formControlClassName({ size: 'compact' })}
+                fieldSize="compact"
               >
                 {CONTACT_METHOD_TYPES.map((t) => (
                   <option key={t} value={t}>
                     {formatContactType(t)}
                   </option>
                 ))}
-              </select>
+              </Picklist>
             </div>
             <div className="space-y-1 sm:col-span-2">
               <label className="text-xs font-semibold text-muted" htmlFor={`edit-value-${method.id}`}>

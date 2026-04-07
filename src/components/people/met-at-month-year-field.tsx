@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { formControlClassName } from '@/components/ui/form-control-classes';
+import { Picklist } from '@/components/ui/picklist';
 
 type MetAtMonthYearFieldProps = {
   /** Stored as `YYYY-MM-01` or null from `people.met_at`. */
@@ -59,8 +59,6 @@ export function MetAtMonthYearField({ defaultMetAt }: MetAtMonthYearFieldProps) 
 
   const metAtValue = month && year ? `${year}-${month}` : '';
 
-  const selectCls = formControlClassName({ size: 'default' });
-
   return (
     <div className="min-w-0 space-y-2">
       <p id="met-at-label" className="text-sm font-semibold">
@@ -72,11 +70,11 @@ export function MetAtMonthYearField({ defaultMetAt }: MetAtMonthYearFieldProps) 
         role="group"
         aria-labelledby="met-at-label"
       >
-        <select
+        <Picklist
           id="met_at_month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className={['min-w-0 flex-1', selectCls].join(' ')}
+          className="min-w-0 flex-1"
           aria-label="Month"
         >
           <option value="">Month</option>
@@ -85,12 +83,12 @@ export function MetAtMonthYearField({ defaultMetAt }: MetAtMonthYearFieldProps) 
               {label}
             </option>
           ))}
-        </select>
-        <select
+        </Picklist>
+        <Picklist
           id="met_at_year"
           value={year}
           onChange={(e) => setYear(e.target.value)}
-          className={['min-w-0 flex-1', selectCls].join(' ')}
+          className="min-w-0 flex-1"
           aria-label="Year"
         >
           <option value="">Year</option>
@@ -99,7 +97,7 @@ export function MetAtMonthYearField({ defaultMetAt }: MetAtMonthYearFieldProps) 
               {y}
             </option>
           ))}
-        </select>
+        </Picklist>
       </div>
     </div>
   );

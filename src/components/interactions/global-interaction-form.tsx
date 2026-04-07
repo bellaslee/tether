@@ -13,7 +13,7 @@ import {
 } from '@/components/people/attendee-picker';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
-import { formControlClassName } from '@/components/ui/form-control-classes';
+import { Picklist } from '@/components/ui/picklist';
 import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 
@@ -95,36 +95,31 @@ export function GlobalInteractionForm({
           <label htmlFor="type" className="text-sm font-semibold">
             Type
           </label>
-          <select
+          <Picklist
             id="type"
             name="interaction_type_id"
             required
             defaultValue={defaultInteractionTypeId}
-            className={formControlClassName()}
           >
             {interactionTypes.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
             ))}
-          </select>
+          </Picklist>
         </div>
         <div className="space-y-2">
           <label htmlFor="direction" className="text-sm font-semibold">
             Direction
           </label>
-          <select
-            id="direction"
-            name="direction"
-            className={formControlClassName()}
-          >
+          <Picklist id="direction" name="direction">
             <option value="">(optional)</option>
             {INTERACTION_DIRECTIONS.map((d) => (
               <option key={d} value={d}>
                 {d}
               </option>
             ))}
-          </select>
+          </Picklist>
         </div>
         <div className="space-y-2 sm:col-span-2">
           <label htmlFor="title" className="text-sm font-semibold">

@@ -9,7 +9,7 @@ import {
 } from '@/lib/actions/person-connections';
 import { Button } from '@/components/ui/button';
 import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';
-import { formControlClassName } from '@/components/ui/form-control-classes';
+import { Picklist } from '@/components/ui/picklist';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
 import { panelTopAccentAt } from '@/lib/ui/panel-top-accent';
@@ -175,11 +175,10 @@ function AddConnectionForm(props: {
         <label htmlFor="connection-related" className="text-sm font-semibold">
           Other person
         </label>
-        <select
+        <Picklist
           id="connection-related"
           value={relatedId}
           onChange={(e) => setRelatedId(e.target.value)}
-          className={formControlClassName()}
           required
           autoFocus
         >
@@ -189,17 +188,16 @@ function AddConnectionForm(props: {
               {p.label}
             </option>
           ))}
-        </select>
+        </Picklist>
       </div>
       <div className="space-y-2">
         <label htmlFor="connection-type" className="text-sm font-semibold">
           Connection type
         </label>
-        <select
+        <Picklist
           id="connection-type"
           value={typeId}
           onChange={(e) => setTypeId(e.target.value)}
-          className={formControlClassName()}
           required
         >
           {connectionTypes.map((t) => (
@@ -207,7 +205,7 @@ function AddConnectionForm(props: {
               {t.name}
             </option>
           ))}
-        </select>
+        </Picklist>
       </div>
       <div className="space-y-2">
         <label htmlFor="connection-notes" className="text-sm font-semibold">

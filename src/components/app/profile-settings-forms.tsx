@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
 import { TextField } from '@/components/ui/text-field';
-import { formControlClassName } from '@/components/ui/form-control-classes';
+import { Picklist } from '@/components/ui/picklist';
 
 const nameInitial: ProfileFormState = {};
 const passwordInitial: ProfileFormState = {};
@@ -112,18 +112,17 @@ export function ProfileSettingsForms({
               >
                 Time zone
               </label>
-              <select
+              <Picklist
                 id="timezone"
                 name="timezone"
                 defaultValue={timezoneSelectValue}
-                className={formControlClassName({ size: 'default' })}
               >
                 {ianaTimeZones.map((z) => (
                   <option key={z} value={z}>
                     {z.replace(/_/g, ' ')}
                   </option>
                 ))}
-              </select>
+              </Picklist>
             </div>
             <Button type="submit" variant="secondary" disabled={timezonePending}>
               {timezonePending ? 'Saving…' : 'Save time zone'}

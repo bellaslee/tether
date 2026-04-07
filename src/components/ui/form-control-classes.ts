@@ -1,7 +1,7 @@
 /**
  * Shared Tailwind for native form controls (input, select, textarea).
  * Use {@link FormInput}, {@link FormTextarea}, or `className={formControlClassName(...)}`
- * on `<select>` instead of copying these strings.
+ * on `<select>`; prefer `Picklist` for styled selects with a consistent chevron.
  */
 export type FormControlSize = 'default' | 'compact' | 'dense';
 
@@ -30,6 +30,14 @@ const SIZE_MAP: Record<FormControlSize, string> = {
   dense: 'min-w-0 max-w-full flex-1 rounded-2xl bg-white/80 px-4 py-2.5',
 };
 
+/** Horizontal padding leaves room for the custom chevron in `Picklist`. */
+const PICKLIST_SIZE_MAP: Record<FormControlSize, string> = {
+  default: 'w-full rounded-2xl bg-white/80 py-3 pl-4',
+  compact: 'w-full rounded-xl bg-white/90 py-2 pl-3',
+  dense:
+    'min-w-0 max-w-full flex-1 rounded-2xl bg-white/80 py-2.5 pl-4',
+};
+
 const SIZE_MAP_TEMPORAL_DENSE =
   'w-full max-w-full flex-1 rounded-2xl bg-white/80 px-4 py-2.5';
 
@@ -47,4 +55,13 @@ export function formControlClassName(options?: {
     temporal && size === 'dense' ? SIZE_MAP_TEMPORAL_DENSE : SIZE_MAP[size];
   const base = temporal ? BASE_TEMPORAL : BASE;
   return [sizeCls, base, resizeCls, className].filter(Boolean).join(' ');
+}
+
+export function picklistControlClassName(options?: {
+  size?: FormControlSize;
+  className?: string;
+}): string {
+  const { size = 'default', className = '' } = options ?? {};
+  const sizeCls = PICKLIST_SIZE_MAP[size];
+  return [sizeCls, BASE, className].filter(Boolean).join(' ');
 }

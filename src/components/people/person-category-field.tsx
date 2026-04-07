@@ -7,7 +7,7 @@ import {
   type CreateCategoryResult,
 } from '@/lib/actions/person-categories';
 import { Button } from '@/components/ui/button';
-import { formControlClassName } from '@/components/ui/form-control-classes';
+import { Picklist } from '@/components/ui/picklist';
 import { RequiredMark } from '@/components/ui/required-mark';
 import { FormInput } from '@/components/ui/form-input';
 
@@ -96,14 +96,13 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
             Manage categories
           </Link>
         </div>
-        <select
+        <Picklist
           key={selectNonce}
           id="category_select"
           name="category_id"
           value={categoryId}
           onChange={(e) => handleSelectChange(e.target.value)}
           required
-          className={formControlClassName()}
           aria-describedby={
             panelMode ? 'category-panel-description' : undefined
           }
@@ -116,7 +115,7 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
           <option value={ADD_SENTINEL} className="text-muted">
             + Add a category…
           </option>
-        </select>
+        </Picklist>
         <p id="category-panel-description" className="sr-only">
           {panelMode === 'add'
             ? 'Add a new category using the fields below.'
