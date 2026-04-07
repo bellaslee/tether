@@ -18,7 +18,7 @@ Ideas and follow-ups that are not scheduled work yet.
 - [ ] surface in product how the relationship / profile brief is produced (AI vs
       rules, editable, refresh behavior) so users are not guessing
 - [ ] ability to specify what kind of pre-meeting brief you want
-- [ ] for prompts, pass in occupation and pronouns
+- [x] for prompts, pass in occupation and pronouns
 - [x] reduce perceived delay when switching person detail tabs (overview vs
       contact and connections, and similar)
 - [x] add relationship strength indicator (Cold, Warm, Hot)

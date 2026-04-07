@@ -9,6 +9,8 @@ import { logAiRequestDebug } from '@/lib/ai/log-debug';
 import {
   buildRelationshipSummaryInstructions,
   buildRelationshipSummaryUserPayload,
+  type PreMeetingTemporalPayload,
+  type RelationshipSummaryRecentNote,
 } from '@/lib/ai/prompts/relationship-summary';
 import {
   summaryContentResultSchema,
@@ -25,11 +27,8 @@ export async function runRelationshipSummaryModel(args: {
   subjectPronouns: string | null;
   subjectOccupation: string | null;
   acceptedFactLines: string[];
-  recentNotes: Array<{
-    interaction_id: string;
-    occurred_at: string;
-    redacted_note: string | null;
-  }>;
+  recentNotes: RelationshipSummaryRecentNote[];
+  preMeetingTemporal?: PreMeetingTemporalPayload;
 }): Promise<SummaryContentResult> {
   const rl = await enforceLlmRateLimits(args.rateLimitIdentity);
   if (!rl.ok) {
@@ -46,6 +45,7 @@ export async function runRelationshipSummaryModel(args: {
     subjectOccupation: args.subjectOccupation,
     acceptedFactLines: args.acceptedFactLines,
     recentNotes: args.recentNotes,
+    preMeetingTemporal: args.preMeetingTemporal,
   });
 
   logAiRequestDebug('relationship_summary', {
@@ -53,6 +53,7 @@ export async function runRelationshipSummaryModel(args: {
     subjectPersonId: args.subjectPersonId,
     factCount: args.acceptedFactLines.length,
     recentInteractionCount: args.recentNotes.length,
+    preMeetingTemporal: Boolean(args.preMeetingTemporal),
   });
 
   const response = await args.openai.responses.parse({
