@@ -140,11 +140,12 @@ export type StoredPeopleListFilters = {
   warmth: RelationshipWarmth[];
 };
 
+/** Search `q` is intentionally omitted from persistence (always empty). */
 export function peopleListFiltersForStorage(
   sp: URLSearchParams,
 ): StoredPeopleListFilters {
   return {
-    q: sp.get('q')?.trim() ?? '',
+    q: '',
     categoryIds: parsePeopleListCategoryIdsFromSearchParams(sp),
     statusValues: parsePeopleListStatusesFromSearchParams(sp),
     warmth: parsePeopleListWarmthFromSearchParams(sp),
@@ -154,7 +155,6 @@ export function peopleListFiltersForStorage(
 export function peopleListFiltersPersistKey(sp: URLSearchParams): string {
   const f = peopleListFiltersForStorage(sp);
   return [
-    f.q,
     [...f.categoryIds].sort().join(','),
     [...f.statusValues].sort().join(','),
     [...f.warmth].sort().join(','),
@@ -169,10 +169,6 @@ export function mergeStoredPeopleListFiltersIntoSearchParams(
     return false;
   }
   let changed = false;
-  if (!sp.has('q') && stored.q) {
-    sp.set('q', stored.q);
-    changed = true;
-  }
   if (!sp.has('category') && stored.categoryIds.length > 0) {
     for (const id of [...stored.categoryIds].sort()) {
       sp.append('category', id);

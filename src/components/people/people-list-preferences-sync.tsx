@@ -18,12 +18,13 @@ import {
 } from '@/lib/people/list-preferences';
 
 /**
- * Merges saved list view / sort / filters into the URL when those params are
- * omitted, only on first paint or when navigating onto /people from another route.
- * While you stay on /people, the URL is authoritative so choosing default
+ * Merges saved list view / sort / filter facets into the URL when those params
+ * are omitted, only on first paint or when navigating onto /people from another
+ * route. While you stay on /people, the URL is authoritative so choosing default
  * view/sort (omitted params) is not overwritten from storage.
  *
- * Also keeps localStorage aligned with the effective URL (including shared links).
+ * The name search query (`q`) is not persisted: it only lives in the URL for the
+ * current visit. Category, status, and warmth facets still sync with localStorage.
  */
 export function PeopleListPreferencesSync() {
   const router = useRouter();
