@@ -145,6 +145,83 @@ export async function createInteractionFromPerson(
   return { ok: true };
 }
 
+const QUICK_LOG_TITLE = 'Quick log';
+
+export async function quickLogInteractionForPerson(
+  personId: string,
+): Promise<ActionResult> {
+  const gate = await assertOwnsPeople([personId]);
+  if (!gate.ctx) {
+    return { error: gate.error };
+  }
+  const { ctx } = gate;
+
+  const { data: otherType, error: typeError } = await ctx.client
+    .from('interaction_types')
+    .select('id')
+    .eq('user_id', ctx.userId)
+    .eq('name', 'Other')
+    .maybeSingle();
+
+  if (typeError) {
+    return { error: typeError.message };
+  }
+  if (!otherType) {
+    return {
+      error:
+        'Could not find an "Other" interaction type. Add it under Settings or restore the default types.',
+    };
+  }
+
+  const typeGate = await assertOwnsInteractionType(ctx, otherType.id);
+  if ('error' in typeGate) {
+    return { error: typeGate.error };
+  }
+
+  const occurredAt = new Date().toISOString();
+
+  const { data: interaction, error: insertError } = await ctx.client
+    .from('interactions')
+    .insert({
+      user_id: ctx.userId,
+      occurred_at: occurredAt,
+      interaction_type_id: otherType.id,
+      title: QUICK_LOG_TITLE,
+      raw_note: null,
+      counts_toward_last_touch: countsTowardLastTouch(occurredAt),
+    })
+    .select('id')
+    .single();
+
+  if (insertError || !interaction) {
+    return { error: insertError?.message ?? 'Could not create interaction.' };
+  }
+
+  const { error: linkError } = await ctx.client.from('interaction_people').insert({
+    interaction_id: interaction.id,
+    person_id: personId,
+    role: 'primary',
+  });
+
+  if (linkError) {
+    await ctx.client
+      .from('interactions')
+      .delete()
+      .eq('id', interaction.id)
+      .eq('user_id', ctx.userId);
+    return { error: linkError.message };
+  }
+
+  await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, [
+    personId,
+  ]);
+
+  revalidatePath('/timeline');
+  revalidatePath(`/people/${personId}`);
+
+  return { ok: true };
+}
+
 export async function createGlobalInteraction(
   _prev: ActionResult,
   formData: FormData,

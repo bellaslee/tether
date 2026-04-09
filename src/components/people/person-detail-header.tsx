@@ -1,12 +1,73 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { createPortal } from 'react-dom';
+import { quickLogInteractionForPerson } from '@/lib/actions/interactions';
 import { Button, ButtonLink } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field-error';
 import { PersonInteractionForm } from '@/components/people/person-interaction-form';
 import type { PersonOption } from '@/components/people/attendee-picker';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { usePersonLogInteraction } from '@/components/people/person-log-interaction-context';
+
+function PersonDetailHeaderLogActions({
+  personId,
+  logOpen,
+  openLogInteraction,
+}: {
+  personId: string;
+  logOpen: boolean;
+  openLogInteraction: () => void;
+}) {
+  const router = useRouter();
+  const [quickLogError, setQuickLogError] = useState<string | null>(null);
+  const [quickLogPending, startQuickLogTransition] = useTransition();
+
+  const onQuickLog = useCallback(() => {
+    setQuickLogError(null);
+    startQuickLogTransition(async () => {
+      const r = await quickLogInteractionForPerson(personId);
+      if (r.error) {
+        setQuickLogError(r.error);
+      } else {
+        router.refresh();
+      }
+    });
+  }, [personId, router]);
+
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          onClick={onQuickLog}
+          disabled={quickLogPending}
+          aria-busy={quickLogPending}
+        >
+          {quickLogPending ? 'Saving…' : 'Quick log'}
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          onClick={openLogInteraction}
+          aria-haspopup="dialog"
+          aria-expanded={logOpen}
+        >
+          Log interaction
+        </Button>
+      </div>
+      {quickLogError ? (
+        <FieldError size="compact" className="max-w-xs text-right">
+          {quickLogError}
+        </FieldError>
+      ) : null}
+    </div>
+  );
+}
 
 type PersonDetailHeaderProps = {
   children: React.ReactNode;
@@ -122,16 +183,11 @@ export function PersonDetailHeader({
               <ButtonLink href={editHref} variant="secondary" size="lg">
                 Edit profile
               </ButtonLink>
-              <Button
-                type="button"
-                variant="primary"
-                size="lg"
-                onClick={openLogInteraction}
-                aria-haspopup="dialog"
-                aria-expanded={logOpen}
-              >
-                Log interaction
-              </Button>
+              <PersonDetailHeaderLogActions
+                personId={personId}
+                logOpen={logOpen}
+                openLogInteraction={openLogInteraction}
+              />
             </div>
           </div>
           {afterTitle}

@@ -11,6 +11,7 @@ import {
   PersonLogInteractionProvider,
   TimelineLogInteractionTrigger,
 } from '@/components/people/person-log-interaction-context';
+import { PersonTimelineQuickLogButton } from '@/components/people/person-timeline-quick-log-button';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionNotePreview } from '@/components/interactions/interaction-note-preview';
 import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
@@ -584,7 +585,8 @@ export default async function PersonDetailPage(props: PageProps) {
                   {PAGE_COPY.overview.timeline.description}
                 </p>
               </div>
-              <div className="flex shrink-0 justify-end sm:pt-1">
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-4 sm:pt-1">
+                <PersonTimelineQuickLogButton personId={person.id} />
                 <TimelineLogInteractionTrigger />
               </div>
             </header>
@@ -843,7 +845,7 @@ function PersonTimelineRow({
     <li className={cardClass}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted">
               {formatDateTimeInTimeZone(
                 interaction.occurred_at,
@@ -873,7 +875,7 @@ function PersonTimelineRow({
             />
           ) : null}
           {otherPeopleInInteraction.length > 0 ? (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-3">
               {otherPeopleInInteraction.map((person) => (
                 <ButtonLink
                   key={`${interaction.id}-${person.id}`}
