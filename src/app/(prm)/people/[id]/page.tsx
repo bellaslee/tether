@@ -58,6 +58,7 @@ import {
   PersonDetailTabPanels,
   PersonDetailTabsProvider,
 } from '@/components/people/person-detail-tabs';
+import { parsePersonDetailTabParam } from '@/lib/people/person-detail-tab';
 
 const PAGE_COPY = {
   meta: {
@@ -67,8 +68,10 @@ const PAGE_COPY = {
   },
   nav: {
     profileSectionsAria: 'Profile sections',
-    tabOverview: 'Overview',
-    tabDetails: 'Contact and Connections',
+    tabProfile: 'Profile',
+    tabMemory: 'Memory',
+    tabTimeline: 'Timeline',
+    tabContacts: 'Contacts and Connections',
   },
   header: {
     backToPeople: '← People',
@@ -184,7 +187,7 @@ export default async function PersonDetailPage(props: PageProps) {
   const { id } = await props.params;
   const searchParams = await props.searchParams;
   const tabParam = first(searchParams.tab);
-  const initialTab = tabParam === 'details' ? 'details' : 'overview';
+  const initialTab = parsePersonDetailTabParam(tabParam);
 
   const ctx = await requirePrmAccess();
   const displayTimeZone = ctx.accountTimeZone ?? 'UTC';
@@ -305,44 +308,35 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const resolvedAllPeople = (allPeople ?? []) as PersonOption[];
 
-  const interactionTypeOptions: InteractionTypeOption[] = (
-    interactionTypeRows ?? []
-  ).map((row) => ({ id: row.id, name: row.name }));
-  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
-    interactionTypeOptions,
-  );
+  const summaryRows = summariesData ?? [];
+  const factRows = factsData ?? [];
+  const taskRows = tasksData ?? [];
 
-  const connectionTypeOptions: ConnectionTypeOption[] = (
-    connectionTypeRows ?? []
-  ).map((row) => ({ id: row.id, name: row.name }));
-  const defaultConnectionTypeId = pickDefaultConnectionTypeId(
-    connectionTypeOptions,
-  );
+  const interactionLabels = new Map<string, string>();
+  const sourceInteractionIds = new Set<string>();
+  for (const s of summaryRows) {
+    for (const sid of s.source_interaction_ids ?? []) {
+      sourceInteractionIds.add(sid);
+    }
+  }
 
-  type ConnectionRowDb = {
-    id: string;
-    notes: string | null;
-    connection_types: { name: string } | null;
-    related_person: {
-      id: string;
-      full_name: string;
-      display_name: string | null;
-    } | null;
-  };
+  if (sourceInteractionIds.size > 0) {
+    const { data: intMeta, error: intMetaError } = await ctx.client
+      .from('interactions')
+      .select('id, occurred_at')
+      .eq('user_id', ctx.userId)
+      .in('id', [...sourceInteractionIds]);
 
-  const connectionListItems = (personConnectionRows ?? []).map((raw) => {
-    const row = raw as unknown as ConnectionRowDb;
-    const rel = row.related_person;
-    const label =
-      rel?.display_name?.trim() || rel?.full_name || PAGE_COPY.connections.unknownRelated;
-    return {
-      id: row.id,
-      typeName: row.connection_types?.name ?? PAGE_COPY.connections.typeFallback,
-      relatedId: rel?.id ?? '',
-      relatedLabel: label,
-      notes: row.notes,
-    };
-  });
+    if (intMetaError) {
+      throw new Error(intMetaError.message);
+    }
+    for (const row of intMeta ?? []) {
+      interactionLabels.set(
+        row.id,
+        formatDateTimeInTimeZone(row.occurred_at, displayTimeZone),
+      );
+    }
+  }
 
   if ('error' in linksRes) {
     throw new Error(linksRes.error);
@@ -364,6 +358,7 @@ export default async function PersonDetailPage(props: PageProps) {
     interaction: InteractionWithType;
     role: string;
   }> = [];
+
   if (interactionIds.length > 0) {
     const fullLinksRes = await fetchInteractionPeopleLinksForUserInteractions(
       ctx.client,
@@ -432,6 +427,45 @@ export default async function PersonDetailPage(props: PageProps) {
     }));
   }
 
+  const interactionTypeOptions: InteractionTypeOption[] = (
+    interactionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
+    interactionTypeOptions,
+  );
+
+  const connectionTypeOptions: ConnectionTypeOption[] = (
+    connectionTypeRows ?? []
+  ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultConnectionTypeId = pickDefaultConnectionTypeId(
+    connectionTypeOptions,
+  );
+
+  type ConnectionRowDb = {
+    id: string;
+    notes: string | null;
+    connection_types: { name: string } | null;
+    related_person: {
+      id: string;
+      full_name: string;
+      display_name: string | null;
+    } | null;
+  };
+
+  const connectionListItems = (personConnectionRows ?? []).map((raw) => {
+    const row = raw as unknown as ConnectionRowDb;
+    const rel = row.related_person;
+    const label =
+      rel?.display_name?.trim() || rel?.full_name || PAGE_COPY.connections.unknownRelated;
+    return {
+      id: row.id,
+      typeName: row.connection_types?.name ?? PAGE_COPY.connections.typeFallback,
+      relatedId: rel?.id ?? '',
+      relatedLabel: label,
+      notes: row.notes,
+    };
+  });
+
   const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
     partitionPersonTimelineRows(timelineRows);
 
@@ -446,254 +480,226 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const aiEnabled = hasOpenAiApiKey();
 
-  const factRows = factsData ?? [];
-  const summaryRows = summariesData ?? [];
-  const taskRows = tasksData ?? [];
-  const interactionLabels = new Map<string, string>();
-
-  const sourceInteractionIds = new Set<string>();
-  for (const s of summaryRows) {
-    for (const sid of s.source_interaction_ids ?? []) {
-      sourceInteractionIds.add(sid);
-    }
-  }
-
-  if (sourceInteractionIds.size > 0) {
-    const { data: intMeta, error: intMetaError } = await ctx.client
-      .from('interactions')
-      .select('id, occurred_at')
-      .eq('user_id', ctx.userId)
-      .in('id', [...sourceInteractionIds]);
-
-    if (intMetaError) {
-      throw new Error(intMetaError.message);
-    }
-    for (const row of intMeta ?? []) {
-      interactionLabels.set(
-        row.id,
-        formatDateTimeInTimeZone(row.occurred_at, displayTimeZone),
-      );
-    }
-  }
-
-  const overviewPanel = (
-        <div className="flex min-w-0 flex-col gap-8">
-          <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch lg:gap-8">
-            <section
-              className={`card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(0)}`}
-              aria-label={PAGE_COPY.overview.context.ariaLabel}
-            >
-              <h2 className="shrink-0 font-display text-2xl">
-                {PAGE_COPY.overview.context.title}
-              </h2>
-              <div className="mt-6 min-h-0 flex-1">
-                <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                  <DetailItem
-                    label={PAGE_COPY.overview.context.labels.pronouns}
-                    value={person.pronouns}
-                  />
-                  <DetailItem
-                    label={PAGE_COPY.overview.context.labels.birthday}
-                    value={
-                      person.birthday
-                        ? formatCalendarDateOnly(person.birthday)
-                        : null
-                    }
-                  />
-                  <DetailItem
-                    label={PAGE_COPY.overview.context.labels.met}
-                    value={
-                      person.met_at ? formatMonthYear(person.met_at) : null
-                    }
-                  />
-                  <DetailItem
-                    label={PAGE_COPY.overview.context.labels.location}
-                    value={person.location}
-                  />
-                  <DetailItem
-                    label={PAGE_COPY.overview.context.labels.occupation}
-                    value={person.occupation}
-                  />
-                  <DetailItem
-                    label={PAGE_COPY.overview.context.labels.company}
-                    value={person.company}
-                  />
-                  <DetailItem
-                    label={PAGE_COPY.overview.context.labels.lastInteraction}
-                    value={
-                      person.last_interaction_at
-                        ? formatDateTimeInTimeZone(
-                            person.last_interaction_at,
-                            displayTimeZone,
-                          )
-                        : null
-                    }
-                  />
-                  <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      {PAGE_COPY.overview.context.howYouMet}
-                    </p>
-                    <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
-                      {person.how_you_met ?? PAGE_COPY.placeholders.emptyField}
-                    </p>
-                  </div>
-                  <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      {PAGE_COPY.overview.context.relationshipContext}
-                    </p>
-                    <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
-                      {person.relationship_context ??
-                        PAGE_COPY.placeholders.emptyField}
-                    </p>
-                  </div>
+  const profilePanel = (
+        <div className="flex min-w-0 flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch lg:gap-8">
+          <section
+            className={`card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(0)}`}
+            aria-label={PAGE_COPY.overview.context.ariaLabel}
+          >
+            <h2 className="shrink-0 font-display text-2xl">
+              {PAGE_COPY.overview.context.title}
+            </h2>
+            <div className="mt-6 min-h-0 flex-1">
+              <div className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                <DetailItem
+                  label={PAGE_COPY.overview.context.labels.pronouns}
+                  value={person.pronouns}
+                />
+                <DetailItem
+                  label={PAGE_COPY.overview.context.labels.birthday}
+                  value={
+                    person.birthday
+                      ? formatCalendarDateOnly(person.birthday)
+                      : null
+                  }
+                />
+                <DetailItem
+                  label={PAGE_COPY.overview.context.labels.met}
+                  value={
+                    person.met_at ? formatMonthYear(person.met_at) : null
+                  }
+                />
+                <DetailItem
+                  label={PAGE_COPY.overview.context.labels.location}
+                  value={person.location}
+                />
+                <DetailItem
+                  label={PAGE_COPY.overview.context.labels.occupation}
+                  value={person.occupation}
+                />
+                <DetailItem
+                  label={PAGE_COPY.overview.context.labels.company}
+                  value={person.company}
+                />
+                <DetailItem
+                  label={PAGE_COPY.overview.context.labels.lastInteraction}
+                  value={
+                    person.last_interaction_at
+                      ? formatDateTimeInTimeZone(
+                          person.last_interaction_at,
+                          displayTimeZone,
+                        )
+                      : null
+                  }
+                />
+                <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    {PAGE_COPY.overview.context.howYouMet}
+                  </p>
+                  <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
+                    {person.how_you_met ?? PAGE_COPY.placeholders.emptyField}
+                  </p>
+                </div>
+                <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    {PAGE_COPY.overview.context.relationshipContext}
+                  </p>
+                  <p className="mt-1 leading-7 text-foreground/90 max-sm:leading-8 [overflow-wrap:anywhere]">
+                    {person.relationship_context ??
+                      PAGE_COPY.placeholders.emptyField}
+                  </p>
                 </div>
               </div>
-            </section>
-
-            <PersonBriefsSection
-              personId={person.id}
-              aiEnabled={aiEnabled}
-              summaries={summaryRows}
-              interactionLabels={interactionLabels}
-              topAccentIndex={1}
-            />
-          </div>
-
-          <div className="grid gap-8 lg:grid-cols-2 lg:items-stretch">
-            <PersonFactsSection
-              personId={person.id}
-              facts={factRows}
-              topAccentIndex={2}
-            />
-            <PersonRemindersSection
-              personId={person.id}
-              tasks={taskRows}
-              topAccentIndex={3}
-            />
-          </div>
-
-          <section
-            className={`card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(4)}`}
-            aria-labelledby={PAGE_COPY.overview.timeline.headingId}
-          >
-            <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-              <div className="min-w-0 flex-1">
-                <h2
-                  id={PAGE_COPY.overview.timeline.headingId}
-                  className="font-display text-2xl tracking-tight"
-                >
-                  {PAGE_COPY.overview.timeline.title}
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-                  {PAGE_COPY.overview.timeline.description}
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-4 sm:pt-1">
-                <PersonTimelineQuickLogButton />
-                <TimelineLogInteractionTrigger />
-              </div>
-            </header>
-
-            {timelineRows.length === 0 ? (
-              <p className="rounded-2xl border border-border-soft bg-white/50 px-6 py-8 text-sm text-muted">
-                {PAGE_COPY.overview.timeline.empty.lead}{' '}
-                <span className="font-semibold text-foreground">
-                  {PAGE_COPY.overview.timeline.empty.logInteractionEmphasis}
-                </span>{' '}
-                {PAGE_COPY.overview.timeline.empty.mid}{' '}
-                <Link
-                  href="/interactions/new"
-                  className="font-semibold text-accent underline-offset-4 hover:underline"
-                >
-                  {PAGE_COPY.overview.timeline.empty.addMomentLink}
-                </Link>
-                {PAGE_COPY.overview.timeline.empty.trailing}
-              </p>
-            ) : (
-              <div className="space-y-10">
-                {upcomingTimelineRows.length > 0 ? (
-                  <div
-                    aria-labelledby={PAGE_COPY.overview.timeline.upcoming.headingId}
-                  >
-                    <h3
-                      id={PAGE_COPY.overview.timeline.upcoming.headingId}
-                      className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
-                    >
-                      {PAGE_COPY.overview.timeline.upcoming.title}
-                    </h3>
-                    <ol className="space-y-6">
-                      {upcomingTimelineRows.map(({ interaction, role }) => (
-                        <PersonTimelineRow
-                          key={interaction.id}
-                          interaction={interaction}
-                          role={role}
-                          viewerPersonId={person.id}
-                          interactionPeople={
-                            peopleChipsByInteraction.get(interaction.id) ?? []
-                          }
-                          isUpcoming
-                          displayTimeZone={displayTimeZone}
-                          sessionTimeZone={ctx.accountTimeZone}
-                          participants={
-                            participantsByInteraction.get(interaction.id) ?? {
-                              primaryPersonId: '',
-                              attendeeIds: [] as string[],
-                            }
-                          }
-                          allPeople={resolvedAllPeople}
-                          interactionTypeOptions={interactionTypeOptions}
-                          memorySuggestAvailable={aiEnabled}
-                        />
-                      ))}
-                    </ol>
-                  </div>
-                ) : null}
-                {pastTimelineRows.length > 0 ? (
-                  <div
-                    aria-labelledby={PAGE_COPY.overview.timeline.past.headingId}
-                  >
-                    {upcomingTimelineRows.length > 0 ? (
-                      <h3
-                        id={PAGE_COPY.overview.timeline.past.headingId}
-                        className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
-                      >
-                        {PAGE_COPY.overview.timeline.past.title}
-                      </h3>
-                    ) : null}
-                    <ol className="space-y-6">
-                      {pastTimelineRows.map(({ interaction, role }) => (
-                        <PersonTimelineRow
-                          key={interaction.id}
-                          interaction={interaction}
-                          role={role}
-                          viewerPersonId={person.id}
-                          interactionPeople={
-                            peopleChipsByInteraction.get(interaction.id) ?? []
-                          }
-                          isUpcoming={false}
-                          displayTimeZone={displayTimeZone}
-                          sessionTimeZone={ctx.accountTimeZone}
-                          participants={
-                            participantsByInteraction.get(interaction.id) ?? {
-                              primaryPersonId: '',
-                              attendeeIds: [] as string[],
-                            }
-                          }
-                          allPeople={resolvedAllPeople}
-                          interactionTypeOptions={interactionTypeOptions}
-                          memorySuggestAvailable={aiEnabled}
-                        />
-                      ))}
-                    </ol>
-                  </div>
-                ) : null}
-              </div>
-            )}
+            </div>
           </section>
+
+          <PersonBriefsSection
+            personId={person.id}
+            aiEnabled={aiEnabled}
+            summaries={summaryRows}
+            interactionLabels={interactionLabels}
+            topAccentIndex={1}
+          />
         </div>
   );
 
-  const detailsPanel = (
+  const memoryPanel = (
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-stretch">
+          <PersonFactsSection
+            personId={person.id}
+            facts={factRows}
+            topAccentIndex={0}
+          />
+          <PersonRemindersSection
+            personId={person.id}
+            tasks={taskRows}
+            topAccentIndex={1}
+          />
+        </div>
+  );
+
+  const timelinePanel = (
+        <section
+          className={`card-surface min-w-0 space-y-6 rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(0)}`}
+          aria-labelledby={PAGE_COPY.overview.timeline.headingId}
+        >
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <div className="min-w-0 flex-1">
+              <h2
+                id={PAGE_COPY.overview.timeline.headingId}
+                className="font-display text-2xl tracking-tight"
+              >
+                {PAGE_COPY.overview.timeline.title}
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+                {PAGE_COPY.overview.timeline.description}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-4 sm:pt-1">
+              <PersonTimelineQuickLogButton />
+              <TimelineLogInteractionTrigger />
+            </div>
+          </header>
+
+          {timelineRows.length === 0 ? (
+            <p className="rounded-2xl border border-border-soft bg-white/50 px-6 py-8 text-sm text-muted">
+              {PAGE_COPY.overview.timeline.empty.lead}{' '}
+              <span className="font-semibold text-foreground">
+                {PAGE_COPY.overview.timeline.empty.logInteractionEmphasis}
+              </span>{' '}
+              {PAGE_COPY.overview.timeline.empty.mid}{' '}
+              <Link
+                href="/interactions/new"
+                className="font-semibold text-accent underline-offset-4 hover:underline"
+              >
+                {PAGE_COPY.overview.timeline.empty.addMomentLink}
+              </Link>
+              {PAGE_COPY.overview.timeline.empty.trailing}
+            </p>
+          ) : (
+            <div className="space-y-10">
+              {upcomingTimelineRows.length > 0 ? (
+                <div
+                  aria-labelledby={PAGE_COPY.overview.timeline.upcoming.headingId}
+                >
+                  <h3
+                    id={PAGE_COPY.overview.timeline.upcoming.headingId}
+                    className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                  >
+                    {PAGE_COPY.overview.timeline.upcoming.title}
+                  </h3>
+                  <ol className="space-y-6">
+                    {upcomingTimelineRows.map(({ interaction, role }) => (
+                      <PersonTimelineRow
+                        key={interaction.id}
+                        interaction={interaction}
+                        role={role}
+                        viewerPersonId={person.id}
+                        interactionPeople={
+                          peopleChipsByInteraction.get(interaction.id) ?? []
+                        }
+                        isUpcoming
+                        displayTimeZone={displayTimeZone}
+                        sessionTimeZone={ctx.accountTimeZone}
+                        participants={
+                          participantsByInteraction.get(interaction.id) ?? {
+                            primaryPersonId: '',
+                            attendeeIds: [] as string[],
+                          }
+                        }
+                        allPeople={resolvedAllPeople}
+                        interactionTypeOptions={interactionTypeOptions}
+                        memorySuggestAvailable={aiEnabled}
+                      />
+                    ))}
+                  </ol>
+                </div>
+              ) : null}
+              {pastTimelineRows.length > 0 ? (
+                <div
+                  aria-labelledby={PAGE_COPY.overview.timeline.past.headingId}
+                >
+                  {upcomingTimelineRows.length > 0 ? (
+                    <h3
+                      id={PAGE_COPY.overview.timeline.past.headingId}
+                      className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                    >
+                      {PAGE_COPY.overview.timeline.past.title}
+                    </h3>
+                  ) : null}
+                  <ol className="space-y-6">
+                    {pastTimelineRows.map(({ interaction, role }) => (
+                      <PersonTimelineRow
+                        key={interaction.id}
+                        interaction={interaction}
+                        role={role}
+                        viewerPersonId={person.id}
+                        interactionPeople={
+                          peopleChipsByInteraction.get(interaction.id) ?? []
+                        }
+                        isUpcoming={false}
+                        displayTimeZone={displayTimeZone}
+                        sessionTimeZone={ctx.accountTimeZone}
+                        participants={
+                          participantsByInteraction.get(interaction.id) ?? {
+                            primaryPersonId: '',
+                            attendeeIds: [] as string[],
+                          }
+                        }
+                        allPeople={resolvedAllPeople}
+                        interactionTypeOptions={interactionTypeOptions}
+                        memorySuggestAvailable={aiEnabled}
+                      />
+                    ))}
+                  </ol>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </section>
+  );
+
+  const contactsPanel = (
         <section
           className="flex flex-col gap-8 lg:grid lg:min-h-[28rem] lg:grid-cols-2 lg:items-stretch"
           aria-label={PAGE_COPY.details.sectionAria}
@@ -752,8 +758,12 @@ export default async function PersonDetailPage(props: PageProps) {
         afterTitle={
           <PersonDetailTabNav
             profileSectionsAria={PAGE_COPY.nav.profileSectionsAria}
-            tabOverview={PAGE_COPY.nav.tabOverview}
-            tabDetails={PAGE_COPY.nav.tabDetails}
+            labels={{
+              profile: PAGE_COPY.nav.tabProfile,
+              memory: PAGE_COPY.nav.tabMemory,
+              timeline: PAGE_COPY.nav.tabTimeline,
+              contacts: PAGE_COPY.nav.tabContacts,
+            }}
           />
         }
         editHref={`/people/${person.id}/edit`}
@@ -794,8 +804,10 @@ export default async function PersonDetailPage(props: PageProps) {
       </PersonDetailHeader>
 
       <PersonDetailTabPanels
-        overview={overviewPanel}
-        details={detailsPanel}
+        profile={profilePanel}
+        memory={memoryPanel}
+        timeline={timelinePanel}
+        contacts={contactsPanel}
       />
       </PersonDetailTabsProvider>
       </PersonQuickLogProvider>
