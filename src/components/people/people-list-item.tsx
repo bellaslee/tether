@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import type { Tables } from '@/lib/db/database.types';
 import { personShownName } from '@/lib/people/list-name';
-import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
+import { RelationshipHeartBar } from '@/components/people/relationship-heart-bar';
 import { formatDateInTimeZone } from '@/lib/datetime';
 import { randomPanelTopAccentClass } from '@/lib/ui/panel-top-accent';
 
@@ -26,6 +26,7 @@ type PersonListRow = Pick<
   | 'last_interaction_at'
   | 'met_at'
   | 'created_at'
+  | 'interaction_count'
 > & {
   person_categories: { name: string } | null;
 };
@@ -82,10 +83,12 @@ export function PeopleListItem({
           <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-0.5 font-semibold text-accent">
             {person.person_categories?.name ?? PAGE_COPY.list.categoryPlaceholder}
           </span>
-          <RelationshipWarmthChip
+          <RelationshipHeartBar
             lastInteractionAt={person.last_interaction_at}
             metAt={person.met_at}
             createdAt={person.created_at}
+            interactionCount={person.interaction_count}
+            personCategoryName={person.person_categories?.name ?? null}
             size="compact"
           />
           {person.last_interaction_at ? (

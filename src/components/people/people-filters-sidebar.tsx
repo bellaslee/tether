@@ -281,8 +281,8 @@ export function PeopleFiltersSidebar({
           label="Relationship warmth"
         >
           <p className="mb-2 text-xs text-muted">
-            Matches the Hot, Warm, and Cold chips on each card. Leave all
-            unchecked to show every warmth.
+            Matches the connection heart row on each card (mapped to Hot, Warm,
+            and Cold). Leave all unchecked to show every warmth.
           </p>
           <div className="flex flex-col gap-2 text-sm">
             {RELATIONSHIP_WARMTH_FILTERS.map((w) => (

@@ -56,6 +56,14 @@ export function localWallTimeToUtcIso(
   return dt.toUTC().toISO();
 }
 
+/** `YYYY-MM-DD` civil date at 12:00 local in `timeZone` → UTC ISO. */
+export function calendarDateLocalNoonToUtcIso(
+  calendarDate: string,
+  timeZone: string,
+): string | null {
+  return localWallTimeToUtcIso(`${calendarDate}T12:00`, timeZone);
+}
+
 export function formatDateTimeInTimeZone(iso: string, timeZone: string): string {
   return new Date(iso).toLocaleString(undefined, {
     timeZone,

@@ -172,6 +172,7 @@ export interface Database {
           relationship_context: string | null;
           met_at: string | null;
           last_interaction_at: string | null;
+          interaction_count: number;
           created_at: string;
           updated_at: string;
         };
@@ -191,6 +192,7 @@ export interface Database {
           relationship_context?: string | null;
           met_at?: string | null;
           last_interaction_at?: string | null;
+          interaction_count?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -210,6 +212,7 @@ export interface Database {
           relationship_context?: string | null;
           met_at?: string | null;
           last_interaction_at?: string | null;
+          interaction_count?: number;
           created_at?: string;
           updated_at?: string;
         };

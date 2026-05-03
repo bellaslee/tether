@@ -14,6 +14,8 @@ export type PersonOption = {
   last_interaction_at: string | null;
   met_at: string | null;
   created_at: string;
+  interaction_count: number;
+  person_categories?: { name: string } | null;
 };
 
 type ParticipantSortMode = 'warmth' | 'name';

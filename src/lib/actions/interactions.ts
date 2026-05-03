@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { localWallTimeToUtcIso } from '@/lib/datetime';
+import { calendarDateLocalNoonToUtcIso, localWallTimeToUtcIso } from '@/lib/datetime';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { resolvePreferredIanaTimeZone } from '@/lib/timezones';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
@@ -139,6 +139,7 @@ export async function createInteractionFromPerson(
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, allIds);
 
   revalidatePath('/timeline');
+  revalidatePath('/people', 'layout');
   revalidatePath(`/people/${primaryPersonId}`);
   allIds.forEach((id) => revalidatePath(`/people/${id}`));
 
@@ -147,14 +148,41 @@ export async function createInteractionFromPerson(
 
 const QUICK_LOG_TITLE = 'Quick log';
 
-export async function quickLogInteractionForPerson(
+const CALENDAR_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_QUICK_LOG_DATES = 62;
+
+export async function quickLogInteractionsForPersonOnCalendarDates(
   personId: string,
+  calendarDates: string[],
+  wallTimeZoneHint?: string,
 ): Promise<ActionResult> {
   const gate = await assertOwnsPeople([personId]);
   if (!gate.ctx) {
     return { error: gate.error };
   }
   const { ctx } = gate;
+
+  const fd = new FormData();
+  const hint = wallTimeZoneHint?.trim();
+  if (hint) {
+    fd.set('wall_time_zone', hint);
+  }
+  const zone = resolvePreferredIanaTimeZone(ctx.accountTimeZone, fd);
+
+  const uniqueSorted = [
+    ...new Set(
+      calendarDates.map((d) => d.trim()).filter((d) => CALENDAR_DATE_RE.test(d)),
+    ),
+  ].sort();
+
+  if (uniqueSorted.length === 0) {
+    return { error: 'Select at least one date.' };
+  }
+  if (uniqueSorted.length > MAX_QUICK_LOG_DATES) {
+    return {
+      error: `You can add at most ${MAX_QUICK_LOG_DATES} days at once.`,
+    };
+  }
 
   const { data: otherType, error: typeError } = await ctx.client
     .from('interaction_types')
@@ -178,45 +206,63 @@ export async function quickLogInteractionForPerson(
     return { error: typeGate.error };
   }
 
-  const occurredAt = new Date().toISOString();
+  const interactionRows: {
+    user_id: string;
+    occurred_at: string;
+    interaction_type_id: string;
+    title: string;
+    raw_note: null;
+    counts_toward_last_touch: boolean;
+  }[] = [];
 
-  const { data: interaction, error: insertError } = await ctx.client
-    .from('interactions')
-    .insert({
+  for (const date of uniqueSorted) {
+    const occurredAt = calendarDateLocalNoonToUtcIso(date, zone);
+    if (!occurredAt) {
+      return { error: `Could not interpret date: ${date}` };
+    }
+    interactionRows.push({
       user_id: ctx.userId,
       occurred_at: occurredAt,
       interaction_type_id: otherType.id,
       title: QUICK_LOG_TITLE,
       raw_note: null,
       counts_toward_last_touch: countsTowardLastTouch(occurredAt),
-    })
-    .select('id')
-    .single();
-
-  if (insertError || !interaction) {
-    return { error: insertError?.message ?? 'Could not create interaction.' };
+    });
   }
 
-  const { error: linkError } = await ctx.client.from('interaction_people').insert({
-    interaction_id: interaction.id,
+  const { data: inserted, error: insertError } = await ctx.client
+    .from('interactions')
+    .insert(interactionRows)
+    .select('id');
+
+  if (insertError || !inserted || inserted.length !== interactionRows.length) {
+    return { error: insertError?.message ?? 'Could not create interactions.' };
+  }
+
+  const linkRows = inserted.map((row) => ({
+    interaction_id: row.id,
     person_id: personId,
-    role: 'primary',
-  });
+    role: 'primary' as const,
+  }));
+
+  const { error: linkError } = await ctx.client
+    .from('interaction_people')
+    .insert(linkRows);
 
   if (linkError) {
+    const ids = inserted.map((r) => r.id);
     await ctx.client
       .from('interactions')
       .delete()
-      .eq('id', interaction.id)
+      .in('id', ids)
       .eq('user_id', ctx.userId);
     return { error: linkError.message };
   }
 
-  await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, [
-    personId,
-  ]);
+  await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, [personId]);
 
   revalidatePath('/timeline');
+  revalidatePath('/people', 'layout');
   revalidatePath(`/people/${personId}`);
 
   return { ok: true };
@@ -312,6 +358,7 @@ export async function createGlobalInteraction(
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, allIds);
 
   revalidatePath('/timeline');
+  revalidatePath('/people', 'layout');
   allIds.forEach((id) => revalidatePath(`/people/${id}`));
 
   redirect('/timeline');
@@ -448,6 +495,7 @@ export async function updateInteraction(
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, touchIds);
 
   revalidatePath('/timeline');
+  revalidatePath('/people', 'layout');
   touchIds.forEach((pid) => revalidatePath(`/people/${pid}`));
 
   return { ok: true };
@@ -496,6 +544,7 @@ export async function deleteInteraction(
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, personIds);
 
   revalidatePath('/timeline');
+  revalidatePath('/people', 'layout');
   personIds.forEach((id) => revalidatePath(`/people/${id}`));
   return { ok: true };
 }

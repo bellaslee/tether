@@ -5,12 +5,13 @@ import { ButtonLink } from '@/components/ui/button';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
 import { ContactMethodRow } from '@/components/people/contact-method-row';
 import type { PersonOption } from '@/components/people/attendee-picker';
-import { RelationshipWarmthChip } from '@/components/people/relationship-warmth-chip';
+import { RelationshipHeartBar } from '@/components/people/relationship-heart-bar';
 import { PersonDetailHeader } from '@/components/people/person-detail-header';
 import {
   PersonLogInteractionProvider,
   TimelineLogInteractionTrigger,
 } from '@/components/people/person-log-interaction-context';
+import { PersonQuickLogProvider } from '@/components/people/person-quick-log-context';
 import { PersonTimelineQuickLogButton } from '@/components/people/person-timeline-quick-log-button';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionNotePreview } from '@/components/interactions/interaction-note-preview';
@@ -224,7 +225,7 @@ export default async function PersonDetailPage(props: PageProps) {
     ctx.client
       .from('people')
       .select(
-        'id, full_name, display_name, last_interaction_at, met_at, created_at',
+        'id, full_name, display_name, last_interaction_at, met_at, created_at, interaction_count, person_categories ( name )',
       )
       .eq('user_id', ctx.userId),
     ctx.client
@@ -301,6 +302,8 @@ export default async function PersonDetailPage(props: PageProps) {
   if (tasksError) {
     throw new Error(tasksError.message);
   }
+
+  const resolvedAllPeople = (allPeople ?? []) as PersonOption[];
 
   const interactionTypeOptions: InteractionTypeOption[] = (
     interactionTypeRows ?? []
@@ -393,7 +396,7 @@ export default async function PersonDetailPage(props: PageProps) {
       });
     }
 
-    const personById = new Map((allPeople ?? []).map((p) => [p.id, p]));
+    const personById = new Map(resolvedAllPeople.map((p) => [p.id, p]));
     for (const [intId, plist] of grouped) {
       const chips: PersonInteractionChip[] = [];
       for (const entry of plist) {
@@ -433,7 +436,7 @@ export default async function PersonDetailPage(props: PageProps) {
     partitionPersonTimelineRows(timelineRows);
 
   const defaultOccurredAt = '';
-  const otherPeople = (allPeople ?? []).filter((p) => p.id !== person.id);
+  const otherPeople = resolvedAllPeople.filter((p) => p.id !== person.id);
   const otherPeopleOptions = otherPeople.map((p) => ({
     id: p.id,
     label: p.display_name?.trim() || p.full_name,
@@ -586,7 +589,7 @@ export default async function PersonDetailPage(props: PageProps) {
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap items-center justify-end gap-4 sm:pt-1">
-                <PersonTimelineQuickLogButton personId={person.id} />
+                <PersonTimelineQuickLogButton />
                 <TimelineLogInteractionTrigger />
               </div>
             </header>
@@ -637,7 +640,7 @@ export default async function PersonDetailPage(props: PageProps) {
                               attendeeIds: [] as string[],
                             }
                           }
-                          allPeople={allPeople ?? []}
+                          allPeople={resolvedAllPeople}
                           interactionTypeOptions={interactionTypeOptions}
                           memorySuggestAvailable={aiEnabled}
                         />
@@ -676,7 +679,7 @@ export default async function PersonDetailPage(props: PageProps) {
                               attendeeIds: [] as string[],
                             }
                           }
-                          allPeople={allPeople ?? []}
+                          allPeople={resolvedAllPeople}
                           interactionTypeOptions={interactionTypeOptions}
                           memorySuggestAvailable={aiEnabled}
                         />
@@ -737,6 +740,10 @@ export default async function PersonDetailPage(props: PageProps) {
   return (
     <main className="prm-page">
       <PersonLogInteractionProvider>
+      <PersonQuickLogProvider
+        personId={person.id}
+        sessionTimeZone={ctx.accountTimeZone}
+      >
       <PersonDetailTabsProvider
         personId={person.id}
         initialTab={initialTab}
@@ -751,7 +758,7 @@ export default async function PersonDetailPage(props: PageProps) {
         }
         editHref={`/people/${person.id}/edit`}
         personId={person.id}
-        allPeople={allPeople ?? []}
+        allPeople={resolvedAllPeople}
         defaultOccurredAt={defaultOccurredAt}
         sessionTimeZone={ctx.accountTimeZone}
         interactionTypes={interactionTypeOptions}
@@ -775,10 +782,12 @@ export default async function PersonDetailPage(props: PageProps) {
             <span className="rounded-full border border-border-soft px-3 py-1 text-xs font-semibold text-muted">
               {formatStatus(person.status)}
             </span>
-            <RelationshipWarmthChip
+            <RelationshipHeartBar
               lastInteractionAt={person.last_interaction_at}
               metAt={person.met_at}
               createdAt={person.created_at}
+              interactionCount={person.interaction_count}
+              personCategoryName={person.person_categories?.name ?? null}
             />
           </div>
         </div>
@@ -789,6 +798,7 @@ export default async function PersonDetailPage(props: PageProps) {
         details={detailsPanel}
       />
       </PersonDetailTabsProvider>
+      </PersonQuickLogProvider>
       </PersonLogInteractionProvider>
     </main>
   );

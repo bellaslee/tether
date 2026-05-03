@@ -14,6 +14,8 @@ export type PersonForWarmthSort = PersonForDisplay & {
   last_interaction_at: string | null;
   met_at: string | null;
   created_at: string;
+  interaction_count: number;
+  person_categories?: { name: string } | null;
 };
 
 export function comparePeopleByRelationshipWarmth(
@@ -24,11 +26,15 @@ export function comparePeopleByRelationshipWarmth(
     lastInteractionAt: a.last_interaction_at,
     metAt: a.met_at,
     createdAt: a.created_at,
+    interactionCount: a.interaction_count,
+    personCategoryName: a.person_categories?.name ?? null,
   });
   const wb = computeRelationshipWarmth({
     lastInteractionAt: b.last_interaction_at,
     metAt: b.met_at,
     createdAt: b.created_at,
+    interactionCount: b.interaction_count,
+    personCategoryName: b.person_categories?.name ?? null,
   });
   const d = WARMTH_SORT_RANK[wa] - WARMTH_SORT_RANK[wb];
   if (d !== 0) {

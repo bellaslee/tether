@@ -1,40 +1,22 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { quickLogInteractionForPerson } from '@/lib/actions/interactions';
 import { Button, ButtonLink } from '@/components/ui/button';
-import { FieldError } from '@/components/ui/field-error';
 import { PersonInteractionForm } from '@/components/people/person-interaction-form';
 import type { PersonOption } from '@/components/people/attendee-picker';
 import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { usePersonLogInteraction } from '@/components/people/person-log-interaction-context';
+import { usePersonQuickLog } from '@/components/people/person-quick-log-context';
 
 function PersonDetailHeaderLogActions({
-  personId,
   logOpen,
   openLogInteraction,
 }: {
-  personId: string;
   logOpen: boolean;
   openLogInteraction: () => void;
 }) {
-  const router = useRouter();
-  const [quickLogError, setQuickLogError] = useState<string | null>(null);
-  const [quickLogPending, startQuickLogTransition] = useTransition();
-
-  const onQuickLog = useCallback(() => {
-    setQuickLogError(null);
-    startQuickLogTransition(async () => {
-      const r = await quickLogInteractionForPerson(personId);
-      if (r.error) {
-        setQuickLogError(r.error);
-      } else {
-        router.refresh();
-      }
-    });
-  }, [personId, router]);
+  const { openQuickLog } = usePersonQuickLog();
 
   return (
     <div className="flex flex-col items-end gap-2">
@@ -43,11 +25,10 @@ function PersonDetailHeaderLogActions({
           type="button"
           variant="secondary"
           size="lg"
-          onClick={onQuickLog}
-          disabled={quickLogPending}
-          aria-busy={quickLogPending}
+          onClick={openQuickLog}
+          aria-haspopup="dialog"
         >
-          {quickLogPending ? 'Saving…' : 'Quick log'}
+          Quick Log
         </Button>
         <Button
           type="button"
@@ -60,11 +41,6 @@ function PersonDetailHeaderLogActions({
           Log interaction
         </Button>
       </div>
-      {quickLogError ? (
-        <FieldError size="compact" className="max-w-xs text-right">
-          {quickLogError}
-        </FieldError>
-      ) : null}
     </div>
   );
 }
@@ -184,7 +160,6 @@ export function PersonDetailHeader({
                 Edit profile
               </ButtonLink>
               <PersonDetailHeaderLogActions
-                personId={personId}
                 logOpen={logOpen}
                 openLogInteraction={openLogInteraction}
               />

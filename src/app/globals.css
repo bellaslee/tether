@@ -175,3 +175,54 @@ summary {
 .text-balance {
   text-wrap: balance;
 }
+
+/* Quick Log calendar — DayPicker tokens + per-day palette swatches (coral / sun / sky) */
+.prm-quick-log-calendar.rdp-root {
+  --rdp-accent-color: var(--accent);
+  --rdp-accent-background-color: var(--accent-soft);
+  --rdp-today-color: var(--accent);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.prm-quick-log-calendar .rdp-weekday {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.prm-quick-log-calendar .rdp-selected {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch {
+  font-weight: 600;
+}
+
+.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch--coral {
+  background-color: var(--accent) !important;
+  color: var(--surface-strong) !important;
+  border: 2px solid var(--accent) !important;
+}
+
+.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch--sun {
+  background-color: var(--accent-sun) !important;
+  color: var(--foreground) !important;
+  border: 2px solid var(--accent-sun) !important;
+}
+
+.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch--sky {
+  background-color: var(--accent-sky) !important;
+  color: var(--surface-strong) !important;
+  border: 2px solid var(--accent-sky) !important;
+}
+
+.prm-quick-log-calendar
+  .rdp-day_button.prm-quick-log-swatch:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.prm-quick-log-calendar .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: var(--accent);
+  font-weight: 600;
+}
