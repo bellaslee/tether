@@ -20,6 +20,7 @@ import { SUGGEST_TASKS_PROMPT_VERSION } from '@/lib/ai/prompts/suggest-tasks';
 import { fetchPersonIdsForUserInteraction } from '@/lib/interactions/interaction-people-queries';
 import { isUuid } from './constants';
 import { recordLlmUsage } from '@/lib/usage/record-usage-event';
+import { syncFactEmbeddings } from '@/lib/retrieval/sync-embeddings';
 import { requireCrmForAiAction, requireOpenAiPipeline } from './guard';
 import {
   loadAcceptedFactBodiesForPersons,
@@ -148,9 +149,25 @@ export async function extractFactsForInteraction(
     return { ok: true };
   }
 
-  const { error: insErr } = await ctx.client.from('facts').insert(rowsToInsert);
+  const { data: insertedFacts, error: insErr } = await ctx.client
+    .from('facts')
+    .insert(rowsToInsert)
+    .select('id');
   if (insErr) {
     return { error: insErr.message };
+  }
+
+  for (const row of insertedFacts ?? []) {
+    try {
+      await syncFactEmbeddings({
+        client: ctx.client,
+        openai,
+        userId: ctx.userId,
+        factId: row.id,
+      });
+    } catch (e) {
+      console.error('[extractFactsForInteraction] embeddings', e);
+    }
   }
 
   revalidatePath('/timeline');

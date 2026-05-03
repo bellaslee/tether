@@ -30,6 +30,9 @@ export function AppNav({ context }: AppNavProps) {
             <Link href="/reminders" className="transition hover:text-foreground">
               Reminders
             </Link>
+            <Link href="/chat" className="transition hover:text-foreground">
+              Chat
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">

@@ -2,6 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import type { FactReviewStatus } from '@/lib/db/database.types';
+import { tryCreateOpenAiClient } from '@/lib/ai/openai';
+import {
+  deleteEmbeddingsForSource,
+  syncFactEmbeddings,
+} from '@/lib/retrieval/sync-embeddings';
 import { isUuid } from './constants';
 import { requireCrmForAiAction } from './guard';
 import type { AiMemoryActionResult } from './types';
@@ -43,6 +48,19 @@ export async function updateFactReview(
     if (!updated) {
       return { error: 'Fact not found or cannot be edited.' };
     }
+    const openai = tryCreateOpenAiClient();
+    if (openai) {
+      try {
+        await syncFactEmbeddings({
+          client: ctx.client,
+          openai,
+          userId: ctx.userId,
+          factId,
+        });
+      } catch (e) {
+        console.error('[updateFactReview] embeddings', e);
+      }
+    }
     revalidatePath(`/people/${updated.person_id}`);
     return { ok: true };
   }
@@ -57,6 +75,7 @@ export async function updateFactReview(
     if (fetchErr || !row) {
       return { error: 'Fact not found.' };
     }
+    await deleteEmbeddingsForSource(ctx.client, ctx.userId, 'fact', factId);
     const { error } = await ctx.client
       .from('facts')
       .delete()
@@ -100,6 +119,24 @@ export async function updateFactReview(
     return { error: 'Fact not found.' };
   }
 
+  if (reviewStatus === 'dismissed') {
+    await deleteEmbeddingsForSource(ctx.client, ctx.userId, 'fact', factId);
+  } else {
+    const openai = tryCreateOpenAiClient();
+    if (openai) {
+      try {
+        await syncFactEmbeddings({
+          client: ctx.client,
+          openai,
+          userId: ctx.userId,
+          factId,
+        });
+      } catch (e) {
+        console.error('[updateFactReview] embeddings', e);
+      }
+    }
+  }
+
   revalidatePath(`/people/${updated.person_id}`);
   return { ok: true };
 }
@@ -134,17 +171,35 @@ export async function createManualFact(
     return { error: 'Person not found.' };
   }
 
-  const { error: insErr } = await ctx.client.from('facts').insert({
-    user_id: ctx.userId,
-    person_id: personId,
-    interaction_id: null,
-    body,
-    review_status: 'accepted',
-    extractor_metadata: { source: 'manual' },
-  });
+  const { data: inserted, error: insErr } = await ctx.client
+    .from('facts')
+    .insert({
+      user_id: ctx.userId,
+      person_id: personId,
+      interaction_id: null,
+      body,
+      review_status: 'accepted',
+      extractor_metadata: { source: 'manual' },
+    })
+    .select('id')
+    .single();
 
-  if (insErr) {
-    return { error: insErr.message };
+  if (insErr || !inserted) {
+    return { error: insErr?.message ?? 'Could not save fact.' };
+  }
+
+  const openai = tryCreateOpenAiClient();
+  if (openai) {
+    try {
+      await syncFactEmbeddings({
+        client: ctx.client,
+        openai,
+        userId: ctx.userId,
+        factId: inserted.id,
+      });
+    } catch (e) {
+      console.error('[createManualFact] embeddings', e);
+    }
   }
 
   revalidatePath(`/people/${personId}`);

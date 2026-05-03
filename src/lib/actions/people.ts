@@ -5,7 +5,11 @@ import { redirect } from 'next/navigation';
 import type { PersonStatus } from '@/lib/db/database.types';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
-import { syncCategoryChangeTimelineEntry } from '@/lib/interactions/category-change-audit';
+import {
+  insertPersonRecord,
+  updatePersonRecord,
+  type PersonUpsertFields,
+} from '@/lib/people/person-mutation-core';
 
 export type ActionResult = { error?: string; ok?: true };
 
@@ -57,43 +61,28 @@ export async function createPerson(
     return { error: 'Choose a valid status.' };
   }
 
-  const { data: categoryRow } = await ctx.client
-    .from('person_categories')
-    .select('id')
-    .eq('id', categoryIdRaw)
-    .eq('user_id', ctx.userId)
-    .maybeSingle();
+  const fields: PersonUpsertFields = {
+    full_name,
+    display_name,
+    category_id: categoryIdRaw,
+    status: statusRaw,
+    pronouns,
+    location,
+    occupation,
+    company,
+    how_you_met,
+    relationship_context,
+    birthday: birthday || null,
+    met_at: metAtResult,
+  };
 
-  if (!categoryRow) {
-    return { error: 'Choose a valid category.' };
-  }
-
-  const { data, error } = await ctx.client
-    .from('people')
-    .insert({
-      user_id: ctx.userId,
-      full_name,
-      display_name,
-      category_id: categoryIdRaw,
-      status: statusRaw,
-      pronouns,
-      location,
-      occupation,
-      company,
-      how_you_met,
-      relationship_context,
-      birthday: birthday || null,
-      met_at: metAtResult,
-    })
-    .select('id')
-    .single();
-
-  if (error || !data) {
-    return { error: error?.message ?? 'Could not create person.' };
+  const created = await insertPersonRecord(ctx, fields);
+  if ('error' in created) {
+    return { error: created.error };
   }
 
   revalidatePath('/people');
-  redirect(`/people/${data.id}`);
+  redirect(`/people/${created.id}`);
 }
 
 export async function updatePersonFormAction(
@@ -142,67 +131,24 @@ export async function updatePerson(
     return { error: 'Choose a valid status.' };
   }
 
-  const { data: categoryRow } = await ctx.client
-    .from('person_categories')
-    .select('id')
-    .eq('id', categoryIdRaw)
-    .eq('user_id', ctx.userId)
-    .maybeSingle();
+  const fields: PersonUpsertFields = {
+    full_name,
+    display_name,
+    category_id: categoryIdRaw,
+    status: statusRaw,
+    pronouns,
+    location,
+    occupation,
+    company,
+    how_you_met,
+    relationship_context,
+    birthday: birthday || null,
+    met_at: metAtResult,
+  };
 
-  if (!categoryRow) {
-    return { error: 'Choose a valid category.' };
-  }
-
-  const { data: personBefore, error: beforeError } = await ctx.client
-    .from('people')
-    .select('category_id, created_at')
-    .eq('id', personId)
-    .eq('user_id', ctx.userId)
-    .maybeSingle();
-
-  if (beforeError || !personBefore) {
-    return { error: beforeError?.message ?? 'Person not found.' };
-  }
-
-  const { error } = await ctx.client
-    .from('people')
-    .update({
-      full_name,
-      display_name,
-      category_id: categoryIdRaw,
-      status: statusRaw,
-      pronouns,
-      location,
-      occupation,
-      company,
-      how_you_met,
-      relationship_context,
-      birthday: birthday || null,
-      met_at: metAtResult,
-    })
-    .eq('id', personId)
-    .eq('user_id', ctx.userId);
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  if (personBefore.category_id !== categoryIdRaw) {
-    try {
-      await syncCategoryChangeTimelineEntry(
-        ctx.client,
-        ctx.userId,
-        personId,
-        personBefore.category_id,
-        categoryIdRaw,
-        personBefore.created_at,
-      );
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Something went wrong.';
-      return {
-        error: `Profile updated, but the timeline entry for this category change could not be saved (${msg}).`,
-      };
-    }
+  const updated = await updatePersonRecord(ctx, personId, fields);
+  if ('error' in updated) {
+    return { error: updated.error };
   }
 
   revalidatePath('/people');

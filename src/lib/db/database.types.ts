@@ -216,7 +216,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'people_category_id_fkey';
+            columns: ['category_id'];
+            isOneToOne: false;
+            referencedRelation: 'person_categories';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       contact_methods: {
         Row: {
@@ -288,7 +296,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'interactions_interaction_type_id_fkey';
+            columns: ['interaction_type_id'];
+            isOneToOne: false;
+            referencedRelation: 'interaction_types';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       interaction_people: {
         Row: {
@@ -461,9 +477,64 @@ export interface Database {
         };
         Relationships: [];
       };
+      document_embeddings: {
+        Row: {
+          id: string;
+          user_id: string;
+          source_type: 'interaction_note' | 'fact';
+          source_id: string;
+          chunk_index: number;
+          content: string;
+          person_ids: string[];
+          embedding: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          source_type: 'interaction_note' | 'fact';
+          source_id: string;
+          chunk_index?: number;
+          content: string;
+          person_ids?: string[];
+          embedding: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          source_type?: 'interaction_note' | 'fact';
+          source_id?: string;
+          chunk_index?: number;
+          content?: string;
+          person_ids?: string[];
+          embedding?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      match_document_embeddings: {
+        Args: {
+          query_embedding: string;
+          match_count?: number;
+        };
+        Returns: {
+          id: string;
+          source_type: string;
+          source_id: string;
+          chunk_index: number;
+          content: string;
+          person_ids: string[];
+          distance: number;
+        }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

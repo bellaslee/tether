@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { calendarDateLocalNoonToUtcIso, localWallTimeToUtcIso } from '@/lib/datetime';
+import { calendarDateLocalNoonToUtcIso } from '@/lib/datetime';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { resolvePreferredIanaTimeZone } from '@/lib/timezones';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
@@ -11,6 +11,12 @@ import {
   resolveCountsTowardLastTouchOnUpdate,
 } from '@/lib/interactions/upcoming';
 import { fetchInteractionPeopleForUserInteraction } from '@/lib/interactions/interaction-people-queries';
+import { parseInteractionFieldsFromValues } from '@/lib/interactions/parse-interaction-fields';
+import { tryCreateOpenAiClient } from '@/lib/ai/openai';
+import {
+  deleteEmbeddingsForSource,
+  syncInteractionNoteEmbeddings,
+} from '@/lib/retrieval/sync-embeddings';
 
 export type ActionResult = { error?: string; ok?: true };
 
@@ -138,6 +144,20 @@ export async function createInteractionFromPerson(
 
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, allIds);
 
+  const openai = tryCreateOpenAiClient();
+  if (openai) {
+    try {
+      await syncInteractionNoteEmbeddings({
+        client: ctx.client,
+        openai,
+        userId: ctx.userId,
+        interactionId: interaction.id,
+      });
+    } catch (e) {
+      console.error('[createInteractionFromPerson] embeddings', e);
+    }
+  }
+
   revalidatePath('/timeline');
   revalidatePath('/people', 'layout');
   revalidatePath(`/people/${primaryPersonId}`);
@@ -261,6 +281,22 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
 
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, [personId]);
 
+  const openai = tryCreateOpenAiClient();
+  if (openai) {
+    for (const row of inserted) {
+      try {
+        await syncInteractionNoteEmbeddings({
+          client: ctx.client,
+          openai,
+          userId: ctx.userId,
+          interactionId: row.id,
+        });
+      } catch (e) {
+        console.error('[quickLogInteractions] embeddings', e);
+      }
+    }
+  }
+
   revalidatePath('/timeline');
   revalidatePath('/people', 'layout');
   revalidatePath(`/people/${personId}`);
@@ -268,10 +304,9 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
   return { ok: true };
 }
 
-export async function createGlobalInteraction(
-  _prev: ActionResult,
+export async function insertGlobalInteractionCore(
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<{ id: string; personIds: string[] } | { error: string }> {
   const primaryPersonId = String(
     formData.get('primary_person_id') ?? '',
   ).trim();
@@ -357,18 +392,47 @@ export async function createGlobalInteraction(
 
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, allIds);
 
+  const openai = tryCreateOpenAiClient();
+  if (openai) {
+    try {
+      await syncInteractionNoteEmbeddings({
+        client: ctx.client,
+        openai,
+        userId: ctx.userId,
+        interactionId: interaction.id,
+      });
+    } catch (e) {
+      console.error('[insertGlobalInteractionCore] embeddings', e);
+    }
+  }
+
+  return { id: interaction.id, personIds: allIds };
+}
+
+export async function createGlobalInteraction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const created = await insertGlobalInteractionCore(formData);
+  if ('error' in created) {
+    return { error: created.error };
+  }
+
   revalidatePath('/timeline');
   revalidatePath('/people', 'layout');
-  allIds.forEach((id) => revalidatePath(`/people/${id}`));
+  created.personIds.forEach((id) => revalidatePath(`/people/${id}`));
 
   redirect('/timeline');
 }
 
-export async function updateInteraction(
+export type UpdateInteractionCoreResult =
+  | { ok: true; touchIds: string[] }
+  | { error: string };
+
+export async function updateInteractionCore(
   interactionId: string,
-  _prev: ActionResult,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<UpdateInteractionCoreResult> {
   if (!isUuid(interactionId)) {
     return { error: 'Invalid interaction.' };
   }
@@ -494,9 +558,36 @@ export async function updateInteraction(
   const touchIds = [...new Set([...oldPersonIds, ...allIds])];
   await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, touchIds);
 
+  const openai = tryCreateOpenAiClient();
+  if (openai) {
+    try {
+      await syncInteractionNoteEmbeddings({
+        client: ctx.client,
+        openai,
+        userId: ctx.userId,
+        interactionId,
+      });
+    } catch (e) {
+      console.error('[updateInteractionCore] embeddings', e);
+    }
+  }
+
+  return { ok: true, touchIds };
+}
+
+export async function updateInteraction(
+  interactionId: string,
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const result = await updateInteractionCore(interactionId, formData);
+  if ('error' in result) {
+    return { error: result.error };
+  }
+
   revalidatePath('/timeline');
   revalidatePath('/people', 'layout');
-  touchIds.forEach((pid) => revalidatePath(`/people/${pid}`));
+  result.touchIds.forEach((pid) => revalidatePath(`/people/${pid}`));
 
   return { ok: true };
 }
@@ -531,6 +622,13 @@ export async function deleteInteraction(
     return { error: 'Interaction not found.' };
   }
 
+  await deleteEmbeddingsForSource(
+    ctx.client,
+    ctx.userId,
+    'interaction_note',
+    interactionId,
+  );
+
   const { error: deleteError } = await ctx.client
     .from('interactions')
     .delete()
@@ -564,25 +662,13 @@ function parseInteractionFields(
   const typeIdRaw = String(formData.get('interaction_type_id') ?? '').trim();
   const title = optionalString(formData.get('title'));
   const raw_note = optionalString(formData.get('raw_note'));
-
-  if (!occurredLocal) {
-    return { error: 'When did this happen?' };
-  }
-  if (!isUuid(typeIdRaw)) {
-    return { error: 'Choose a valid interaction type.' };
-  }
-
-  const occurred_at = localWallTimeToUtcIso(occurredLocal, wallClockZone);
-  if (!occurred_at) {
-    return { error: 'Use a valid date and time.' };
-  }
-
-  return {
-    occurred_at,
-    interaction_type_id: typeIdRaw,
+  return parseInteractionFieldsFromValues(
+    wallClockZone,
+    occurredLocal,
+    typeIdRaw,
     title,
     raw_note,
-  };
+  );
 }
 
 function optionalString(value: FormDataEntryValue | null) {
