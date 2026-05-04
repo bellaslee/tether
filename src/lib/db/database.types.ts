@@ -327,6 +327,60 @@ export interface Database {
         };
         Relationships: [];
       };
+      quick_log_presets: {
+        Row: {
+          id: string;
+          user_id: string;
+          label: string;
+          primary_person_id: string;
+          interaction_type_id: string;
+          interaction_title: string;
+          attendee_person_ids: string[];
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          label: string;
+          primary_person_id: string;
+          interaction_type_id: string;
+          interaction_title?: string;
+          attendee_person_ids?: string[];
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          label?: string;
+          primary_person_id?: string;
+          interaction_type_id?: string;
+          interaction_title?: string;
+          attendee_person_ids?: string[];
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'quick_log_presets_primary_person_id_fkey';
+            columns: ['primary_person_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'quick_log_presets_interaction_type_id_fkey';
+            columns: ['interaction_type_id'];
+            isOneToOne: false;
+            referencedRelation: 'interaction_types';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       facts: {
         Row: {
           id: string;

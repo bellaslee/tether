@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useState,
   useTransition,
 } from 'react';
@@ -12,9 +13,23 @@ import { createPortal } from 'react-dom';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 import { quickLogInteractionsForPersonOnCalendarDates } from '@/lib/actions/interactions';
+import { QUICK_LOG_TITLE } from '@/lib/interactions/quick-log-shared';
+import {
+  createQuickLogPreset,
+  deleteQuickLogPreset,
+  updateQuickLogPreset,
+} from '@/lib/actions/quick-log-presets';
 import { PersonQuickLogDayButton } from '@/components/people/person-quick-log-day-button';
+import type { QuickLogSnapshot } from '@/components/people/person-quick-log-types';
+import { InteractionParticipantPicker } from '@/components/people/interaction-participant-picker';
+import type { PersonOption } from '@/components/people/interaction-participant-picker';
+import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field-error';
+import { FormInput } from '@/components/ui/form-input';
+import { Picklist } from '@/components/ui/picklist';
+import { TextField } from '@/components/ui/text-field';
+import { formControlClassName } from '@/components/ui/form-control-classes';
 
 function dateToCalendarString(d: Date): string {
   const y = d.getFullYear();
@@ -32,34 +47,92 @@ function startOfLocalToday(): Date {
 export type PersonQuickLogDialogProps = {
   open: boolean;
   onClose: () => void;
-  personId: string;
+  snapshot: QuickLogSnapshot | null;
+  allPeople: PersonOption[];
+  interactionTypes: InteractionTypeOption[];
+  defaultInteractionTypeId: string;
   sessionTimeZone: string | null;
 };
 
 export function PersonQuickLogDialog({
   open,
   onClose,
-  personId,
+  snapshot,
+  allPeople,
+  interactionTypes,
+  defaultInteractionTypeId,
   sessionTimeZone,
 }: PersonQuickLogDialogProps) {
+  if (!open || !snapshot) {
+    return null;
+  }
+
+  return (
+    <PersonQuickLogDialogInner
+      key={snapshot.nonce}
+      snapshot={snapshot}
+      onClose={onClose}
+      allPeople={allPeople}
+      interactionTypes={interactionTypes}
+      defaultInteractionTypeId={defaultInteractionTypeId}
+      sessionTimeZone={sessionTimeZone}
+    />
+  );
+}
+
+function PersonQuickLogDialogInner({
+  snapshot,
+  onClose,
+  allPeople,
+  interactionTypes,
+  defaultInteractionTypeId,
+  sessionTimeZone,
+}: Omit<PersonQuickLogDialogProps, 'open' | 'snapshot'> & {
+  snapshot: QuickLogSnapshot;
+}) {
   const router = useRouter();
   const titleId = useId();
-  const [selected, setSelected] = useState<Date[] | undefined>(undefined);
+  const typeFieldId = useId();
+  const titleFieldId = useId();
+  const presetLabelFieldId = useId();
+  const newPresetLabelFieldId = useId();
+
+  const [primaryPersonId, setPrimaryPersonId] = useState(
+    snapshot.primaryPersonId,
+  );
+  const [attendeeIds, setAttendeeIds] = useState<string[]>(() => [
+    ...snapshot.attendeeIds,
+  ]);
+
+  const resolvedDefaultType = useMemo(() => {
+    const fromSnap = snapshot.interactionTypeId;
+    if (interactionTypes.some((t) => t.id === fromSnap)) {
+      return fromSnap;
+    }
+    return defaultInteractionTypeId;
+  }, [
+    snapshot.interactionTypeId,
+    interactionTypes,
+    defaultInteractionTypeId,
+  ]);
+
+  const [interactionTypeId, setInteractionTypeId] = useState(resolvedDefaultType);
+  const [interactionTitle, setInteractionTitle] = useState(
+    snapshot.interactionTitle || QUICK_LOG_TITLE,
+  );
+  const [presetLabel, setPresetLabel] = useState(snapshot.presetLabel);
+  const [newPresetLabel, setNewPresetLabel] = useState('');
+  const [selected, setSelected] = useState<Date[] | undefined>(() => [
+    startOfLocalToday(),
+  ]);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
     setError(null);
-    setSelected([startOfLocalToday()]);
-  }, [open]);
+  }, [snapshot.nonce]);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKeyDown = (e: KeyboardEvent) => {
@@ -72,9 +145,26 @@ export function PersonQuickLogDialog({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [open, onClose, pending]);
+  }, [onClose, pending]);
 
-  const onSave = useCallback(() => {
+  const onPeopleChange = useCallback(
+    (v: { primaryPersonId: string; attendeeIds: string[] }) => {
+      setPrimaryPersonId(v.primaryPersonId);
+      setAttendeeIds(v.attendeeIds);
+    },
+    [],
+  );
+
+  const wallTimeZoneHint =
+    typeof Intl !== 'undefined'
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
+
+  const onSaveLog = useCallback(() => {
+    if (!primaryPersonId.trim()) {
+      setError('Choose who this moment is mainly about.');
+      return;
+    }
     const dates = selected ?? [];
     if (dates.length === 0) {
       setError('Select at least one date.');
@@ -82,15 +172,16 @@ export function PersonQuickLogDialog({
     }
     setError(null);
     const calendarDates = dates.map(dateToCalendarString);
-    const wallTimeZoneHint =
-      typeof Intl !== 'undefined'
-        ? Intl.DateTimeFormat().resolvedOptions().timeZone
-        : undefined;
     startTransition(async () => {
       const r = await quickLogInteractionsForPersonOnCalendarDates(
-        personId,
+        primaryPersonId,
         calendarDates,
-        wallTimeZoneHint,
+        {
+          interactionTypeId,
+          attendeeIds,
+          title: interactionTitle,
+          wallTimeZoneHint,
+        },
       );
       if (r.error) {
         setError(r.error);
@@ -99,17 +190,125 @@ export function PersonQuickLogDialog({
         router.refresh();
       }
     });
-  }, [personId, router, selected, onClose]);
+  }, [
+    primaryPersonId,
+    selected,
+    interactionTypeId,
+    attendeeIds,
+    interactionTitle,
+    wallTimeZoneHint,
+    onClose,
+    router,
+  ]);
 
-  if (!open || typeof document === 'undefined') {
-    return null;
-  }
+  const onSavePresetUpdate = useCallback(() => {
+    if (!snapshot.editingPresetId) {
+      return;
+    }
+    if (!primaryPersonId.trim()) {
+      setError('Choose who this preset is mainly about.');
+      return;
+    }
+    const label = presetLabel.trim();
+    if (!label) {
+      setError('Enter a name for this preset.');
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const r = await updateQuickLogPreset(snapshot.editingPresetId!, {
+        label,
+        primaryPersonId,
+        interactionTypeId,
+        interactionTitle,
+        attendeeIds,
+      });
+      if (r.error) {
+        setError(r.error);
+      } else {
+        onClose();
+        router.refresh();
+      }
+    });
+  }, [
+    snapshot.editingPresetId,
+    presetLabel,
+    primaryPersonId,
+    interactionTypeId,
+    interactionTitle,
+    attendeeIds,
+    onClose,
+    router,
+  ]);
+
+  const onSaveNewPreset = useCallback(() => {
+    if (!primaryPersonId.trim()) {
+      setError('Choose who this preset is mainly about.');
+      return;
+    }
+    const label = newPresetLabel.trim();
+    if (!label) {
+      setError('Enter a name for the new preset.');
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const r = await createQuickLogPreset({
+        label,
+        primaryPersonId,
+        interactionTypeId,
+        interactionTitle,
+        attendeeIds,
+      });
+      if (r.error) {
+        setError(r.error);
+      } else {
+        setNewPresetLabel('');
+        router.refresh();
+      }
+    });
+  }, [
+    primaryPersonId,
+    newPresetLabel,
+    interactionTypeId,
+    interactionTitle,
+    attendeeIds,
+    router,
+  ]);
+
+  const onDeletePreset = useCallback(() => {
+    if (!snapshot.editingPresetId) {
+      return;
+    }
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm('Delete this quick log preset?')
+    ) {
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const r = await deleteQuickLogPreset(snapshot.editingPresetId!);
+      if (r.error) {
+        setError(r.error);
+      } else {
+        onClose();
+        router.refresh();
+      }
+    });
+  }, [snapshot.editingPresetId, onClose, router]);
 
   const zoneLabel =
     sessionTimeZone?.trim() ||
     (typeof Intl !== 'undefined'
       ? Intl.DateTimeFormat().resolvedOptions().timeZone
       : null);
+
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const isEditPreset = snapshot.mode === 'editPreset';
 
   return createPortal(
     <div
@@ -125,7 +324,7 @@ export function PersonQuickLogDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="card-surface max-h-[min(90dvh,36rem)] w-full max-w-md overflow-y-auto rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
+        className="card-surface max-h-[min(92dvh,44rem)] w-full max-w-lg overflow-y-auto rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -133,7 +332,7 @@ export function PersonQuickLogDialog({
             id={titleId}
             className="font-display text-xl tracking-tight sm:text-2xl"
           >
-            Quick Log
+            {isEditPreset ? 'Edit quick log preset' : 'Quick Log'}
           </h2>
           <Button
             type="button"
@@ -146,33 +345,159 @@ export function PersonQuickLogDialog({
             Close
           </Button>
         </div>
-        <p className="mt-2 text-sm leading-7 text-muted">
-          Each selected day is saved as a quick log at{' '}
-          <span className="font-medium text-foreground">12:00</span>
-          {zoneLabel ? (
+
+        {!isEditPreset ? (
+          <p className="mt-2 text-sm leading-7 text-muted">
+            Each selected day is saved at{' '}
+            <span className="font-medium text-foreground">12:00</span>
+            {zoneLabel ? (
+              <>
+                {' '}
+                <span className="text-foreground/90">({zoneLabel})</span>
+              </>
+            ) : null}
+            . Tap days to add or remove them.
+          </p>
+        ) : (
+          <p className="mt-2 text-sm leading-7 text-muted">
+            Update who is included, the type, and the title. This does not create
+            timeline entries.
+          </p>
+        )}
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <p className="text-sm font-semibold">People</p>
+            <p className="mt-1 text-xs text-muted">
+              Mark who was there. Use “Mark as main” for the primary person on
+              each entry.
+            </p>
+            <div className="mt-2">
+              <InteractionParticipantPicker
+                people={allPeople}
+                initialPrimaryId={primaryPersonId}
+                initialAttendeeIds={attendeeIds}
+                autoRevealList
+                formIntegration={false}
+                onSelectionChange={onPeopleChange}
+              />
+            </div>
+          </div>
+
+          {isEditPreset ? (
+            <TextField
+              id={presetLabelFieldId}
+              label="Preset name"
+              value={presetLabel}
+              onChange={(e) => setPresetLabel(e.target.value)}
+              disabled={pending}
+              autoComplete="off"
+            />
+          ) : null}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label
+                htmlFor={typeFieldId}
+                className="text-sm font-semibold"
+              >
+                Type
+              </label>
+              <Picklist
+                id={typeFieldId}
+                value={interactionTypeId}
+                onChange={(e) => setInteractionTypeId(e.target.value)}
+                disabled={pending}
+                required
+              >
+                {interactionTypes.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </Picklist>
+            </div>
+            <TextField
+              id={titleFieldId}
+              label="Title"
+              hint="Shown on each timeline entry."
+              value={interactionTitle}
+              onChange={(e) => setInteractionTitle(e.target.value)}
+              placeholder={QUICK_LOG_TITLE}
+              disabled={pending}
+              autoComplete="off"
+            />
+          </div>
+
+          {!isEditPreset ? (
             <>
-              {' '}
-              <span className="text-foreground/90">({zoneLabel})</span>
+              <div className="flex justify-center">
+                <DayPicker
+                  mode="multiple"
+                  className="prm-quick-log-calendar"
+                  selected={selected}
+                  onSelect={setSelected}
+                  disabled={pending}
+                  components={{ DayButton: PersonQuickLogDayButton }}
+                />
+              </div>
+
+              <div className="rounded-2xl border border-border-soft bg-white/50 p-4 space-y-3">
+                <p className="text-sm font-semibold">Save as preset</p>
+                <p className="text-xs text-muted">
+                  Save this combination of people, type, and title for one-tap
+                  reuse from your timelines.
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="min-w-0 flex-1">
+                    <label
+                      htmlFor={newPresetLabelFieldId}
+                      className="sr-only"
+                    >
+                      New preset name
+                    </label>
+                    <FormInput
+                      id={newPresetLabelFieldId}
+                      type="text"
+                      value={newPresetLabel}
+                      onChange={(e) => setNewPresetLabel(e.target.value)}
+                      placeholder="e.g. Weekly walk with Sam"
+                      disabled={pending}
+                      className={formControlClassName({ size: 'default' })}
+                      autoComplete="off"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={pending}
+                    onClick={onSaveNewPreset}
+                  >
+                    Save preset
+                  </Button>
+                </div>
+              </div>
             </>
           ) : null}
-          . Tap days to add or remove them.
-        </p>
-        <div className="mt-4 flex justify-center">
-          <DayPicker
-            mode="multiple"
-            className="prm-quick-log-calendar"
-            selected={selected}
-            onSelect={setSelected}
-            disabled={pending}
-            components={{ DayButton: PersonQuickLogDayButton }}
-          />
         </div>
+
         {error ? (
           <FieldError size="compact" className="mt-4">
             {error}
           </FieldError>
         ) : null}
+
         <div className="mt-6 flex flex-wrap justify-end gap-3">
+          {isEditPreset ? (
+            <Button
+              type="button"
+              variant="ghostSubtle"
+              onClick={onDeletePreset}
+              disabled={pending}
+            >
+              Delete preset
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant="secondary"
@@ -181,15 +506,27 @@ export function PersonQuickLogDialog({
           >
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="primary"
-            onClick={onSave}
-            disabled={pending || (selected?.length ?? 0) === 0}
-            aria-busy={pending}
-          >
-            {pending ? 'Saving…' : 'Save'}
-          </Button>
+          {isEditPreset ? (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={onSavePresetUpdate}
+              disabled={pending}
+              aria-busy={pending}
+            >
+              {pending ? 'Saving…' : 'Update preset'}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={onSaveLog}
+              disabled={pending || (selected?.length ?? 0) === 0}
+              aria-busy={pending}
+            >
+              {pending ? 'Saving…' : 'Save to timeline'}
+            </Button>
+          )}
         </div>
       </div>
     </div>,

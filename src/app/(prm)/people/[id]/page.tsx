@@ -13,6 +13,8 @@ import {
 } from '@/components/people/person-log-interaction-context';
 import { PersonQuickLogProvider } from '@/components/people/person-quick-log-context';
 import { PersonTimelineQuickLogButton } from '@/components/people/person-timeline-quick-log-button';
+import { QuickLogPresetStrip } from '@/components/people/quick-log-preset-strip';
+import { toQuickLogPresetCardModel } from '@/lib/quick-log/preset-card-model';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionNotePreview } from '@/components/interactions/interaction-note-preview';
 import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
@@ -434,6 +436,36 @@ export default async function PersonDetailPage(props: PageProps) {
     interactionTypeOptions,
   );
 
+  const { data: quickLogPresetRows, error: quickLogPresetError } =
+    await ctx.client
+      .from('quick_log_presets')
+      .select(
+        'id, label, primary_person_id, interaction_type_id, interaction_title, attendee_person_ids, sort_order, created_at, interaction_types ( name )',
+      )
+      .eq('user_id', ctx.userId)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false });
+
+  if (quickLogPresetError) {
+    throw new Error(quickLogPresetError.message);
+  }
+
+  const allQuickLogPresets = (quickLogPresetRows ?? []).map((row) =>
+    toQuickLogPresetCardModel(
+      row as Parameters<typeof toQuickLogPresetCardModel>[0],
+    ),
+  );
+
+  const quickLogPresetsForPerson = allQuickLogPresets.filter(
+    (p) =>
+      p.primary_person_id === person.id ||
+      p.attendee_person_ids.includes(person.id),
+  );
+
+  const quickLogPeopleById = new Map(
+    resolvedAllPeople.map((p) => [p.id, p]),
+  );
+
   const connectionTypeOptions: ConnectionTypeOption[] = (
     connectionTypeRows ?? []
   ).map((row) => ({ id: row.id, name: row.name }));
@@ -601,6 +633,11 @@ export default async function PersonDetailPage(props: PageProps) {
             </div>
           </header>
 
+          <QuickLogPresetStrip
+            presets={quickLogPresetsForPerson}
+            peopleById={quickLogPeopleById}
+          />
+
           {timelineRows.length === 0 ? (
             <p className="rounded-2xl border border-border-soft bg-white/50 px-6 py-8 text-sm text-muted">
               {PAGE_COPY.overview.timeline.empty.lead}{' '}
@@ -747,8 +784,11 @@ export default async function PersonDetailPage(props: PageProps) {
     <main className="prm-page">
       <PersonLogInteractionProvider>
       <PersonQuickLogProvider
-        personId={person.id}
+        defaultPrimaryPersonId={person.id}
         sessionTimeZone={ctx.accountTimeZone}
+        allPeople={resolvedAllPeople}
+        interactionTypes={interactionTypeOptions}
+        defaultInteractionTypeId={defaultInteractionTypeId}
       >
       <PersonDetailTabsProvider
         personId={person.id}

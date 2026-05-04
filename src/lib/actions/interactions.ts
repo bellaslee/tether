@@ -17,6 +17,11 @@ import {
   deleteEmbeddingsForSource,
   syncInteractionNoteEmbeddings,
 } from '@/lib/retrieval/sync-embeddings';
+import { assertOwnsInteractionType, assertOwnsPeople } from '@/lib/prm/assert-owns';
+import {
+  resolveQuickLogInteractionTitle,
+  type QuickLogCalendarOptions,
+} from '@/lib/interactions/quick-log-shared';
 
 export type ActionResult = { error?: string; ok?: true };
 
@@ -27,45 +32,7 @@ function isUuid(value: string): boolean {
   return UUID_RE.test(value);
 }
 
-async function assertOwnsPeople(personIds: string[]) {
-  const ctx = await getPrmSupabaseContext();
-  if (!ctx) {
-    return { error: 'You need to sign in again.', ctx: null };
-  }
-  const unique = [...new Set(personIds)];
-  const { data, error } = await ctx.client
-    .from('people')
-    .select('id')
-    .eq('user_id', ctx.userId)
-    .in('id', unique);
-  if (error) {
-    return { error: error.message, ctx: null };
-  }
-  if (!data || data.length !== unique.length) {
-    return { error: 'One or more people could not be found.', ctx: null };
-  }
-  return { ctx, error: undefined };
-}
-
-async function assertOwnsInteractionType(
-  ctx: NonNullable<Awaited<ReturnType<typeof getPrmSupabaseContext>>>,
-  interactionTypeId: string,
-): Promise<{ ok: true } | { error: string }> {
-  const { data, error } = await ctx.client
-    .from('interaction_types')
-    .select('id')
-    .eq('id', interactionTypeId)
-    .eq('user_id', ctx.userId)
-    .maybeSingle();
-
-  if (error) {
-    return { error: error.message };
-  }
-  if (!data) {
-    return { error: 'Choose a valid interaction type.' };
-  }
-  return { ok: true };
-}
+export type { QuickLogCalendarOptions };
 
 export async function createInteractionFromPerson(
   primaryPersonId: string,
@@ -166,24 +133,39 @@ export async function createInteractionFromPerson(
   return { ok: true };
 }
 
-const QUICK_LOG_TITLE = 'Quick log';
-
 const CALENDAR_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_QUICK_LOG_DATES = 62;
 
 export async function quickLogInteractionsForPersonOnCalendarDates(
-  personId: string,
+  primaryPersonId: string,
   calendarDates: string[],
-  wallTimeZoneHint?: string,
+  options: QuickLogCalendarOptions,
 ): Promise<ActionResult> {
-  const gate = await assertOwnsPeople([personId]);
+  if (!isUuid(primaryPersonId)) {
+    return { error: 'Choose who this moment is mainly about.' };
+  }
+  const attendeeIds = [...new Set((options.attendeeIds ?? []).map((id) => id.trim()).filter(Boolean))]
+    .filter((id) => id !== primaryPersonId)
+    .sort();
+
+  const allPersonIds = [primaryPersonId, ...attendeeIds];
+  const gate = await assertOwnsPeople(allPersonIds);
   if (!gate.ctx) {
     return { error: gate.error };
   }
   const { ctx } = gate;
 
+  if (!isUuid(options.interactionTypeId)) {
+    return { error: 'Choose a valid interaction type.' };
+  }
+
+  const typeGate = await assertOwnsInteractionType(ctx, options.interactionTypeId);
+  if ('error' in typeGate) {
+    return { error: typeGate.error };
+  }
+
   const fd = new FormData();
-  const hint = wallTimeZoneHint?.trim();
+  const hint = options.wallTimeZoneHint?.trim();
   if (hint) {
     fd.set('wall_time_zone', hint);
   }
@@ -204,27 +186,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
     };
   }
 
-  const { data: otherType, error: typeError } = await ctx.client
-    .from('interaction_types')
-    .select('id')
-    .eq('user_id', ctx.userId)
-    .eq('name', 'Other')
-    .maybeSingle();
-
-  if (typeError) {
-    return { error: typeError.message };
-  }
-  if (!otherType) {
-    return {
-      error:
-        'Could not find an "Other" interaction type. Add it under Settings or restore the default types.',
-    };
-  }
-
-  const typeGate = await assertOwnsInteractionType(ctx, otherType.id);
-  if ('error' in typeGate) {
-    return { error: typeGate.error };
-  }
+  const resolvedTitle = resolveQuickLogInteractionTitle(options.title);
 
   const interactionRows: {
     user_id: string;
@@ -243,8 +205,8 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
     interactionRows.push({
       user_id: ctx.userId,
       occurred_at: occurredAt,
-      interaction_type_id: otherType.id,
-      title: QUICK_LOG_TITLE,
+      interaction_type_id: options.interactionTypeId,
+      title: resolvedTitle,
       raw_note: null,
       counts_toward_last_touch: countsTowardLastTouch(occurredAt),
     });
@@ -259,11 +221,16 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
     return { error: insertError?.message ?? 'Could not create interactions.' };
   }
 
-  const linkRows = inserted.map((row) => ({
-    interaction_id: row.id,
-    person_id: personId,
-    role: 'primary' as const,
-  }));
+  const linkRows = inserted.flatMap((row) =>
+    allPersonIds.map((personId) => ({
+      interaction_id: row.id,
+      person_id: personId,
+      role:
+        personId === primaryPersonId
+          ? ('primary' as const)
+          : ('attendee' as const),
+    })),
+  );
 
   const { error: linkError } = await ctx.client
     .from('interaction_people')
@@ -279,7 +246,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
     return { error: linkError.message };
   }
 
-  await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, [personId]);
+  await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, allPersonIds);
 
   const openai = tryCreateOpenAiClient();
   if (openai) {
@@ -299,7 +266,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
 
   revalidatePath('/timeline');
   revalidatePath('/people', 'layout');
-  revalidatePath(`/people/${personId}`);
+  allPersonIds.forEach((id) => revalidatePath(`/people/${id}`));
 
   return { ok: true };
 }

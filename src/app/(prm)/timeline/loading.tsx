@@ -13,8 +13,16 @@ export default function TimelineLoading() {
           <RouteLoadingPulse className="h-4 w-full max-w-2xl" />
           <RouteLoadingPulse className="h-4 w-full max-w-xl" />
         </div>
-        <RouteLoadingPulse className="h-11 w-40 shrink-0 rounded-xl" />
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
+          <RouteLoadingPulse className="h-11 w-28 shrink-0 rounded-xl" />
+          <RouteLoadingPulse className="h-11 w-40 shrink-0 rounded-xl" />
+        </div>
       </header>
+      <div className="mt-6 flex gap-3 overflow-hidden">
+        <RouteLoadingPulse className="h-28 w-40 shrink-0 rounded-2xl" />
+        <RouteLoadingPulse className="h-28 w-40 shrink-0 rounded-2xl" />
+        <RouteLoadingPulse className="h-28 w-36 shrink-0 rounded-2xl" />
+      </div>
       <div className="mt-10 space-y-10">
         <div className="space-y-4">
           <RouteLoadingPulse className="h-3 w-28" />

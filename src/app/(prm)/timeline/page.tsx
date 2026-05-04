@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/button';
+import { PersonQuickLogProvider } from '@/components/people/person-quick-log-context';
+import { PersonTimelineQuickLogButton } from '@/components/people/person-timeline-quick-log-button';
+import { QuickLogPresetStrip } from '@/components/people/quick-log-preset-strip';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionNotePreview } from '@/components/interactions/interaction-note-preview';
 import { InteractionMemorySuggestButton } from '@/components/interactions/interaction-memory-suggest-button';
@@ -8,7 +11,11 @@ import { InteractionMetaChips } from '@/components/interactions/interaction-meta
 import { requirePrmAccess } from '@/lib/prm/guard';
 import { formatDateTimeInTimeZone } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
-import type { InteractionTypeOption } from '@/lib/interactions/type-options';
+import {
+  defaultInteractionTypeId as pickDefaultInteractionTypeId,
+  type InteractionTypeOption,
+} from '@/lib/interactions/type-options';
+import { toQuickLogPresetCardModel } from '@/lib/quick-log/preset-card-model';
 import { partitionTimelineByOccurrence } from '@/lib/interactions/timeline-partition';
 import { hasOpenAiApiKey } from '@/lib/env';
 import {
@@ -72,6 +79,9 @@ export default async function TimelinePage() {
   const interactionTypeOptions: InteractionTypeOption[] = (
     interactionTypeRows ?? []
   ).map((row) => ({ id: row.id, name: row.name }));
+  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
+    interactionTypeOptions,
+  );
 
   const { data: allPeopleRows, error: allPeopleError } = await ctx.client
     .from('people')
@@ -84,7 +94,29 @@ export default async function TimelinePage() {
     throw new Error(allPeopleError.message);
   }
 
-  const allPeople = allPeopleRows ?? [];
+  const allPeople = (allPeopleRows ?? []) as PersonOption[];
+
+  const { data: quickLogPresetRows, error: quickLogPresetError } =
+    await ctx.client
+      .from('quick_log_presets')
+      .select(
+        'id, label, primary_person_id, interaction_type_id, interaction_title, attendee_person_ids, sort_order, created_at, interaction_types ( name )',
+      )
+      .eq('user_id', ctx.userId)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false });
+
+  if (quickLogPresetError) {
+    throw new Error(quickLogPresetError.message);
+  }
+
+  const globalQuickLogPresets = (quickLogPresetRows ?? []).map((row) =>
+    toQuickLogPresetCardModel(
+      row as Parameters<typeof toQuickLogPresetCardModel>[0],
+    ),
+  );
+
+  const quickLogPeopleById = new Map(allPeople.map((p) => [p.id, p]));
 
   const { data: interactions, error } = await ctx.client
     .from('interactions')
@@ -145,20 +177,37 @@ export default async function TimelinePage() {
 
   return (
     <main className="prm-page">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="prm-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
-          <h1 className="mt-2 font-display text-4xl tracking-tight">
-            {PAGE_COPY.hero.title}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-            {PAGE_COPY.hero.description}
-          </p>
+      <PersonQuickLogProvider
+        defaultPrimaryPersonId={null}
+        sessionTimeZone={ctx.accountTimeZone}
+        allPeople={allPeople}
+        interactionTypes={interactionTypeOptions}
+        defaultInteractionTypeId={defaultInteractionTypeId}
+      >
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="prm-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
+            <h1 className="mt-2 font-display text-4xl tracking-tight">
+              {PAGE_COPY.hero.title}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+              {PAGE_COPY.hero.description}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
+            <PersonTimelineQuickLogButton />
+            <ButtonLink href="/interactions/new" variant="primary" size="lg">
+              {PAGE_COPY.logInteraction}
+            </ButtonLink>
+          </div>
+        </header>
+
+        <div className="mt-6">
+          <QuickLogPresetStrip
+            presets={globalQuickLogPresets}
+            peopleById={quickLogPeopleById}
+          />
         </div>
-        <ButtonLink href="/interactions/new" variant="primary" size="lg">
-          {PAGE_COPY.logInteraction}
-        </ButtonLink>
-      </header>
 
       {interactionList.length === 0 ? (
         <ol className="space-y-5">
@@ -229,6 +278,7 @@ export default async function TimelinePage() {
           ) : null}
         </div>
       )}
+      </PersonQuickLogProvider>
     </main>
   );
 }

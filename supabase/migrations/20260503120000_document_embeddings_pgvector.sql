@@ -11,7 +11,7 @@ create table public.document_embeddings (
   chunk_index int not null default 0,
   content text not null check (char_length(trim(content)) > 0),
   person_ids uuid[] not null default '{}'::uuid[],
-  embedding vector(1536) not null,
+  embedding extensions.vector(1536) not null,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
   unique (user_id, source_type, source_id, chunk_index)
@@ -23,7 +23,7 @@ create index document_embeddings_source_idx
 
 create index document_embeddings_embedding_hnsw
   on public.document_embeddings
-  using hnsw (embedding vector_cosine_ops);
+  using hnsw (embedding extensions.vector_cosine_ops);
 
 create trigger set_document_embeddings_updated_at
 before update on public.document_embeddings
@@ -53,9 +53,9 @@ on public.document_embeddings
 for delete
 using (auth.uid() = user_id);
 
--- Cosine distance operator <=>; smaller distance = closer match
+-- Cosine distance: use operator(extensions.<=>) so resolution works when vector lives in extensions (see Supabase pgvector + search_path).
 create or replace function public.match_document_embeddings(
-  query_embedding vector(1536),
+  query_embedding extensions.vector(1536),
   match_count int default 12
 )
 returns table (
@@ -77,10 +77,10 @@ as $$
     de.chunk_index,
     de.content,
     de.person_ids,
-    (de.embedding <=> query_embedding)::double precision as distance
+    (de.embedding operator(extensions.<=>) query_embedding)::double precision as distance
   from public.document_embeddings de
-  order by de.embedding <=> query_embedding
+  order by de.embedding operator(extensions.<=>) query_embedding
   limit least(coalesce(match_count, 12), 50);
 $$;
 
-grant execute on function public.match_document_embeddings(vector, int) to authenticated;
+grant execute on function public.match_document_embeddings(extensions.vector, int) to authenticated;

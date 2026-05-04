@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useId, useMemo, useState } from 'react';
+import { Fragment, useEffect, useId, useMemo, useState } from 'react';
 import { comparePeopleByRelationshipWarmth } from '@/lib/people/compare-by-relationship-warmth';
 import { personShownName } from '@/lib/people/list-name';
 import { Button } from '@/components/ui/button';
@@ -69,6 +69,15 @@ export type InteractionParticipantPickerProps = {
   autoRevealList?: boolean;
   namePrimary?: string;
   nameAttendees?: string;
+  /**
+   * When false, omit hidden form inputs and report selection via
+   * {@link onSelectionChange} (for dialogs that are not a form).
+   */
+  formIntegration?: boolean;
+  onSelectionChange?: (value: {
+    primaryPersonId: string;
+    attendeeIds: string[];
+  }) => void;
 };
 
 export function InteractionParticipantPicker({
@@ -79,6 +88,8 @@ export function InteractionParticipantPicker({
   autoRevealList = false,
   namePrimary = 'primary_person_id',
   nameAttendees = 'attendee_ids',
+  formIntegration = true,
+  onSelectionChange,
 }: InteractionParticipantPickerProps) {
   const resolvedInitialPrimary = fixedPrimaryId ?? initialPrimaryId;
   const [primaryId, setPrimaryId] = useState(
@@ -98,6 +109,21 @@ export function InteractionParticipantPicker({
     ids.sort();
     return ids.join(',');
   }, [selectedIds, primaryId]);
+
+  const attendeeIdsSorted = useMemo(() => {
+    const ids = [...selectedIds].filter((id) => id !== primaryId);
+    ids.sort();
+    return ids;
+  }, [selectedIds, primaryId]);
+
+  useEffect(() => {
+    if (!formIntegration && onSelectionChange) {
+      onSelectionChange({
+        primaryPersonId: primaryId,
+        attendeeIds: attendeeIdsSorted,
+      });
+    }
+  }, [formIntegration, onSelectionChange, primaryId, attendeeIdsSorted]);
 
   const orderedPeople = useMemo(() => {
     const copy = [...people];
@@ -165,10 +191,14 @@ export function InteractionParticipantPicker({
 
   return (
     <div className="space-y-3">
-      {!fixedPrimaryId ? (
-        <input type="hidden" name={namePrimary} value={primaryId} readOnly />
+      {formIntegration ? (
+        <>
+          {!fixedPrimaryId ? (
+            <input type="hidden" name={namePrimary} value={primaryId} readOnly />
+          ) : null}
+          <input type="hidden" name={nameAttendees} value={attendeeValue} readOnly />
+        </>
       ) : null}
-      <input type="hidden" name={nameAttendees} value={attendeeValue} readOnly />
 
       <div className="min-w-0">
         <label htmlFor={searchFieldId} className="sr-only">
