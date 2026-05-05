@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { calendarDateLocalNoonToUtcIso } from '@/lib/datetime';
+import { localWallTimeToUtcIso } from '@/lib/datetime';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { resolvePreferredIanaTimeZone } from '@/lib/timezones';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
@@ -20,6 +20,7 @@ import {
 import { assertOwnsInteractionType, assertOwnsPeople } from '@/lib/prm/assert-owns';
 import {
   resolveQuickLogInteractionTitle,
+  resolveQuickLogTimeLocal,
   type QuickLogCalendarOptions,
 } from '@/lib/interactions/quick-log-shared';
 
@@ -139,14 +140,30 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
   calendarDates: string[],
   options: QuickLogCalendarOptions,
 ): Promise<ActionResult> {
-  if (!isUuid(primaryPersonId)) {
-    return { error: 'Choose who this moment is mainly about.' };
+  const primaryTrim = primaryPersonId.trim();
+  if (primaryTrim && !isUuid(primaryTrim)) {
+    return { error: 'Choose a valid main person, or clear main and pick attendees only.' };
   }
-  const attendeeIds = [...new Set((options.attendeeIds ?? []).map((id) => id.trim()).filter(Boolean))]
-    .filter((id) => id !== primaryPersonId)
-    .sort();
+  const rawAttendees = (options.attendeeIds ?? [])
+    .map((id) => id.trim())
+    .filter(Boolean);
+  const attendeeIds = [
+    ...new Set(
+      primaryTrim
+        ? rawAttendees.filter((id) => id !== primaryTrim)
+        : rawAttendees,
+    ),
+  ].sort();
 
-  const allPersonIds = [primaryPersonId, ...attendeeIds];
+  const allPersonIds =
+    primaryTrim && isUuid(primaryTrim)
+      ? [primaryTrim, ...attendeeIds]
+      : [...new Set(attendeeIds.filter((id) => isUuid(id)))].sort();
+
+  if (allPersonIds.length === 0) {
+    return { error: 'Include at least one person.' };
+  }
+
   const gate = await assertOwnsPeople(allPersonIds);
   if (!gate.ctx) {
     return { error: gate.error };
@@ -185,6 +202,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
   }
 
   const resolvedTitle = resolveQuickLogInteractionTitle(options.title);
+  const timeLocal = resolveQuickLogTimeLocal(options.timeLocal);
 
   const interactionRows: {
     user_id: string;
@@ -196,7 +214,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
   }[] = [];
 
   for (const date of uniqueSorted) {
-    const occurredAt = calendarDateLocalNoonToUtcIso(date, zone);
+    const occurredAt = localWallTimeToUtcIso(`${date}T${timeLocal}`, zone);
     if (!occurredAt) {
       return { error: `Could not interpret date: ${date}` };
     }
@@ -224,7 +242,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
       interaction_id: row.id,
       person_id: personId,
       role:
-        personId === primaryPersonId
+        primaryTrim && personId === primaryTrim
           ? ('primary' as const)
           : ('attendee' as const),
     })),

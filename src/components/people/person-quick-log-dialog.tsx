@@ -52,6 +52,8 @@ export type PersonQuickLogDialogProps = {
   interactionTypes: InteractionTypeOption[];
   defaultInteractionTypeId: string;
   sessionTimeZone: string | null;
+  /** When true (global timeline), main person is optional if at least one person is included. */
+  allowMissingPrimaryPerson: boolean;
 };
 
 export function PersonQuickLogDialog({
@@ -62,6 +64,7 @@ export function PersonQuickLogDialog({
   interactionTypes,
   defaultInteractionTypeId,
   sessionTimeZone,
+  allowMissingPrimaryPerson,
 }: PersonQuickLogDialogProps) {
   if (!open || !snapshot) {
     return null;
@@ -76,6 +79,7 @@ export function PersonQuickLogDialog({
       interactionTypes={interactionTypes}
       defaultInteractionTypeId={defaultInteractionTypeId}
       sessionTimeZone={sessionTimeZone}
+      allowMissingPrimaryPerson={allowMissingPrimaryPerson}
     />
   );
 }
@@ -87,6 +91,7 @@ function PersonQuickLogDialogInner({
   interactionTypes,
   defaultInteractionTypeId,
   sessionTimeZone,
+  allowMissingPrimaryPerson,
 }: Omit<PersonQuickLogDialogProps, 'open' | 'snapshot'> & {
   snapshot: QuickLogSnapshot;
 }) {
@@ -96,6 +101,9 @@ function PersonQuickLogDialogInner({
   const titleFieldId = useId();
   const presetLabelFieldId = useId();
   const newPresetLabelFieldId = useId();
+  const timeFieldId = useId();
+
+  const [timeLocal, setTimeLocal] = useState('12:00');
 
   const [primaryPersonId, setPrimaryPersonId] = useState(
     snapshot.primaryPersonId,
@@ -161,8 +169,17 @@ function PersonQuickLogDialogInner({
       : undefined;
 
   const onSaveLog = useCallback(() => {
-    if (!primaryPersonId.trim()) {
+    const primaryTrim = primaryPersonId.trim();
+    if (!allowMissingPrimaryPerson && !primaryTrim) {
       setError('Choose who this moment is mainly about.');
+      return;
+    }
+    if (
+      allowMissingPrimaryPerson &&
+      !primaryTrim &&
+      attendeeIds.length === 0
+    ) {
+      setError('Include at least one person.');
       return;
     }
     const dates = selected ?? [];
@@ -174,13 +191,14 @@ function PersonQuickLogDialogInner({
     const calendarDates = dates.map(dateToCalendarString);
     startTransition(async () => {
       const r = await quickLogInteractionsForPersonOnCalendarDates(
-        primaryPersonId,
+        primaryTrim,
         calendarDates,
         {
           interactionTypeId,
           attendeeIds,
           title: interactionTitle,
           wallTimeZoneHint,
+          timeLocal,
         },
       );
       if (r.error) {
@@ -192,11 +210,13 @@ function PersonQuickLogDialogInner({
     });
   }, [
     primaryPersonId,
+    allowMissingPrimaryPerson,
+    attendeeIds,
     selected,
     interactionTypeId,
-    attendeeIds,
     interactionTitle,
     wallTimeZoneHint,
+    timeLocal,
     onClose,
     router,
   ]);
@@ -206,7 +226,9 @@ function PersonQuickLogDialogInner({
       return;
     }
     if (!primaryPersonId.trim()) {
-      setError('Choose who this preset is mainly about.');
+      setError(
+        'Presets need a main person. Mark someone as main, or create this preset from a person’s profile.',
+      );
       return;
     }
     const label = presetLabel.trim();
@@ -243,7 +265,9 @@ function PersonQuickLogDialogInner({
 
   const onSaveNewPreset = useCallback(() => {
     if (!primaryPersonId.trim()) {
-      setError('Choose who this preset is mainly about.');
+      setError(
+        'Presets need a main person. Mark someone as main, or create this preset from a person’s profile.',
+      );
       return;
     }
     const label = newPresetLabel.trim();
@@ -348,14 +372,12 @@ function PersonQuickLogDialogInner({
 
         {!isEditPreset ? (
           <p className="mt-2 text-sm leading-7 text-muted">
-            Each selected day is saved at{' '}
-            <span className="font-medium text-foreground">12:00</span>
+            Each selected day uses the time below in{' '}
             {zoneLabel ? (
-              <>
-                {' '}
-                <span className="text-foreground/90">({zoneLabel})</span>
-              </>
-            ) : null}
+              <span className="font-medium text-foreground/90">{zoneLabel}</span>
+            ) : (
+              'your local zone'
+            )}
             . Tap days to add or remove them.
           </p>
         ) : (
@@ -369,8 +391,9 @@ function PersonQuickLogDialogInner({
           <div>
             <p className="text-sm font-semibold">People</p>
             <p className="mt-1 text-xs text-muted">
-              Mark who was there. Use “Mark as main” for the primary person on
-              each entry.
+              {allowMissingPrimaryPerson
+                ? 'Mark who was there. Main is optional from this page; include at least one person. Use “Mark as main” when you want a primary contact on each entry.'
+                : 'Mark who was there. Use “Mark as main” for the primary person on each entry.'}
             </p>
             <div className="mt-2">
               <InteractionParticipantPicker
@@ -431,6 +454,28 @@ function PersonQuickLogDialogInner({
 
           {!isEditPreset ? (
             <>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-2">
+                  <label
+                    htmlFor={timeFieldId}
+                    className="text-sm font-semibold"
+                  >
+                    Time
+                  </label>
+                  <FormInput
+                    id={timeFieldId}
+                    type="time"
+                    value={timeLocal}
+                    onChange={(e) => setTimeLocal(e.target.value)}
+                    disabled={pending}
+                    className={formControlClassName({ size: 'default' })}
+                  />
+                  <p className="text-xs text-muted">
+                    Defaults to noon (12:00). Applies to every selected day.
+                  </p>
+                </div>
+              </div>
+
               <div className="flex justify-center">
                 <DayPicker
                   mode="multiple"

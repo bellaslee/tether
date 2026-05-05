@@ -12,7 +12,7 @@ import { requirePrmAccess } from '@/lib/prm/guard';
 import { formatDateTimeInTimeZone } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
 import {
-  defaultInteractionTypeId as pickDefaultInteractionTypeId,
+  defaultQuickLogInteractionTypeId as pickDefaultQuickLogInteractionTypeId,
   type InteractionTypeOption,
 } from '@/lib/interactions/type-options';
 import { toQuickLogPresetCardModel } from '@/lib/quick-log/preset-card-model';
@@ -79,7 +79,7 @@ export default async function TimelinePage() {
   const interactionTypeOptions: InteractionTypeOption[] = (
     interactionTypeRows ?? []
   ).map((row) => ({ id: row.id, name: row.name }));
-  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
+  const defaultQuickLogInteractionTypeId = pickDefaultQuickLogInteractionTypeId(
     interactionTypeOptions,
   );
 
@@ -182,7 +182,7 @@ export default async function TimelinePage() {
         sessionTimeZone={ctx.accountTimeZone}
         allPeople={allPeople}
         interactionTypes={interactionTypeOptions}
-        defaultInteractionTypeId={defaultInteractionTypeId}
+        defaultInteractionTypeId={defaultQuickLogInteractionTypeId}
       >
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

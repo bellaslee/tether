@@ -117,6 +117,7 @@ export function PersonQuickLogProvider({
         interactionTypes={interactionTypes}
         defaultInteractionTypeId={defaultInteractionTypeId}
         sessionTimeZone={sessionTimeZone}
+        allowMissingPrimaryPerson={defaultPrimaryPersonId === null}
       />
     </PersonQuickLogContext.Provider>
   );

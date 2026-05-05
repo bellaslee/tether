@@ -31,6 +31,7 @@ import {
 import type { Tables } from '@/lib/db/database.types';
 import {
   defaultInteractionTypeId as pickDefaultInteractionTypeId,
+  defaultQuickLogInteractionTypeId as pickDefaultQuickLogInteractionTypeId,
   type InteractionTypeOption,
 } from '@/lib/interactions/type-options';
 import {
@@ -435,6 +436,9 @@ export default async function PersonDetailPage(props: PageProps) {
   const defaultInteractionTypeId = pickDefaultInteractionTypeId(
     interactionTypeOptions,
   );
+  const defaultQuickLogInteractionTypeId = pickDefaultQuickLogInteractionTypeId(
+    interactionTypeOptions,
+  );
 
   const { data: quickLogPresetRows, error: quickLogPresetError } =
     await ctx.client
@@ -788,7 +792,7 @@ export default async function PersonDetailPage(props: PageProps) {
         sessionTimeZone={ctx.accountTimeZone}
         allPeople={resolvedAllPeople}
         interactionTypes={interactionTypeOptions}
-        defaultInteractionTypeId={defaultInteractionTypeId}
+        defaultInteractionTypeId={defaultQuickLogInteractionTypeId}
       >
       <PersonDetailTabsProvider
         personId={person.id}
