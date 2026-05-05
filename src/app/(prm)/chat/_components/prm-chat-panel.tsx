@@ -232,11 +232,6 @@ export function PrmChatPanel({
           </Button>
         </div>
       </form>
-
-      <p className="text-xs text-muted">
-        Refreshing will clear your conversation history. AI uses your
-        notes and facts for recall.
-      </p>
     </div>
   );
 }

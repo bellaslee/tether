@@ -210,11 +210,8 @@ export function PrmChatProposalCard({
 
   return (
     <div className="card-surface rounded-2xl border border-border-soft p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border-soft pb-3">
+      <div className="border-b border-border-soft pb-3">
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        <p className="text-xs text-muted">
-          Confirm saves to your PRM, cancel discards this card.
-        </p>
       </div>
 
       <div className="mt-4 space-y-4">
@@ -474,11 +471,6 @@ export function PrmChatProposalCard({
             </div>
             <div className="space-y-2">
               <p className="text-sm font-semibold text-foreground">Also with</p>
-              {draft.kind === 'create_interaction' ? (
-                <p className="text-xs text-muted">
-                  Only people you named in your message should be checked here.
-                </p>
-              ) : null}
               {peopleSorted.filter((p) => p.id !== (draft.primary_person_id ?? '')).length ===
               0 ? (
                 <p className="text-xs text-muted">
@@ -545,11 +537,6 @@ export function PrmChatProposalCard({
                   }
                   required
                 />
-                <p className="text-xs text-muted">
-                  Same kind of control as logging a moment elsewhere — this value
-                  is read as local wall time in {momentWallZone} when you
-                  confirm.
-                </p>
               </div>
               <div className="space-y-2">
                 <label
@@ -633,7 +620,6 @@ export function PrmChatProposalCard({
             <TextareaField
               id={`${prefix}-fact-body`}
               label="What to remember"
-              hint="Saved directly to this profile—no AI."
               fieldSize="compact"
               rows={3}
               required
@@ -673,7 +659,6 @@ export function PrmChatProposalCard({
             <TextField
               id={`${prefix}-rem-title`}
               label="Reminder"
-              hint="Shows as an active open loop you can complete or snooze."
               fieldSize="compact"
               required
               value={draft.reminder_title}

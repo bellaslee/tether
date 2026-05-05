@@ -40,7 +40,6 @@ export function SignupForm() {
         minLength={6}
         label="Password"
         labelClassName="text-sm font-semibold text-foreground"
-        hintAfter="At least 6 characters for local Supabase defaults."
       />
       <label className="flex gap-3 text-sm leading-6 text-muted">
         <input

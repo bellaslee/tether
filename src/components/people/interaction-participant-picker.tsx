@@ -214,11 +214,6 @@ export function InteractionParticipantPicker({
           placeholder="Search by name"
           autoComplete="off"
         />
-        {!listRevealed ? (
-          <p className="mt-2 text-xs text-muted">
-            Click or focus here to see people.
-          </p>
-        ) : null}
       </div>
 
       {listRevealed ? (

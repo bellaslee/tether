@@ -145,9 +145,6 @@ export function ManageConnectionTypesPanel(
 
       <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
         <h2 className="font-display text-xl tracking-tight">Add a type</h2>
-        <p className="mt-2 text-sm leading-7 text-muted">
-          New types show up when you link people on their profiles.
-        </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
           <FormInput
             type="text"

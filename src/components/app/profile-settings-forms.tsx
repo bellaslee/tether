@@ -157,7 +157,6 @@ export function ProfileSettingsForms({
             required
             label="New password"
             labelClassName="text-sm font-semibold text-foreground"
-            hintAfter="At least 8 characters."
           />
           <TextField
             id="password_confirm"

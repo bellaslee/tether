@@ -390,11 +390,6 @@ function PersonQuickLogDialogInner({
         <div className="mt-4 space-y-4">
           <div>
             <p className="text-sm font-semibold">People</p>
-            <p className="mt-1 text-xs text-muted">
-              {allowMissingPrimaryPerson
-                ? 'Mark who was there. Main is optional from this page; include at least one person. Use “Mark as main” when you want a primary contact on each entry.'
-                : 'Mark who was there. Use “Mark as main” for the primary person on each entry.'}
-            </p>
             <div className="mt-2">
               <InteractionParticipantPicker
                 people={allPeople}
@@ -443,7 +438,6 @@ function PersonQuickLogDialogInner({
             <TextField
               id={titleFieldId}
               label="Title"
-              hint="Shown on each timeline entry."
               value={interactionTitle}
               onChange={(e) => setInteractionTitle(e.target.value)}
               placeholder={QUICK_LOG_TITLE}
@@ -470,9 +464,6 @@ function PersonQuickLogDialogInner({
                     disabled={pending}
                     className={formControlClassName({ size: 'default' })}
                   />
-                  <p className="text-xs text-muted">
-                    Defaults to noon (12:00). Applies to every selected day.
-                  </p>
                 </div>
               </div>
 
@@ -489,10 +480,6 @@ function PersonQuickLogDialogInner({
 
               <div className="rounded-2xl border border-border-soft bg-white/50 p-4 space-y-3">
                 <p className="text-sm font-semibold">Save as preset</p>
-                <p className="text-xs text-muted">
-                  Save this combination of people, type, and title for one-tap
-                  reuse from your timelines.
-                </p>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                   <div className="min-w-0 flex-1">
                     <label

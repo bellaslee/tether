@@ -210,9 +210,6 @@ export function ManageCategoriesPanel(props: ManageCategoriesPanelProps) {
 
       <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
         <h2 className="font-display text-xl tracking-tight">Add a category</h2>
-        <p className="mt-2 text-sm leading-7 text-muted">
-          New categories appear in person forms and filters immediately.
-        </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
           <FormInput
             type="text"

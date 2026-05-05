@@ -139,10 +139,6 @@ export function PersonInteractionForm({
           >
             People
           </p>
-          <p className="text-xs text-muted">
-            They are the main person for this entry. Add anyone else who shared
-            the moment.
-          </p>
           <div
             role="group"
             aria-labelledby={`person-interaction-people-${personId}`}

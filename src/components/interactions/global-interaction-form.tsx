@@ -61,11 +61,6 @@ export function GlobalInteractionForm({
         <p id="global-interaction-people-label" className="text-sm font-semibold">
           People
         </p>
-        <p className="text-xs text-muted">
-          Select who was part of this moment. Use{' '}
-          <span className="font-medium text-foreground">Mark as main</span> if it
-          was mostly about one person (optional).
-        </p>
         <div role="group" aria-labelledby="global-interaction-people-label">
           <InteractionParticipantPicker
             people={people}

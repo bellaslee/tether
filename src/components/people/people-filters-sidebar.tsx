@@ -224,9 +224,6 @@ export function PeopleFiltersSidebar({
           labelId="people-filter-categories-label"
           label="Categories"
         >
-          <p className="mb-2 text-xs text-muted">
-            Leave all unchecked to show every category.
-          </p>
           <div className="flex max-h-40 flex-col gap-2 overflow-y-auto text-sm">
             {categoryOptions.length === 0 ? (
               <span className="text-muted">No categories yet.</span>
@@ -254,9 +251,6 @@ export function PeopleFiltersSidebar({
           labelId="people-filter-status-label"
           label="Status"
         >
-          <p className="mb-2 text-xs text-muted">
-            Leave all unchecked to show every status.
-          </p>
           <div className="flex flex-col gap-2 text-sm">
             {PERSON_STATUSES.map((s) => (
               <label
@@ -280,10 +274,6 @@ export function PeopleFiltersSidebar({
           labelId="people-filter-warmth-label"
           label="Relationship warmth"
         >
-          <p className="mb-2 text-xs text-muted">
-            Matches the connection heart row on each card (mapped to Hot, Warm,
-            and Cold). Leave all unchecked to show every warmth.
-          </p>
           <div className="flex flex-col gap-2 text-sm">
             {RELATIONSHIP_WARMTH_FILTERS.map((w) => (
               <label
