@@ -32,8 +32,6 @@ function isUuid(value: string): boolean {
   return UUID_RE.test(value);
 }
 
-export type { QuickLogCalendarOptions };
-
 export async function createInteractionFromPerson(
   primaryPersonId: string,
   _prev: ActionResult,
