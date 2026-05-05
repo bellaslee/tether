@@ -332,10 +332,11 @@ export interface Database {
           id: string;
           user_id: string;
           label: string;
-          primary_person_id: string;
+          primary_person_id: string | null;
           interaction_type_id: string;
           interaction_title: string;
           attendee_person_ids: string[];
+          time_local: string;
           sort_order: number;
           created_at: string;
           updated_at: string;
@@ -344,10 +345,11 @@ export interface Database {
           id?: string;
           user_id: string;
           label: string;
-          primary_person_id: string;
+          primary_person_id?: string | null;
           interaction_type_id: string;
           interaction_title?: string;
           attendee_person_ids?: string[];
+          time_local?: string;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;
@@ -356,10 +358,11 @@ export interface Database {
           id?: string;
           user_id?: string;
           label?: string;
-          primary_person_id?: string;
+          primary_person_id?: string | null;
           interaction_type_id?: string;
           interaction_title?: string;
           attendee_person_ids?: string[];
+          time_local?: string;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;

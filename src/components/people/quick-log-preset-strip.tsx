@@ -16,11 +16,19 @@ function peopleSummary(
   preset: QuickLogPresetCardModel,
   peopleById: Map<string, PersonOption>,
 ): string {
-  const primary = peopleById.get(preset.primary_person_id);
-  const primaryName = primary
-    ? personShownName(primary)
-    : 'Unknown';
   const n = preset.attendee_person_ids.length;
+  if (!preset.primary_person_id) {
+    if (n === 0) {
+      return 'No people';
+    }
+    if (n === 1) {
+      const only = peopleById.get(preset.attendee_person_ids[0] ?? '');
+      return only ? personShownName(only) : '1 person';
+    }
+    return `${n} people`;
+  }
+  const primary = peopleById.get(preset.primary_person_id);
+  const primaryName = primary ? personShownName(primary) : 'Unknown';
   if (n === 0) {
     return primaryName;
   }

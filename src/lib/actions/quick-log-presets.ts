@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getPrmSupabaseContext } from '@/lib/prm/context';
 import { assertOwnsInteractionType, assertOwnsPeople } from '@/lib/prm/assert-owns';
 import { resolveQuickLogInteractionTitle } from '@/lib/interactions/quick-log-shared';
+import { resolveQuickLogTimeLocal } from '@/lib/interactions/quick-log-shared';
 import type { ActionResult } from '@/lib/actions/interactions';
 
 const UUID_RE =
@@ -41,20 +42,25 @@ export async function createQuickLogPreset(input: {
   interactionTypeId: string;
   interactionTitle: string;
   attendeeIds: string[];
+  timeLocal?: string;
 }): Promise<ActionResult & { id?: string }> {
   const label = normalizeLabel(input.label);
   if (typeof label !== 'string') {
     return { error: label.error };
   }
-  if (!isUuid(input.primaryPersonId)) {
-    return { error: 'Choose who this preset is mainly about.' };
+  const primaryPersonId = input.primaryPersonId.trim();
+  if (primaryPersonId && !isUuid(primaryPersonId)) {
+    return { error: 'Choose a valid main person.' };
   }
   if (!isUuid(input.interactionTypeId)) {
     return { error: 'Choose a valid interaction type.' };
   }
 
-  const attendees = normalizeAttendeeIds(input.primaryPersonId, input.attendeeIds);
-  const allIds = [input.primaryPersonId, ...attendees];
+  const attendees = normalizeAttendeeIds(primaryPersonId, input.attendeeIds);
+  const allIds = [primaryPersonId, ...attendees].filter(Boolean);
+  if (allIds.length === 0) {
+    return { error: 'Include at least one person in this preset.' };
+  }
   const peopleGate = await assertOwnsPeople(allIds);
   if (!peopleGate.ctx) {
     return { error: peopleGate.error };
@@ -67,16 +73,18 @@ export async function createQuickLogPreset(input: {
   }
 
   const interactionTitle = resolveQuickLogInteractionTitle(input.interactionTitle);
+  const timeLocal = resolveQuickLogTimeLocal(input.timeLocal);
 
   const { data: row, error } = await ctx.client
     .from('quick_log_presets')
     .insert({
       user_id: ctx.userId,
       label,
-      primary_person_id: input.primaryPersonId,
+      primary_person_id: primaryPersonId || null,
       interaction_type_id: input.interactionTypeId,
       interaction_title: interactionTitle,
       attendee_person_ids: attendees,
+      time_local: timeLocal,
     })
     .select('id')
     .single();
@@ -100,6 +108,7 @@ export async function updateQuickLogPreset(
     interactionTypeId: string;
     interactionTitle: string;
     attendeeIds: string[];
+    timeLocal?: string;
   },
 ): Promise<ActionResult> {
   if (!isUuid(presetId)) {
@@ -109,15 +118,19 @@ export async function updateQuickLogPreset(
   if (typeof label !== 'string') {
     return { error: label.error };
   }
-  if (!isUuid(input.primaryPersonId)) {
-    return { error: 'Choose who this preset is mainly about.' };
+  const primaryPersonId = input.primaryPersonId.trim();
+  if (primaryPersonId && !isUuid(primaryPersonId)) {
+    return { error: 'Choose a valid main person.' };
   }
   if (!isUuid(input.interactionTypeId)) {
     return { error: 'Choose a valid interaction type.' };
   }
 
-  const attendees = normalizeAttendeeIds(input.primaryPersonId, input.attendeeIds);
-  const allIds = [input.primaryPersonId, ...attendees];
+  const attendees = normalizeAttendeeIds(primaryPersonId, input.attendeeIds);
+  const allIds = [primaryPersonId, ...attendees].filter(Boolean);
+  if (allIds.length === 0) {
+    return { error: 'Include at least one person in this preset.' };
+  }
 
   const ctx = await getPrmSupabaseContext();
   if (!ctx) {
@@ -146,15 +159,17 @@ export async function updateQuickLogPreset(
   }
 
   const interactionTitle = resolveQuickLogInteractionTitle(input.interactionTitle);
+  const timeLocal = resolveQuickLogTimeLocal(input.timeLocal);
 
   const { error: upErr } = await ctx.client
     .from('quick_log_presets')
     .update({
       label,
-      primary_person_id: input.primaryPersonId,
+      primary_person_id: primaryPersonId || null,
       interaction_type_id: input.interactionTypeId,
       interaction_title: interactionTitle,
       attendee_person_ids: attendees,
+      time_local: timeLocal,
     })
     .eq('id', presetId)
     .eq('user_id', ctx.userId);
@@ -194,7 +209,7 @@ export async function deleteQuickLogPreset(presetId: string): Promise<ActionResu
   const touchIds = [
     row.primary_person_id,
     ...((row.attendee_person_ids as string[]) ?? []),
-  ];
+  ].filter(Boolean);
 
   const { error: delErr } = await ctx.client
     .from('quick_log_presets')

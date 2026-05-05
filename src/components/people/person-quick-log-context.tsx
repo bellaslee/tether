@@ -59,6 +59,7 @@ export function PersonQuickLogProvider({
       attendeeIds: [],
       interactionTypeId: defaultInteractionTypeId,
       interactionTitle: QUICK_LOG_TITLE,
+      timeLocal: '12:00',
       presetLabel: '',
     });
     setOpen(true);
@@ -71,10 +72,11 @@ export function PersonQuickLogProvider({
         nonce: nonceRef.current,
         mode: 'log',
         editingPresetId: null,
-        primaryPersonId: preset.primary_person_id,
+        primaryPersonId: preset.primary_person_id ?? '',
         attendeeIds: [...preset.attendee_person_ids],
         interactionTypeId: preset.interaction_type_id,
         interactionTitle: preset.interaction_title || QUICK_LOG_TITLE,
+        timeLocal: preset.time_local,
         presetLabel: '',
       });
       setOpen(true);
@@ -88,10 +90,11 @@ export function PersonQuickLogProvider({
       nonce: nonceRef.current,
       mode: 'editPreset',
       editingPresetId: preset.id,
-      primaryPersonId: preset.primary_person_id,
+      primaryPersonId: preset.primary_person_id ?? '',
       attendeeIds: [...preset.attendee_person_ids],
       interactionTypeId: preset.interaction_type_id,
       interactionTitle: preset.interaction_title || QUICK_LOG_TITLE,
+      timeLocal: preset.time_local,
       presetLabel: preset.label,
     });
     setOpen(true);

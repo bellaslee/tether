@@ -100,7 +100,7 @@ export default async function TimelinePage() {
     await ctx.client
       .from('quick_log_presets')
       .select(
-        'id, label, primary_person_id, interaction_type_id, interaction_title, attendee_person_ids, sort_order, created_at, interaction_types ( name )',
+        'id, label, primary_person_id, interaction_type_id, interaction_title, attendee_person_ids, time_local, sort_order, created_at, interaction_types ( name )',
       )
       .eq('user_id', ctx.userId)
       .order('sort_order', { ascending: true })

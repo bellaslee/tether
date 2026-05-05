@@ -103,7 +103,7 @@ function PersonQuickLogDialogInner({
   const newPresetLabelFieldId = useId();
   const timeFieldId = useId();
 
-  const [timeLocal, setTimeLocal] = useState('12:00');
+  const [timeLocal, setTimeLocal] = useState(snapshot.timeLocal);
 
   const [primaryPersonId, setPrimaryPersonId] = useState(
     snapshot.primaryPersonId,
@@ -225,10 +225,9 @@ function PersonQuickLogDialogInner({
     if (!snapshot.editingPresetId) {
       return;
     }
-    if (!primaryPersonId.trim()) {
-      setError(
-        'Presets need a main person. Mark someone as main, or create this preset from a person’s profile.',
-      );
+    const primaryTrim = primaryPersonId.trim();
+    if (!primaryTrim && attendeeIds.length === 0) {
+      setError('Include at least one person in this preset.');
       return;
     }
     const label = presetLabel.trim();
@@ -238,13 +237,15 @@ function PersonQuickLogDialogInner({
     }
     setError(null);
     startTransition(async () => {
-      const r = await updateQuickLogPreset(snapshot.editingPresetId!, {
+      const presetInput = {
         label,
-        primaryPersonId,
+        primaryPersonId: primaryTrim,
         interactionTypeId,
         interactionTitle,
         attendeeIds,
-      });
+        timeLocal,
+      };
+      const r = await updateQuickLogPreset(snapshot.editingPresetId!, presetInput);
       if (r.error) {
         setError(r.error);
       } else {
@@ -259,15 +260,15 @@ function PersonQuickLogDialogInner({
     interactionTypeId,
     interactionTitle,
     attendeeIds,
+    timeLocal,
     onClose,
     router,
   ]);
 
   const onSaveNewPreset = useCallback(() => {
-    if (!primaryPersonId.trim()) {
-      setError(
-        'Presets need a main person. Mark someone as main, or create this preset from a person’s profile.',
-      );
+    const primaryTrim = primaryPersonId.trim();
+    if (!primaryTrim && attendeeIds.length === 0) {
+      setError('Include at least one person in this preset.');
       return;
     }
     const label = newPresetLabel.trim();
@@ -277,13 +278,15 @@ function PersonQuickLogDialogInner({
     }
     setError(null);
     startTransition(async () => {
-      const r = await createQuickLogPreset({
+      const presetInput = {
         label,
-        primaryPersonId,
+        primaryPersonId: primaryTrim,
         interactionTypeId,
         interactionTitle,
         attendeeIds,
-      });
+        timeLocal,
+      };
+      const r = await createQuickLogPreset(presetInput);
       if (r.error) {
         setError(r.error);
       } else {
@@ -297,6 +300,7 @@ function PersonQuickLogDialogInner({
     interactionTypeId,
     interactionTitle,
     attendeeIds,
+    timeLocal,
     router,
   ]);
 
@@ -446,27 +450,27 @@ function PersonQuickLogDialogInner({
             />
           </div>
 
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-2">
+              <label
+                htmlFor={timeFieldId}
+                className="text-sm font-semibold"
+              >
+                Time
+              </label>
+              <FormInput
+                id={timeFieldId}
+                type="time"
+                value={timeLocal}
+                onChange={(e) => setTimeLocal(e.target.value)}
+                disabled={pending}
+                className={formControlClassName({ size: 'default' })}
+              />
+            </div>
+          </div>
+
           {!isEditPreset ? (
             <>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div className="space-y-2">
-                  <label
-                    htmlFor={timeFieldId}
-                    className="text-sm font-semibold"
-                  >
-                    Time
-                  </label>
-                  <FormInput
-                    id={timeFieldId}
-                    type="time"
-                    value={timeLocal}
-                    onChange={(e) => setTimeLocal(e.target.value)}
-                    disabled={pending}
-                    className={formControlClassName({ size: 'default' })}
-                  />
-                </div>
-              </div>
-
               <div className="flex justify-center">
                 <DayPicker
                   mode="multiple"
