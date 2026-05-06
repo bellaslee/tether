@@ -25,29 +25,24 @@ function normalizeAttendeeIds(
     .sort();
 }
 
-function normalizeLabel(raw: string): string | { error: string } {
-  const t = raw.trim();
+/** Preset headline in DB mirrors interaction title (trimmed/truncated to label column limit). */
+function labelFromResolvedInteractionTitle(interactionTitle: string): string {
+  const t = interactionTitle.trim();
   if (!t) {
-    return { error: 'Enter a name for this preset.' };
+    return '';
   }
-  if (t.length > MAX_PRESET_LABEL_LEN) {
-    return { error: `Preset name must be at most ${MAX_PRESET_LABEL_LEN} characters.` };
-  }
-  return t;
+  return t.length > MAX_PRESET_LABEL_LEN
+    ? t.slice(0, MAX_PRESET_LABEL_LEN)
+    : t;
 }
 
 export async function createQuickLogPreset(input: {
-  label: string;
   primaryPersonId: string;
   interactionTypeId: string;
   interactionTitle: string;
   attendeeIds: string[];
   timeLocal?: string;
 }): Promise<ActionResult & { id?: string }> {
-  const label = normalizeLabel(input.label);
-  if (typeof label !== 'string') {
-    return { error: label.error };
-  }
   const primaryPersonId = input.primaryPersonId.trim();
   if (primaryPersonId && !isUuid(primaryPersonId)) {
     return { error: 'Choose a valid main person.' };
@@ -73,6 +68,10 @@ export async function createQuickLogPreset(input: {
   }
 
   const interactionTitle = resolveQuickLogInteractionTitle(input.interactionTitle);
+  const label = labelFromResolvedInteractionTitle(interactionTitle);
+  if (!label) {
+    return { error: 'Add an interaction title to save this preset.' };
+  }
   const timeLocal = resolveQuickLogTimeLocal(input.timeLocal);
 
   const { data: row, error } = await ctx.client
@@ -103,7 +102,6 @@ export async function createQuickLogPreset(input: {
 export async function updateQuickLogPreset(
   presetId: string,
   input: {
-    label: string;
     primaryPersonId: string;
     interactionTypeId: string;
     interactionTitle: string;
@@ -113,10 +111,6 @@ export async function updateQuickLogPreset(
 ): Promise<ActionResult> {
   if (!isUuid(presetId)) {
     return { error: 'Invalid preset.' };
-  }
-  const label = normalizeLabel(input.label);
-  if (typeof label !== 'string') {
-    return { error: label.error };
   }
   const primaryPersonId = input.primaryPersonId.trim();
   if (primaryPersonId && !isUuid(primaryPersonId)) {
@@ -159,6 +153,10 @@ export async function updateQuickLogPreset(
   }
 
   const interactionTitle = resolveQuickLogInteractionTitle(input.interactionTitle);
+  const label = labelFromResolvedInteractionTitle(interactionTitle);
+  if (!label) {
+    return { error: 'Add an interaction title to save this preset.' };
+  }
   const timeLocal = resolveQuickLogTimeLocal(input.timeLocal);
 
   const { error: upErr } = await ctx.client

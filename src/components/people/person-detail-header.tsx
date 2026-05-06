@@ -1,174 +1,46 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { Button, ButtonLink } from '@/components/ui/button';
-import { PersonInteractionForm } from '@/components/people/person-interaction-form';
-import type { PersonOption } from '@/components/people/attendee-picker';
-import type { InteractionTypeOption } from '@/lib/interactions/type-options';
 import { usePersonLogInteraction } from '@/components/people/person-log-interaction-context';
-import { usePersonQuickLog } from '@/components/people/person-quick-log-context';
-
-function PersonDetailHeaderLogActions({
-  logOpen,
-  openLogInteraction,
-}: {
-  logOpen: boolean;
-  openLogInteraction: () => void;
-}) {
-  const { openQuickLog } = usePersonQuickLog();
-
-  return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        <Button
-          type="button"
-          variant="secondary"
-          size="lg"
-          onClick={openQuickLog}
-          aria-haspopup="dialog"
-        >
-          Quick Log
-        </Button>
-        <Button
-          type="button"
-          variant="primary"
-          size="lg"
-          onClick={openLogInteraction}
-          aria-haspopup="dialog"
-          aria-expanded={logOpen}
-        >
-          Log interaction
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 type PersonDetailHeaderProps = {
   children: React.ReactNode;
   /** Rendered directly under the title row (e.g. profile tabs). */
   afterTitle?: React.ReactNode;
   editHref: string;
-  personId: string;
-  allPeople: PersonOption[];
-  defaultOccurredAt: string;
-  sessionTimeZone: string | null;
-  interactionTypes: InteractionTypeOption[];
-  defaultInteractionTypeId: string;
 };
 
 export function PersonDetailHeader({
   children,
   afterTitle,
   editHref,
-  personId,
-  allPeople,
-  defaultOccurredAt,
-  sessionTimeZone,
-  interactionTypes,
-  defaultInteractionTypeId,
 }: PersonDetailHeaderProps) {
-  const { logOpen, openLogInteraction, closeLogInteraction } =
+  const { logInteractionModalOpen, openLogInteraction } =
     usePersonLogInteraction();
-  const handleSuccess = useCallback(() => {
-    closeLogInteraction();
-  }, [closeLogInteraction]);
 
-  useEffect(() => {
-    if (!logOpen) {
-      return;
-    }
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        closeLogInteraction();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [logOpen, closeLogInteraction]);
-
-  const logLightbox =
-    logOpen && typeof document !== 'undefined'
-      ? createPortal(
-          <div
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-foreground/35 p-4 backdrop-blur-[2px] sm:p-6"
-            role="presentation"
-            onClick={closeLogInteraction}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="log-interaction-dialog-title"
-              className="card-surface max-h-[min(90dvh,48rem)] w-full max-w-3xl overflow-y-auto rounded-[1.75rem] border border-border-soft p-6 sm:p-8"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <h2
-                  id="log-interaction-dialog-title"
-                  className="font-display text-2xl tracking-tight"
-                >
-                  Log an interaction
-                </h2>
-                <Button
-                  type="button"
-                  variant="ghostSubtle"
-                  size="sm"
-                  onClick={closeLogInteraction}
-                  className="shrink-0"
-                >
-                  Close
-                </Button>
-              </div>
-              <p className="mt-2 text-sm leading-7 text-muted">
-                Saved to their timeline and yours. Add anyone else under{' '}
-                <span className="font-medium text-foreground">People</span> so
-                one entry stays in sync for everyone.
-              </p>
-              <div className="mt-6">
-                <PersonInteractionForm
-                  personId={personId}
-                  allPeople={allPeople}
-                  defaultOccurredAt={defaultOccurredAt}
-                  sessionTimeZone={sessionTimeZone}
-                  interactionTypes={interactionTypes}
-                  defaultInteractionTypeId={defaultInteractionTypeId}
-                  onSuccess={handleSuccess}
-                />
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null;
-
-  // Fragment (no wrapper div): sticky must be a direct sibling of the long page
-  // content under <main> so the sticky containing block spans the full scroll height.
   return (
-    <>
-      <div className="prm-person-sticky-header sticky top-0 z-40 -mx-6 w-[calc(100%+3rem)] max-w-none px-6 pt-2 sm:-mx-10 sm:w-[calc(100%+5rem)] sm:px-10 lg:-mx-12 lg:w-[calc(100%+6rem)] lg:px-12">
-        <div className="w-full space-y-4 border-b border-border-soft pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">{children}</div>
-            <div className="flex shrink-0 flex-wrap gap-3">
-              <ButtonLink href={editHref} variant="secondary" size="lg">
-                Edit profile
-              </ButtonLink>
-              <PersonDetailHeaderLogActions
-                logOpen={logOpen}
-                openLogInteraction={openLogInteraction}
-              />
-            </div>
+    <div className="prm-person-sticky-header sticky top-0 z-40 -mx-6 w-[calc(100%+3rem)] max-w-none px-6 pt-2 sm:-mx-10 sm:w-[calc(100%+5rem)] sm:px-10 lg:-mx-12 lg:w-[calc(100%+6rem)] lg:px-12">
+      <div className="w-full space-y-4 border-b border-border-soft pb-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">{children}</div>
+          <div className="flex shrink-0 flex-wrap gap-3">
+            <ButtonLink href={editHref} variant="secondary" size="lg">
+              Edit profile
+            </ButtonLink>
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              onClick={openLogInteraction}
+              aria-haspopup="dialog"
+              aria-expanded={logInteractionModalOpen}
+            >
+              Log interaction
+            </Button>
           </div>
-          {afterTitle}
         </div>
+        {afterTitle}
       </div>
-      {logLightbox}
-    </>
+    </div>
   );
 }

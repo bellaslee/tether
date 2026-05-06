@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { ButtonLink } from '@/components/ui/button';
-import { PersonQuickLogProvider } from '@/components/people/person-quick-log-context';
-import { PersonTimelineQuickLogButton } from '@/components/people/person-timeline-quick-log-button';
+import {
+  PersonLogInteractionProvider,
+  TimelineLogInteractionPrimaryButton,
+} from '@/components/people/person-log-interaction-context';
 import { QuickLogPresetStrip } from '@/components/people/quick-log-preset-strip';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
 import { InteractionNotePreview } from '@/components/interactions/interaction-note-preview';
@@ -11,10 +13,7 @@ import { InteractionMetaChips } from '@/components/interactions/interaction-meta
 import { requirePrmAccess } from '@/lib/prm/guard';
 import { formatDateTimeInTimeZone } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
-import {
-  defaultQuickLogInteractionTypeId as pickDefaultQuickLogInteractionTypeId,
-  type InteractionTypeOption,
-} from '@/lib/interactions/type-options';
+import { type InteractionTypeOption } from '@/lib/interactions/type-options';
 import { toQuickLogPresetCardModel } from '@/lib/quick-log/preset-card-model';
 import { partitionTimelineByOccurrence } from '@/lib/interactions/timeline-partition';
 import { hasOpenAiApiKey } from '@/lib/env';
@@ -79,10 +78,6 @@ export default async function TimelinePage() {
   const interactionTypeOptions: InteractionTypeOption[] = (
     interactionTypeRows ?? []
   ).map((row) => ({ id: row.id, name: row.name }));
-  const defaultQuickLogInteractionTypeId = pickDefaultQuickLogInteractionTypeId(
-    interactionTypeOptions,
-  );
-
   const { data: allPeopleRows, error: allPeopleError } = await ctx.client
     .from('people')
     .select(
@@ -177,12 +172,11 @@ export default async function TimelinePage() {
 
   return (
     <main className="prm-page">
-      <PersonQuickLogProvider
+      <PersonLogInteractionProvider
         defaultPrimaryPersonId={null}
         sessionTimeZone={ctx.accountTimeZone}
         allPeople={allPeople}
         interactionTypes={interactionTypeOptions}
-        defaultInteractionTypeId={defaultQuickLogInteractionTypeId}
       >
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -195,8 +189,8 @@ export default async function TimelinePage() {
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
-            <PersonTimelineQuickLogButton />
-            <ButtonLink href="/interactions/new" variant="primary" size="lg">
+            <TimelineLogInteractionPrimaryButton />
+            <ButtonLink href="/interactions/new" variant="secondary" size="lg">
               {PAGE_COPY.logInteraction}
             </ButtonLink>
           </div>
@@ -278,7 +272,7 @@ export default async function TimelinePage() {
           ) : null}
         </div>
       )}
-      </PersonQuickLogProvider>
+      </PersonLogInteractionProvider>
     </main>
   );
 }

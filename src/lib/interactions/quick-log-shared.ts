@@ -8,6 +8,8 @@ export type QuickLogCalendarOptions = {
   attendeeIds?: string[];
   /** Trimmed; empty uses {@link QUICK_LOG_TITLE}. */
   title?: string | null;
+  /** Same note on every inserted row; empty trimmed → stored as null. */
+  rawNote?: string | null;
   wallTimeZoneHint?: string;
   /** Local wall time per selected calendar day, `HH:MM` (24h). Default 12:00. */
   timeLocal?: string;

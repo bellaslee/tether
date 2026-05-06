@@ -33,109 +33,10 @@ function isUuid(value: string): boolean {
   return UUID_RE.test(value);
 }
 
-export async function createInteractionFromPerson(
-  primaryPersonId: string,
-  _prev: ActionResult,
-  formData: FormData,
-): Promise<ActionResult> {
-  const attendeeRaw = String(formData.get('attendee_ids') ?? '').trim();
-  const attendeeIds = attendeeRaw
-    ? attendeeRaw
-        .split(',')
-        .map((id) => id.trim())
-        .filter(Boolean)
-    : [];
-
-  const allIds = [
-    primaryPersonId,
-    ...attendeeIds.filter((id) => id !== primaryPersonId),
-  ];
-  const gate = await assertOwnsPeople(allIds);
-  if (!gate.ctx) {
-    return { error: gate.error };
-  }
-  const { ctx } = gate;
-
-  const wallClockZone = resolvePreferredIanaTimeZone(
-    ctx.accountTimeZone,
-    formData,
-  );
-  const payload = parseInteractionFields(formData, wallClockZone);
-  if ('error' in payload) {
-    return { error: payload.error };
-  }
-
-  const typeGate = await assertOwnsInteractionType(ctx, payload.interaction_type_id);
-  if ('error' in typeGate) {
-    return { error: typeGate.error };
-  }
-
-  const { data: interaction, error: insertError } = await ctx.client
-    .from('interactions')
-    .insert({
-      user_id: ctx.userId,
-      occurred_at: payload.occurred_at,
-      interaction_type_id: payload.interaction_type_id,
-      title: payload.title,
-      raw_note: payload.raw_note,
-      counts_toward_last_touch: countsTowardLastTouch(payload.occurred_at),
-    })
-    .select('id')
-    .single();
-
-  if (insertError || !interaction) {
-    return { error: insertError?.message ?? 'Could not create interaction.' };
-  }
-
-  const rows = allIds.map((personId) => ({
-    interaction_id: interaction.id,
-    person_id: personId,
-    role:
-      personId === primaryPersonId
-        ? ('primary' as const)
-        : ('attendee' as const),
-  }));
-
-  const { error: linkError } = await ctx.client
-    .from('interaction_people')
-    .insert(rows);
-  if (linkError) {
-    await ctx.client
-      .from('interactions')
-      .delete()
-      .eq('id', interaction.id)
-      .eq('user_id', ctx.userId);
-    return { error: linkError.message };
-  }
-
-  await refreshLastInteractionAtForPersonIds(ctx.client, ctx.userId, allIds);
-
-  const openai = tryCreateOpenAiClient();
-  if (openai) {
-    try {
-      await syncInteractionNoteEmbeddings({
-        client: ctx.client,
-        openai,
-        userId: ctx.userId,
-        interactionId: interaction.id,
-      });
-    } catch (e) {
-      console.error('[createInteractionFromPerson] embeddings', e);
-    }
-  }
-
-  revalidatePath('/timeline');
-  revalidatePath('/people', 'layout');
-  revalidatePath(`/people/${primaryPersonId}`);
-  allIds.forEach((id) => revalidatePath(`/people/${id}`));
-
-  return { ok: true };
-}
-
 const CALENDAR_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_QUICK_LOG_DATES = 62;
 
-export async function quickLogInteractionsForPersonOnCalendarDates(
+export async function createInteractionsForCalendarSelection(
   primaryPersonId: string,
   calendarDates: string[],
   options: QuickLogCalendarOptions,
@@ -203,13 +104,15 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
 
   const resolvedTitle = resolveQuickLogInteractionTitle(options.title);
   const timeLocal = resolveQuickLogTimeLocal(options.timeLocal);
+  const noteTrim = String(options.rawNote ?? '').trim();
+  const rawNoteVal = noteTrim.length > 0 ? noteTrim : null;
 
   const interactionRows: {
     user_id: string;
     occurred_at: string;
     interaction_type_id: string;
     title: string;
-    raw_note: null;
+    raw_note: string | null;
     counts_toward_last_touch: boolean;
   }[] = [];
 
@@ -223,7 +126,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
       occurred_at: occurredAt,
       interaction_type_id: options.interactionTypeId,
       title: resolvedTitle,
-      raw_note: null,
+      raw_note: rawNoteVal,
       counts_toward_last_touch: countsTowardLastTouch(occurredAt),
     });
   }
@@ -275,7 +178,7 @@ export async function quickLogInteractionsForPersonOnCalendarDates(
           interactionId: row.id,
         });
       } catch (e) {
-        console.error('[quickLogInteractions] embeddings', e);
+        console.error('[createInteractionsForCalendarSelection] embeddings', e);
       }
     }
   }

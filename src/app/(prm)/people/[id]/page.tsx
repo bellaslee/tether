@@ -11,8 +11,6 @@ import {
   PersonLogInteractionProvider,
   TimelineLogInteractionTrigger,
 } from '@/components/people/person-log-interaction-context';
-import { PersonQuickLogProvider } from '@/components/people/person-quick-log-context';
-import { PersonTimelineQuickLogButton } from '@/components/people/person-timeline-quick-log-button';
 import { QuickLogPresetStrip } from '@/components/people/quick-log-preset-strip';
 import { toQuickLogPresetCardModel } from '@/lib/quick-log/preset-card-model';
 import { InteractionEditDisclosure } from '@/components/interactions/interaction-edit-disclosure';
@@ -29,11 +27,7 @@ import {
   formatMonthYear,
 } from '@/lib/datetime';
 import type { Tables } from '@/lib/db/database.types';
-import {
-  defaultInteractionTypeId as pickDefaultInteractionTypeId,
-  defaultQuickLogInteractionTypeId as pickDefaultQuickLogInteractionTypeId,
-  type InteractionTypeOption,
-} from '@/lib/interactions/type-options';
+import { type InteractionTypeOption } from '@/lib/interactions/type-options';
 import {
   interactionHasMemorySuggestNote,
   interactionMemorySuggestionsAlreadyApplied,
@@ -433,13 +427,6 @@ export default async function PersonDetailPage(props: PageProps) {
   const interactionTypeOptions: InteractionTypeOption[] = (
     interactionTypeRows ?? []
   ).map((row) => ({ id: row.id, name: row.name }));
-  const defaultInteractionTypeId = pickDefaultInteractionTypeId(
-    interactionTypeOptions,
-  );
-  const defaultQuickLogInteractionTypeId = pickDefaultQuickLogInteractionTypeId(
-    interactionTypeOptions,
-  );
-
   const { data: quickLogPresetRows, error: quickLogPresetError } =
     await ctx.client
       .from('quick_log_presets')
@@ -505,7 +492,6 @@ export default async function PersonDetailPage(props: PageProps) {
   const { upcoming: upcomingTimelineRows, past: pastTimelineRows } =
     partitionPersonTimelineRows(timelineRows);
 
-  const defaultOccurredAt = '';
   const otherPeople = resolvedAllPeople.filter((p) => p.id !== person.id);
   const otherPeopleOptions = otherPeople.map((p) => ({
     id: p.id,
@@ -632,7 +618,6 @@ export default async function PersonDetailPage(props: PageProps) {
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-4 sm:pt-1">
-              <PersonTimelineQuickLogButton />
               <TimelineLogInteractionTrigger />
             </div>
           </header>
@@ -786,13 +771,12 @@ export default async function PersonDetailPage(props: PageProps) {
 
   return (
     <main className="prm-page">
-      <PersonLogInteractionProvider>
-      <PersonQuickLogProvider
+      <PersonLogInteractionProvider
         defaultPrimaryPersonId={person.id}
+        fixedPrimaryPersonId={person.id}
         sessionTimeZone={ctx.accountTimeZone}
         allPeople={resolvedAllPeople}
         interactionTypes={interactionTypeOptions}
-        defaultInteractionTypeId={defaultQuickLogInteractionTypeId}
       >
       <PersonDetailTabsProvider
         personId={person.id}
@@ -811,12 +795,6 @@ export default async function PersonDetailPage(props: PageProps) {
           />
         }
         editHref={`/people/${person.id}/edit`}
-        personId={person.id}
-        allPeople={resolvedAllPeople}
-        defaultOccurredAt={defaultOccurredAt}
-        sessionTimeZone={ctx.accountTimeZone}
-        interactionTypes={interactionTypeOptions}
-        defaultInteractionTypeId={defaultInteractionTypeId}
       >
         <div>
           <Link
@@ -854,7 +832,6 @@ export default async function PersonDetailPage(props: PageProps) {
         contacts={contactsPanel}
       />
       </PersonDetailTabsProvider>
-      </PersonQuickLogProvider>
       </PersonLogInteractionProvider>
     </main>
   );

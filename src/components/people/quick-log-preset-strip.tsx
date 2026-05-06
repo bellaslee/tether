@@ -4,7 +4,7 @@ import type { QuickLogPresetCardModel } from '@/lib/quick-log/preset-card-model'
 import { personShownName } from '@/lib/people/list-name';
 import { Button } from '@/components/ui/button';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
-import { usePersonQuickLog } from '@/components/people/person-quick-log-context';
+import { usePersonLogInteraction } from '@/components/people/person-log-interaction-context';
 import type { PersonOption } from '@/components/people/interaction-participant-picker';
 
 type QuickLogPresetStripProps = {
@@ -39,7 +39,7 @@ export function QuickLogPresetStrip({
   presets,
   peopleById,
 }: QuickLogPresetStripProps) {
-  const { openQuickLogWithPreset, openEditPreset } = usePersonQuickLog();
+  const { openLogWithPreset, openEditPreset } = usePersonLogInteraction();
 
   if (presets.length === 0) {
     return null;
@@ -48,7 +48,7 @@ export function QuickLogPresetStrip({
   return (
     <div className="-mx-6 min-w-0 sm:-mx-8">
       <p className="mb-2 px-6 text-xs font-semibold uppercase tracking-[0.24em] text-muted sm:px-8">
-        Quick log presets
+        Log presets
       </p>
       <div
         className="flex gap-3 overflow-x-auto px-6 pb-1 pt-0.5 scroll-px-6 sm:px-8 sm:scroll-px-8"
@@ -64,19 +64,13 @@ export function QuickLogPresetStrip({
           >
             <button
               type="button"
-              onClick={() => openQuickLogWithPreset(preset)}
+              onClick={() => openLogWithPreset(preset)}
               className="min-w-0 text-left"
             >
               <p className="font-display text-lg leading-snug tracking-tight [overflow-wrap:anywhere]">
-                {preset.label}
+                {preset.interaction_title.trim() || preset.label}
               </p>
               <p className="mt-1 text-xs text-muted">{preset.interaction_type_name}</p>
-              {preset.interaction_title &&
-              preset.interaction_title !== 'Quick log' ? (
-                <p className="mt-1 line-clamp-2 text-xs text-foreground/80">
-                  {preset.interaction_title}
-                </p>
-              ) : null}
               <p className="mt-2 text-xs font-medium text-foreground/90">
                 {peopleSummary(preset, peopleById)}
               </p>

@@ -8,10 +8,15 @@ export function defaultInteractionTypeId(types: InteractionTypeOption[]) {
   return hangout?.id ?? types[0]?.id ?? '';
 }
 
-/** Default type for Quick Log (and presets opened from it): **Other** when present. */
-export function defaultQuickLogInteractionTypeId(
+/** UX “blank category” resolves to Other for save (fallback first type id). */
+export function resolveInteractionTypeIdForSave(
+  selectedId: string,
   types: InteractionTypeOption[],
-) {
+): string {
+  const trimmed = selectedId.trim();
+  if (trimmed) {
+    return trimmed;
+  }
   const other = types.find((t) => t.name === 'Other');
   return other?.id ?? types[0]?.id ?? '';
 }
