@@ -54,6 +54,7 @@ type PersonListRow = Pick<
   | 'met_at'
   | 'created_at'
   | 'interaction_count'
+  | 'relationship_hearts_baseline_halves'
 > & {
   person_categories: { name: string } | null;
 };
@@ -145,7 +146,7 @@ export default async function PeoplePage(props: {
   let query = ctx.client
     .from('people')
     .select(
-      'id, full_name, display_name, category_id, status, last_interaction_at, met_at, created_at, interaction_count, person_categories ( name )',
+      'id, full_name, display_name, category_id, status, last_interaction_at, met_at, created_at, interaction_count, relationship_hearts_baseline_halves, person_categories ( name )',
     )
     .eq('user_id', ctx.userId)
     .order('full_name', { ascending: true });
@@ -181,6 +182,8 @@ export default async function PeoplePage(props: {
               createdAt: p.created_at,
               interactionCount: p.interaction_count,
               personCategoryName: p.person_categories?.name ?? null,
+              relationshipHeartsBaselineHalves:
+                p.relationship_hearts_baseline_halves,
             }),
           ),
         )

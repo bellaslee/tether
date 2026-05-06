@@ -128,7 +128,9 @@ export async function updatePersonRecord(
 
   const { data: personBefore, error: beforeError } = await ctx.client
     .from('people')
-    .select('category_id, created_at')
+    .select(
+      'category_id, created_at, relationship_hearts_baseline_halves',
+    )
     .eq('id', personId)
     .eq('user_id', ctx.userId)
     .maybeSingle();
@@ -136,6 +138,10 @@ export async function updatePersonRecord(
   if (beforeError || !personBefore) {
     return { error: beforeError?.message ?? 'Person not found.' };
   }
+
+  const categoryChanged = personBefore.category_id !== input.category_id;
+  const relationship_hearts_baseline_halves =
+    categoryChanged ? null : personBefore.relationship_hearts_baseline_halves;
 
   const { error } = await ctx.client
     .from('people')
@@ -152,6 +158,7 @@ export async function updatePersonRecord(
       relationship_context: input.relationship_context,
       birthday: input.birthday || null,
       met_at: input.met_at,
+      relationship_hearts_baseline_halves,
     })
     .eq('id', personId)
     .eq('user_id', ctx.userId);

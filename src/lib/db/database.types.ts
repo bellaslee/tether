@@ -173,6 +173,7 @@ export interface Database {
           met_at: string | null;
           last_interaction_at: string | null;
           interaction_count: number;
+          relationship_hearts_baseline_halves: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -193,6 +194,7 @@ export interface Database {
           met_at?: string | null;
           last_interaction_at?: string | null;
           interaction_count?: number;
+          relationship_hearts_baseline_halves?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -213,6 +215,7 @@ export interface Database {
           met_at?: string | null;
           last_interaction_at?: string | null;
           interaction_count?: number;
+          relationship_hearts_baseline_halves?: number | null;
           created_at?: string;
           updated_at?: string;
         };

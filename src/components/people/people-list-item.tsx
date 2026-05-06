@@ -27,6 +27,7 @@ type PersonListRow = Pick<
   | 'met_at'
   | 'created_at'
   | 'interaction_count'
+  | 'relationship_hearts_baseline_halves'
 > & {
   person_categories: { name: string } | null;
 };
@@ -89,6 +90,9 @@ export function PeopleListItem({
             createdAt={person.created_at}
             interactionCount={person.interaction_count}
             personCategoryName={person.person_categories?.name ?? null}
+            relationshipHeartsBaselineHalves={
+              person.relationship_hearts_baseline_halves
+            }
             size="compact"
           />
           {person.last_interaction_at ? (

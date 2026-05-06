@@ -15,6 +15,7 @@ export type PersonOption = {
   met_at: string | null;
   created_at: string;
   interaction_count: number;
+  relationship_hearts_baseline_halves?: number | null;
   person_categories?: { name: string } | null;
 };
 

@@ -5,7 +5,7 @@ import { ButtonLink } from '@/components/ui/button';
 import { ContactMethodAddDisclosure } from '@/components/people/contact-method-add-disclosure';
 import { ContactMethodRow } from '@/components/people/contact-method-row';
 import type { PersonOption } from '@/components/people/attendee-picker';
-import { RelationshipHeartBar } from '@/components/people/relationship-heart-bar';
+import { RelationshipHeartBaselineButton } from '@/components/people/relationship-heart-baseline-dialog';
 import { PersonDetailHeader } from '@/components/people/person-detail-header';
 import {
   PersonLogInteractionProvider,
@@ -225,7 +225,7 @@ export default async function PersonDetailPage(props: PageProps) {
     ctx.client
       .from('people')
       .select(
-        'id, full_name, display_name, last_interaction_at, met_at, created_at, interaction_count, person_categories ( name )',
+        'id, full_name, display_name, last_interaction_at, met_at, created_at, interaction_count, relationship_hearts_baseline_halves, person_categories ( name )',
       )
       .eq('user_id', ctx.userId),
     ctx.client
@@ -814,12 +814,18 @@ export default async function PersonDetailPage(props: PageProps) {
             <span className="rounded-full border border-border-soft px-3 py-1 text-xs font-semibold text-muted">
               {formatStatus(person.status)}
             </span>
-            <RelationshipHeartBar
-              lastInteractionAt={person.last_interaction_at}
-              metAt={person.met_at}
-              createdAt={person.created_at}
-              interactionCount={person.interaction_count}
-              personCategoryName={person.person_categories?.name ?? null}
+            <RelationshipHeartBaselineButton
+              personId={person.id}
+              relationshipHeartsBaselineHalves={
+                person.relationship_hearts_baseline_halves
+              }
+              warmthContext={{
+                lastInteractionAt: person.last_interaction_at,
+                metAt: person.met_at,
+                createdAt: person.created_at,
+                interactionCount: person.interaction_count,
+                personCategoryName: person.person_categories?.name ?? null,
+              }}
             />
           </div>
         </div>

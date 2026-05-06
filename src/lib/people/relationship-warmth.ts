@@ -43,7 +43,9 @@ const TENURE_BASELINE_MAX_HEARTS = 3;
  * Bond-type floor: partner and family keep a higher minimum even when touch is
  * infrequent. Names are matched case-insensitively; users can rename categories.
  */
-function categoryBondFloorHearts(categoryName: string | null | undefined): number {
+function categoryBondFloorHearts(
+  categoryName: string | null | undefined,
+): number {
   const n = categoryName?.trim().toLowerCase() ?? '';
   if (!n) {
     return 2;
@@ -58,15 +60,14 @@ function categoryBondFloorHearts(categoryName: string | null | undefined): numbe
     return 3;
   }
   if (n === 'coworker' || n === 'acquaintance' || n === 'networking') {
-    return 2;
+    return 1;
   }
   return 2;
 }
 
 function tenureBonusHearts(ageDays: number): number {
   return Math.round(
-    TENURE_BASELINE_MAX_HEARTS *
-      clamp01(ageDays / TENURE_BLEND_MAX_DAYS),
+    TENURE_BASELINE_MAX_HEARTS * clamp01(ageDays / TENURE_BLEND_MAX_DAYS),
   );
 }
 
@@ -83,10 +84,7 @@ export function computeBondBaselineFilledHearts(input: {
   const ageDays = Math.max(0, wholeDaysBetween(start, today));
   const fromCategory = categoryBondFloorHearts(input.personCategoryName);
   const fromTenure = tenureBonusHearts(ageDays);
-  return Math.min(
-    RELATIONSHIP_MAX_HEARTS,
-    fromCategory + fromTenure,
-  );
+  return Math.min(RELATIONSHIP_MAX_HEARTS, fromCategory + fromTenure);
 }
 
 function clamp01(value: number): number {
@@ -142,8 +140,30 @@ export type ComputeRelationshipWarmthInput = {
   interactionCount?: number;
   /** `person_categories.name` — drives baseline floor with tenure. */
   personCategoryName?: string | null;
+  /**
+   * When set (`0–20` halves), substitutes bond baseline from category + tenure
+   * before soft-floor and activity formulas.
+   */
+  relationshipHeartsBaselineHalves?: number | null;
   now?: Date;
 };
+
+/** Valid DB/app values: integer half-hearts 0..2*RELATIONSHIP_MAX_HEARTS. */
+export function normalizeRelationshipHeartsBaselineHalves(
+  value: number | null | undefined,
+): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+  const rounded = Math.round(value);
+  if (rounded < 0 || rounded > RELATIONSHIP_MAX_HEARTS * 2) {
+    return null;
+  }
+  return rounded;
+}
 
 /** `filled` is in half-heart steps (0, 0.5, 1, …, max). */
 export type RelationshipHeartsResult = {
@@ -175,12 +195,18 @@ export function computeRelationshipHearts(
   const ageDays = Math.max(0, wholeDaysBetween(start, today));
   const tenureT = clamp01(ageDays / TENURE_BLEND_MAX_DAYS);
 
-  const baselineFilled = computeBondBaselineFilledHearts({
-    personCategoryName: input.personCategoryName,
-    metAt: input.metAt,
-    createdAt: input.createdAt,
-    now,
-  });
+  const manualHalves = normalizeRelationshipHeartsBaselineHalves(
+    input.relationshipHeartsBaselineHalves,
+  );
+  const baselineFilled =
+    manualHalves !== null
+      ? manualHalves / 2
+      : computeBondBaselineFilledHearts({
+          personCategoryName: input.personCategoryName,
+          metAt: input.metAt,
+          createdAt: input.createdAt,
+          now,
+        });
 
   const softFloor = displayBondSoftFloor(baselineFilled);
 
@@ -196,11 +222,12 @@ export function computeRelationshipHearts(
   const freqStrength = interactionFrequencyStrength(interactionCount);
 
   const bondPotentialActivity = clamp01(
-    ACTIVITY_WEIGHT_TENURE * tenureT +
-      ACTIVITY_WEIGHT_FREQUENCY * freqStrength,
+    ACTIVITY_WEIGHT_TENURE * tenureT + ACTIVITY_WEIGHT_FREQUENCY * freqStrength,
   );
 
-  const daysSince = Math.floor((now.getTime() - lastTouch.getTime()) / MS_PER_DAY);
+  const daysSince = Math.floor(
+    (now.getTime() - lastTouch.getTime()) / MS_PER_DAY,
+  );
   const tauDays = lerp(RECENCY_TAU_DAYS_NEW, RECENCY_TAU_DAYS_OLD, tenureT);
   const recency = Math.exp(-Math.max(0, daysSince) / tauDays);
 
@@ -253,9 +280,10 @@ export function relationshipWarmthChipClassName(
 export function relationshipHeartBarTooltip(
   input: ComputeRelationshipWarmthInput,
 ): string {
+  if (normalizeRelationshipHeartsBaselineHalves(input.relationshipHeartsBaselineHalves) !== null) {
+    return 'You set the connection baseline here. Logged moments and how recently you last connected still move the hearts around that baseline.';
+  }
   const cat = input.personCategoryName?.trim();
-  const lead = cat
-    ? `their category (${cat})`
-    : 'how you categorize them';
+  const lead = cat ? `their category (${cat})` : 'how you categorize them';
   return `Hearts combine ${lead}, how long you have known each other, moments you have logged together, and how recently you last connected.`;
 }
