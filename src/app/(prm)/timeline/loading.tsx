@@ -15,7 +15,6 @@ export default function TimelineLoading() {
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
           <RouteLoadingPulse className="h-11 w-28 shrink-0 rounded-xl" />
-          <RouteLoadingPulse className="h-11 w-40 shrink-0 rounded-xl" />
         </div>
       </header>
       <div className="mt-6 flex gap-3 overflow-hidden">

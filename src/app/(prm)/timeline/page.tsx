@@ -32,7 +32,6 @@ const PAGE_COPY = {
     description:
       'Plans you are looking forward to and moments you have already shared. People listed together were part of the same entry — it lives once in the database.',
   },
-  logInteraction: 'Log interaction',
   empty: {
     lead: "Nothing logged yet. Start from a person's page or",
     addMomentLink: 'add a multi-person moment',
@@ -190,9 +189,6 @@ export default async function TimelinePage() {
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
             <TimelineLogInteractionPrimaryButton />
-            <ButtonLink href="/interactions/new" variant="secondary" size="lg">
-              {PAGE_COPY.logInteraction}
-            </ButtonLink>
           </div>
         </header>
 
