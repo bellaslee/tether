@@ -53,7 +53,7 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
             <h2 id={titleId} className="mt-2 font-display text-2xl tracking-tight sm:text-3xl">
               Privacy Policy
             </h2>
-            <p className="mt-2 text-sm text-muted">Last updated: April 5, 2026</p>
+            <p className="mt-2 text-sm text-muted">Last updated: May 6, 2026</p>
           </div>
           <Button
             type="button"
@@ -71,9 +71,36 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
             <h3 className="font-display text-xl text-foreground">Overview</h3>
             <p className="text-sm leading-7 text-muted">
               Tether is a personal relationship memory tool. This policy describes what information
-              the service processes, why we process it, and the choices you have. If anything here
-              conflicts with a separate agreement you accepted (for example with your host or
-              employer), that agreement may govern instead where the law allows.
+              the service processes, why we process it, and the choices you have. We aim to handle
+              personal notes and relationship context the way a careful app should: with{' '}
+              <span className="text-foreground/90">plain language</span>,{' '}
+              <span className="text-foreground/90">strong separation between accounts</span>, and{' '}
+              <span className="text-foreground/90">straightforward explanations</span> of how the
+              service works. If anything here conflicts with a separate agreement you accepted (for
+              example with your host or employer), that agreement may govern instead where the law
+              allows.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="font-display text-xl text-foreground">Security and trust model</h3>
+            <p className="text-sm leading-7 text-muted">
+              <span className="text-foreground/90">Isolation.</span> Your workspace is tied to your
+              account. Other users cannot browse your people or notes; access requires signing in.
+              Engineering patterns such as row-level security support that separation on the backend.
+            </p>
+            <p className="text-sm leading-7 text-muted">
+              <span className="text-foreground/90">Baseline protections.</span> We use encryption
+              for data in transit (HTTPS), careful access controls for operators and software, and
+              rely on our hosting providers for encryption at rest as part of their
+              infrastructure—the same general posture many productivity apps use against common
+              risks like casual interception or stolen physical media.
+            </p>
+            <p className="text-sm leading-7 text-muted">
+              <span className="text-foreground/90">How we prioritize privacy.</span> Beyond
+              isolation and baseline security, we focus on transparency (including how AI requests
+              work), minimizing unnecessary collection and logging, and policies such as not selling
+              your personal information—see below.
             </p>
           </section>
 
