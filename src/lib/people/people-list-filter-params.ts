@@ -1,11 +1,8 @@
 import type { PersonStatus } from '@/lib/db/database.types';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
-import type { RelationshipWarmth } from '@/lib/people/relationship-warmth';
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-const RELATIONSHIP_WARMTH_FILTERS: RelationshipWarmth[] = ['hot', 'warm', 'cold'];
 
 export function isPeopleListCategoryId(value: string): boolean {
   return UUID_RE.test(value);
@@ -89,66 +86,19 @@ export function effectivePeopleListStatuses(
   return parsed;
 }
 
-export function parsePeopleListWarmth(
-  param: string | string[] | undefined,
-): RelationshipWarmth[] {
-  const seen = new Set<RelationshipWarmth>();
-  const out: RelationshipWarmth[] = [];
-  for (const raw of searchParamToStrings(param)) {
-    const w = raw.trim().toLowerCase();
-    if (
-      RELATIONSHIP_WARMTH_FILTERS.includes(w as RelationshipWarmth) &&
-      !seen.has(w as RelationshipWarmth)
-    ) {
-      seen.add(w as RelationshipWarmth);
-      out.push(w as RelationshipWarmth);
-    }
-  }
-  return out;
-}
-
-export function parsePeopleListWarmthFromSearchParams(
-  sp: URLSearchParams,
-): RelationshipWarmth[] {
-  const seen = new Set<RelationshipWarmth>();
-  const out: RelationshipWarmth[] = [];
-  for (const raw of sp.getAll('warmth')) {
-    const w = raw.trim().toLowerCase();
-    if (
-      RELATIONSHIP_WARMTH_FILTERS.includes(w as RelationshipWarmth) &&
-      !seen.has(w as RelationshipWarmth)
-    ) {
-      seen.add(w as RelationshipWarmth);
-      out.push(w as RelationshipWarmth);
-    }
-  }
-  return out;
-}
-
-export type PeopleListFilterFacetSnapshot = {
-  q: string;
-  categoryIds: string[];
-  statusValues: PersonStatus[];
-  warmth: RelationshipWarmth[];
-};
-
 /** Raw URL facets for persistence (not `effectivePeopleListStatuses`). */
 export type StoredPeopleListFilters = {
   q: string;
   categoryIds: string[];
   statusValues: PersonStatus[];
-  warmth: RelationshipWarmth[];
 };
 
 /** Search `q` is intentionally omitted from persistence (always empty). */
-export function peopleListFiltersForStorage(
-  sp: URLSearchParams,
-): StoredPeopleListFilters {
+export function peopleListFiltersForStorage(sp: URLSearchParams): StoredPeopleListFilters {
   return {
     q: '',
     categoryIds: parsePeopleListCategoryIdsFromSearchParams(sp),
     statusValues: parsePeopleListStatusesFromSearchParams(sp),
-    warmth: parsePeopleListWarmthFromSearchParams(sp),
   };
 }
 
@@ -157,7 +107,6 @@ export function peopleListFiltersPersistKey(sp: URLSearchParams): string {
   return [
     [...f.categoryIds].sort().join(','),
     [...f.statusValues].sort().join(','),
-    [...f.warmth].sort().join(','),
   ].join('|');
 }
 
@@ -181,30 +130,11 @@ export function mergeStoredPeopleListFiltersIntoSearchParams(
     }
     changed = true;
   }
-  if (!sp.has('warmth') && stored.warmth.length > 0) {
-    for (const w of [...stored.warmth].sort()) {
-      sp.append('warmth', w);
-    }
-    changed = true;
-  }
   return changed;
 }
 
-export function peopleListFilterFacetSnapshotFromSearchParams(
-  sp: URLSearchParams,
-): PeopleListFilterFacetSnapshot {
-  const statusInUrl = sp.has('status');
-  const parsedStatus = parsePeopleListStatusesFromSearchParams(sp);
-  return {
-    q: sp.get('q')?.trim() ?? '',
-    categoryIds: parsePeopleListCategoryIdsFromSearchParams(sp),
-    statusValues: effectivePeopleListStatuses(statusInUrl, parsedStatus),
-    warmth: parsePeopleListWarmthFromSearchParams(sp),
-  };
-}
-
 /**
- * Writes category, status, and warmth keys into params (q is unchanged).
+ * Writes category and status keys into params (q is unchanged).
  * Empty category selection or full set → omit category (show all).
  */
 export function applyPeopleListFilterFacetsToParams(
@@ -213,10 +143,9 @@ export function applyPeopleListFilterFacetsToParams(
     categoryIds: Set<string>;
     allCategoryIds: string[];
     statusValues: PersonStatus[];
-    warmth: RelationshipWarmth[];
   },
 ): void {
-  const { categoryIds, allCategoryIds, statusValues, warmth } = input;
+  const { categoryIds, allCategoryIds, statusValues } = input;
   const allSet = new Set(allCategoryIds);
   const fullySelected =
     allSet.size > 0 &&
@@ -240,7 +169,4 @@ export function applyPeopleListFilterFacetsToParams(
   }
 
   params.delete('warmth');
-  for (const w of [...warmth].sort()) {
-    params.append('warmth', w);
-  }
 }

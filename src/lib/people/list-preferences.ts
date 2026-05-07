@@ -4,13 +4,10 @@ import {
   isPeopleListCategoryId,
   type StoredPeopleListFilters,
 } from '@/lib/people/people-list-filter-params';
-import type { RelationshipWarmth } from '@/lib/people/relationship-warmth';
 
 const VIEW_STORAGE_KEY = 'prm.people.listView';
 const SORT_STORAGE_KEY = 'prm.people.listSort';
 const FILTER_STORAGE_KEY = 'prm.people.listFilters';
-
-const WARMTH_FILTER_VALUES: RelationshipWarmth[] = ['hot', 'warm', 'cold'];
 
 export type ListViewPreference = 'categories' | 'grid' | 'graph';
 
@@ -119,14 +116,7 @@ export function readStoredPeopleListFilters(): StoredPeopleListFilters | null {
             typeof x === 'string' && PERSON_STATUSES.includes(x as PersonStatus),
         )
       : [];
-    const warmth = Array.isArray(o.warmth)
-      ? o.warmth.filter(
-          (x): x is RelationshipWarmth =>
-            typeof x === 'string' &&
-            WARMTH_FILTER_VALUES.includes(x as RelationshipWarmth),
-        )
-      : [];
-    return { q, categoryIds, statusValues, warmth };
+    return { q, categoryIds, statusValues };
   } catch {
     return null;
   }

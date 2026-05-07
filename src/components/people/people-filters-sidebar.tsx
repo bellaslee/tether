@@ -10,12 +10,6 @@ import type { PersonStatus } from '@/lib/db/database.types';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { formatStatus } from '@/lib/domain/labels';
 import { applyPeopleListFilterFacetsToParams } from '@/lib/people/people-list-filter-params';
-import {
-  relationshipWarmthLabel,
-  type RelationshipWarmth,
-} from '@/lib/people/relationship-warmth';
-
-const RELATIONSHIP_WARMTH_FILTERS: RelationshipWarmth[] = ['hot', 'warm', 'cold'];
 
 type CategoryOption = { id: string; name: string };
 
@@ -26,7 +20,6 @@ type Props = {
   categoryFilterInitiallyOpen: boolean;
   statusValues: PersonStatus[];
   statusFilterInitiallyOpen: boolean;
-  warmthFilter: RelationshipWarmth[];
 };
 
 function replacePath(
@@ -38,15 +31,10 @@ function replacePath(
   router.replace(qs ? `${pathname}?${qs}` : pathname);
 }
 
-function appliedFacetsKey(
-  categoryIds: string[],
-  statusValues: PersonStatus[],
-  warmthFilter: RelationshipWarmth[],
-): string {
+function appliedFacetsKey(categoryIds: string[], statusValues: PersonStatus[]): string {
   return [
     [...categoryIds].sort().join(','),
     [...statusValues].sort().join(','),
-    [...warmthFilter].sort().join(','),
   ].join('|');
 }
 
@@ -57,7 +45,6 @@ export function PeopleFiltersSidebar({
   categoryFilterInitiallyOpen,
   statusValues,
   statusFilterInitiallyOpen,
-  warmthFilter,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -69,8 +56,8 @@ export function PeopleFiltersSidebar({
   );
 
   const appliedKey = useMemo(
-    () => appliedFacetsKey(categoryIds, statusValues, warmthFilter),
-    [categoryIds, statusValues, warmthFilter],
+    () => appliedFacetsKey(categoryIds, statusValues),
+    [categoryIds, statusValues],
   );
 
   const [draftCategoryIds, setDraftCategoryIds] = useState<Set<string>>(
@@ -79,15 +66,10 @@ export function PeopleFiltersSidebar({
   const [draftStatusValues, setDraftStatusValues] = useState<PersonStatus[]>(
     () => [...statusValues],
   );
-  const [draftWarmth, setDraftWarmth] = useState<RelationshipWarmth[]>(() => [
-    ...warmthFilter,
-  ]);
-
   useEffect(() => {
     setDraftCategoryIds(new Set(categoryIds));
     setDraftStatusValues([...statusValues]);
-    setDraftWarmth([...warmthFilter]);
-  }, [appliedKey, categoryIds, statusValues, warmthFilter]);
+  }, [appliedKey, categoryIds, statusValues]);
 
   useEffect(() => {
     setQDraft(q);
@@ -158,29 +140,18 @@ export function PeopleFiltersSidebar({
     });
   }, []);
 
-  const toggleWarmth = useCallback((w: RelationshipWarmth, checked: boolean) => {
-    setDraftWarmth((prev) => {
-      if (checked) {
-        return [...new Set([...prev, w])];
-      }
-      return prev.filter((x) => x !== w);
-    });
-  }, []);
-
   const applyFilters = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
     applyPeopleListFilterFacetsToParams(p, {
       categoryIds: draftCategoryIds,
       allCategoryIds: categoryOptions.map((c) => c.id),
       statusValues: draftStatusValues,
-      warmth: draftWarmth,
     });
     replacePath(router, pathname, p);
   }, [
     categoryOptions,
     draftCategoryIds,
     draftStatusValues,
-    draftWarmth,
     pathname,
     router,
     searchParams,
@@ -264,29 +235,6 @@ export function PeopleFiltersSidebar({
                   className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
                 />
                 <span>{formatStatus(s)}</span>
-              </label>
-            ))}
-          </div>
-        </PeopleFilterDisclosure>
-        <PeopleFilterDisclosure
-          key="people-filter-warmth"
-          initialOpen={warmthFilter.length > 0}
-          labelId="people-filter-warmth-label"
-          label="Relationship warmth"
-        >
-          <div className="flex flex-col gap-2 text-sm">
-            {RELATIONSHIP_WARMTH_FILTERS.map((w) => (
-              <label
-                key={w}
-                className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
-              >
-                <input
-                  type="checkbox"
-                  checked={draftWarmth.includes(w)}
-                  onChange={(e) => toggleWarmth(w, e.target.checked)}
-                  className="size-4 rounded border-border-soft text-accent focus:ring-accent/40"
-                />
-                <span>{relationshipWarmthLabel(w)}</span>
               </label>
             ))}
           </div>

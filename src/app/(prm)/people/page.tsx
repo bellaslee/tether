@@ -8,9 +8,7 @@ import {
   effectivePeopleListStatuses,
   parsePeopleListCategoryIds,
   parsePeopleListStatuses,
-  parsePeopleListWarmth,
 } from '@/lib/people/people-list-filter-params';
-import { computeRelationshipWarmth } from '@/lib/people/relationship-warmth';
 import { PeopleFiltersSidebar } from '@/components/people/people-filters-sidebar';
 import { PeopleListPreferencesSync } from '@/components/people/people-list-preferences-sync';
 import { PeopleRelationshipGraph } from '@/components/people/people-relationship-graph';
@@ -141,7 +139,6 @@ export default async function PeoplePage(props: {
   const statusInUrl = Object.hasOwn(searchParams, 'status');
   const statusFromUrl = parsePeopleListStatuses(searchParams.status);
   const statusValues = effectivePeopleListStatuses(statusInUrl, statusFromUrl);
-  const warmthFilter = parsePeopleListWarmth(searchParams.warmth);
   const sortKey = parsePeopleSort(first(searchParams.sort));
   const viewKey = parsePeopleView(first(searchParams.view));
 
@@ -184,26 +181,9 @@ export default async function PeoplePage(props: {
 
   const peopleList = (people ?? []) as PersonListRow[];
 
-  const warmthFiltered =
-    warmthFilter.length > 0
-      ? peopleList.filter((p) =>
-          warmthFilter.includes(
-            computeRelationshipWarmth({
-              lastInteractionAt: p.last_interaction_at,
-              metAt: p.met_at,
-              createdAt: p.created_at,
-              interactionCount: p.interaction_count,
-              personCategoryName: p.person_categories?.name ?? null,
-              relationshipHeartsBaselineHalves:
-                p.relationship_hearts_baseline_halves,
-            }),
-          ),
-        )
-      : peopleList;
-
   let graphCollapsedLinks: CollapsedGraphLink[] = [];
-  if (viewKey === 'graph' && warmthFiltered.length > 0) {
-    const idSet = new Set(warmthFiltered.map((p) => p.id));
+  if (viewKey === 'graph' && peopleList.length > 0) {
+    const idSet = new Set(peopleList.map((p) => p.id));
     const { data: allConnRows, error: connError } = await ctx.client
       .from('person_connections')
       .select('person_id, related_person_id, connection_type_id')
@@ -237,7 +217,7 @@ export default async function PeoplePage(props: {
     graphCollapsedLinks = collapsePersonConnections(inScope, typeNameById);
   }
 
-  const gridSortedPeople = [...warmthFiltered].sort((a, b) =>
+  const gridSortedPeople = [...peopleList].sort((a, b) =>
     comparePeopleListRows(sortKey, a, b),
   );
 
@@ -248,7 +228,7 @@ export default async function PeoplePage(props: {
   }
 
   const peopleByCategory = new Map<string, PersonListRow[]>();
-  for (const p of warmthFiltered) {
+  for (const p of peopleList) {
     const cid = p.category_id;
     const bucket = peopleByCategory.get(cid) ?? [];
     bucket.push(p);
@@ -317,7 +297,6 @@ export default async function PeoplePage(props: {
               categoryFilterInitiallyOpen={categoryFilterInitiallyOpen}
               statusValues={statusValues}
               statusFilterInitiallyOpen={statusFilterInitiallyOpen}
-              warmthFilter={warmthFilter}
             />
           </Suspense>
         </section>
@@ -337,7 +316,7 @@ export default async function PeoplePage(props: {
         </section>
 
         <section className="order-3 min-w-0 lg:order-none lg:col-start-2 lg:row-start-2">
-          {warmthFiltered.length === 0 ? (
+          {peopleList.length === 0 ? (
             <div className="card-surface rounded-[1.75rem] border border-border-soft p-10 text-center text-sm text-muted">
               {PAGE_COPY.empty.lead}{' '}
               <Link
@@ -366,8 +345,8 @@ export default async function PeoplePage(props: {
                 Hover a dot for a name or a line for the connection type.
               </p>
               <p className="sr-only" role="status">
-                {warmthFiltered.length}{' '}
-                {warmthFiltered.length === 1 ? 'person' : 'people'},{' '}
+                {peopleList.length}{' '}
+                {peopleList.length === 1 ? 'person' : 'people'},{' '}
                 {graphCollapsedLinks.length}{' '}
                 {graphCollapsedLinks.length === 1 ? 'link' : 'links'} visible.
               </p>
@@ -378,7 +357,7 @@ export default async function PeoplePage(props: {
                   </p>
                 ) : null}
                 <PeopleRelationshipGraph
-                  people={warmthFiltered.map((p) => ({
+                  people={peopleList.map((p) => ({
                     id: p.id,
                     full_name: p.full_name,
                     display_name: p.display_name,

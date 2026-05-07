@@ -24,7 +24,7 @@ import {
  * view/sort (omitted params) is not overwritten from storage.
  *
  * The name search query (`q`) is not persisted: it only lives in the URL for the
- * current visit. Category, status, and warmth facets still sync with localStorage.
+ * current visit. Category and status facets still sync with localStorage.
  */
 export function PeopleListPreferencesSync() {
   const router = useRouter();
