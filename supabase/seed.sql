@@ -1,1 +1,0 @@
--- Seed data is intentionally empty for project initialization.
