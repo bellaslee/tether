@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-  createPersonConnection,
+  createPersonConnectionsBatch,
   deletePersonConnection,
 } from '@/lib/actions/person-connections';
 import { Button } from '@/components/ui/button';
 import { ConfirmLightbox } from '@/components/ui/confirm-lightbox';
+import { FormInput } from '@/components/ui/form-input';
 import { Picklist } from '@/components/ui/picklist';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import { listRowCardClassName } from '@/components/ui/list-row-card';
@@ -43,6 +44,13 @@ type PersonConnectionsPanelProps = {
   /** Rotates sun / sky / coral top border with other person-detail panels. */
   topAccentIndex?: number;
 };
+
+function comparePersonOptionByLabel(
+  a: PersonConnectionPersonOption,
+  b: PersonConnectionPersonOption,
+) {
+  return a.label.localeCompare(b.label, undefined, { sensitivity: 'base' });
+}
 
 function ConnectionRow(props: {
   row: PersonConnectionListItem;
@@ -129,36 +137,93 @@ function AddConnectionForm(props: {
     onCancel,
   } = props;
   const router = useRouter();
-  const [relatedId, setRelatedId] = useState('');
   const [typeId, setTypeId] = useState(defaultConnectionTypeId);
+  const [selectedRelatedIds, setSelectedRelatedIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [query, setQuery] = useState('');
+  const [listRevealed, setListRevealed] = useState(false);
   const [notes, setNotes] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const orderedPeople = useMemo(() => {
+    const copy = [...otherPeople];
+    copy.sort(comparePersonOptionByLabel);
+    return copy;
+  }, [otherPeople]);
+
+  const visiblePeople = useMemo(() => {
+    if (!listRevealed) {
+      return [];
+    }
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      return orderedPeople;
+    }
+    return orderedPeople.filter(
+      (person) =>
+        selectedRelatedIds.has(person.id) ||
+        person.label.toLowerCase().includes(q),
+    );
+  }, [listRevealed, orderedPeople, query, selectedRelatedIds]);
+
+  function revealList() {
+    setListRevealed(true);
+  }
+
+  function toggleRelated(personId: string) {
+    setSelectedRelatedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(personId)) {
+        next.delete(personId);
+      } else {
+        next.add(personId);
+      }
+      return next;
+    });
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!relatedId) {
-      setError('Choose someone to connect.');
+    if (!typeId) {
+      setError('Choose a connection type.');
+      return;
+    }
+    if (selectedRelatedIds.size === 0) {
+      setError('Choose at least one person to connect.');
       return;
     }
     setPending(true);
     try {
-      const result = await createPersonConnection(
+      const relatedPersonIds = [...selectedRelatedIds];
+      const result = await createPersonConnectionsBatch(
         personId,
-        relatedId,
+        relatedPersonIds,
         typeId,
         notes,
       );
+      if (result.ok) {
+        setSelectedRelatedIds(new Set());
+        setQuery('');
+        setListRevealed(false);
+        setNotes('');
+        setTypeId(defaultConnectionTypeId);
+        router.refresh();
+        onDone();
+        return;
+      }
+      if (result.createdCount > 0) {
+        router.refresh();
+      }
+      if (result.skippedRelatedIds.length > 0) {
+        setSelectedRelatedIds(new Set(result.skippedRelatedIds));
+      }
       if (!result.ok) {
         setError(result.error);
         return;
       }
-      setRelatedId('');
-      setNotes('');
-      setTypeId(defaultConnectionTypeId);
-      router.refresh();
-      onDone();
     } finally {
       setPending(false);
     }
@@ -171,25 +236,6 @@ function AddConnectionForm(props: {
         <span className="font-semibold text-foreground">{subjectName}</span>.
         For example, choose Parent if they are {subjectName}&apos;s parent.
       </p>
-      <div className="space-y-2">
-        <label htmlFor="connection-related" className="text-sm font-semibold">
-          Other person
-        </label>
-        <Picklist
-          id="connection-related"
-          value={relatedId}
-          onChange={(e) => setRelatedId(e.target.value)}
-          required
-          autoFocus
-        >
-          <option value="">Select…</option>
-          {otherPeople.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.label}
-            </option>
-          ))}
-        </Picklist>
-      </div>
       <div className="space-y-2">
         <label htmlFor="connection-type" className="text-sm font-semibold">
           Connection type
@@ -206,6 +252,96 @@ function AddConnectionForm(props: {
             </option>
           ))}
         </Picklist>
+      </div>
+      <div className="space-y-2">
+        <label htmlFor="connection-related" className="text-sm font-semibold">
+          People to connect
+        </label>
+        <div className="min-w-0">
+          <label htmlFor="connection-related-search" className="sr-only">
+            Search people by name
+          </label>
+          <FormInput
+            id="connection-related-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={revealList}
+            onClick={revealList}
+            placeholder="Search by name"
+            autoComplete="off"
+          />
+        </div>
+        {listRevealed && visiblePeople.length === 0 ? (
+          <p className="text-sm text-muted">No one matches your search.</p>
+        ) : null}
+        {listRevealed && visiblePeople.length > 0 ? (
+          <ul className="flex max-h-44 flex-col gap-2 overflow-y-auto pr-1">
+            {visiblePeople.map((person) => {
+              const selected = selectedRelatedIds.has(person.id);
+              return (
+                <li key={person.id}>
+                  <div
+                    className={listRowCardClassName(
+                      [
+                        'flex min-w-0 items-center gap-3 transition',
+                        selected
+                          ? 'border-accent bg-accent-soft text-foreground'
+                          : 'hover:bg-white/90',
+                      ].join(' '),
+                    )}
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={selected}
+                      aria-label={
+                        selected
+                          ? `Remove ${person.label} from this connection`
+                          : `Add ${person.label} to this connection`
+                      }
+                      onClick={() => toggleRelated(person.id)}
+                      className={[
+                        'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition outline-none',
+                        'focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
+                        selected
+                          ? 'border-accent bg-accent text-white'
+                          : 'border-border-soft bg-white/90 text-transparent',
+                      ].join(' ')}
+                    >
+                      {selected ? (
+                        <svg
+                          className="size-3"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                        >
+                          <path d="m2.5 6 2.5 2.5L9.5 3.5" />
+                        </svg>
+                      ) : null}
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => toggleRelated(person.id)}
+                      className="min-w-0 flex-1 py-0.5 text-left text-sm font-medium"
+                    >
+                      {person.label}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+        <p className="text-xs text-muted">
+          {selectedRelatedIds.size > 0
+            ? `${selectedRelatedIds.size} selected`
+            : 'Select one or more people.'}
+        </p>
       </div>
       <div className="space-y-2">
         <label htmlFor="connection-notes" className="text-sm font-semibold">

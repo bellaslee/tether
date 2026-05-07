@@ -13,21 +13,25 @@ export type CreatePersonConnectionResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
-export async function createPersonConnection(
-  personId: string,
-  relatedPersonId: string,
+type CreateConnectionPairResult =
+  | { ok: true; id: string }
+  | {
+      ok: false;
+      error: string;
+      reason: 'duplicate' | 'invalid' | 'other';
+    };
+
+type CreateConnectionContext = Awaited<
+  ReturnType<typeof getPrmSupabaseContext>
+>;
+
+async function resolveReciprocalTypeId(
+  ctx: NonNullable<CreateConnectionContext>,
   connectionTypeId: string,
-  notesRaw?: string | null,
-): Promise<CreatePersonConnectionResult> {
-  const ctx = await getPrmSupabaseContext();
-  if (!ctx) {
-    return { ok: false, error: 'You need to sign in again.' };
-  }
-
-  if (!personId || !relatedPersonId || personId === relatedPersonId) {
-    return { ok: false, error: 'Pick someone other than this person.' };
-  }
-
+): Promise<
+  | { ok: true; reciprocalTypeId: string }
+  | { ok: false; error: string }
+> {
   const { data: typeRow, error: typeError } = await ctx.client
     .from('connection_types')
     .select('id, inverse_type_id')
@@ -39,7 +43,32 @@ export async function createPersonConnection(
     return { ok: false, error: 'Connection type not found.' };
   }
 
-  const notes = notesRaw != null ? optionalNotes(notesRaw) : null;
+  return { ok: true, reciprocalTypeId: typeRow.inverse_type_id ?? typeRow.id };
+}
+
+async function createConnectionPair(args: {
+  ctx: NonNullable<CreateConnectionContext>;
+  personId: string;
+  relatedPersonId: string;
+  connectionTypeId: string;
+  reciprocalTypeId: string;
+  notes: string | null;
+}): Promise<CreateConnectionPairResult> {
+  const {
+    ctx,
+    personId,
+    relatedPersonId,
+    connectionTypeId,
+    reciprocalTypeId,
+    notes,
+  } = args;
+  if (!personId || !relatedPersonId || personId === relatedPersonId) {
+    return {
+      ok: false,
+      error: 'Pick someone other than this person.',
+      reason: 'invalid',
+    };
+  }
 
   const { data: inserted, error: insertError } = await ctx.client
     .from('person_connections')
@@ -58,17 +87,15 @@ export async function createPersonConnection(
       return {
         ok: false,
         error: 'That connection already exists for these people and type.',
+        reason: 'duplicate',
       };
     }
-    return { ok: false, error: insertError.message };
+    return { ok: false, error: insertError.message, reason: 'other' };
   }
 
   if (!inserted) {
-    return { ok: false, error: 'Could not create connection.' };
+    return { ok: false, error: 'Could not create connection.', reason: 'other' };
   }
-
-  const reciprocalTypeId =
-    typeRow.inverse_type_id ?? typeRow.id;
 
   const { error: reciprocalError } = await ctx.client
     .from('person_connections')
@@ -86,12 +113,150 @@ export async function createPersonConnection(
       .delete()
       .eq('id', inserted.id)
       .eq('user_id', ctx.userId);
-    return { ok: false, error: reciprocalError.message };
+    return { ok: false, error: reciprocalError.message, reason: 'other' };
+  }
+
+  return { ok: true, id: inserted.id };
+}
+
+export async function createPersonConnection(
+  personId: string,
+  relatedPersonId: string,
+  connectionTypeId: string,
+  notesRaw?: string | null,
+): Promise<CreatePersonConnectionResult> {
+  const ctx = await getPrmSupabaseContext();
+  if (!ctx) {
+    return { ok: false, error: 'You need to sign in again.' };
+  }
+
+  const type = await resolveReciprocalTypeId(ctx, connectionTypeId);
+  if (!type.ok) {
+    return type;
+  }
+
+  const notes = notesRaw != null ? optionalNotes(notesRaw) : null;
+  const result = await createConnectionPair({
+    ctx,
+    personId,
+    relatedPersonId,
+    connectionTypeId,
+    reciprocalTypeId: type.reciprocalTypeId,
+    notes,
+  });
+
+  if (!result.ok) {
+    return { ok: false, error: result.error };
   }
 
   revalidatePath(`/people/${personId}`);
   revalidatePath(`/people/${relatedPersonId}`);
-  return { ok: true, id: inserted.id };
+  return { ok: true, id: result.id };
+}
+
+export type CreatePersonConnectionsBatchResult =
+  | {
+      ok: true;
+      createdCount: number;
+      skippedCount: 0;
+      skippedRelatedIds: string[];
+    }
+  | {
+      ok: false;
+      error: string;
+      createdCount: number;
+      skippedCount: number;
+      skippedRelatedIds: string[];
+    };
+
+export async function createPersonConnectionsBatch(
+  personId: string,
+  relatedPersonIds: string[],
+  connectionTypeId: string,
+  notesRaw?: string | null,
+): Promise<CreatePersonConnectionsBatchResult> {
+  const ctx = await getPrmSupabaseContext();
+  if (!ctx) {
+    return {
+      ok: false,
+      error: 'You need to sign in again.',
+      createdCount: 0,
+      skippedCount: 0,
+      skippedRelatedIds: [],
+    };
+  }
+
+  const type = await resolveReciprocalTypeId(ctx, connectionTypeId);
+  if (!type.ok) {
+    return {
+      ok: false,
+      error: type.error,
+      createdCount: 0,
+      skippedCount: 0,
+      skippedRelatedIds: [],
+    };
+  }
+
+  const notes = notesRaw != null ? optionalNotes(notesRaw) : null;
+  const normalizedIds = [...new Set(relatedPersonIds.filter(Boolean))];
+  if (!personId || normalizedIds.length === 0) {
+    return {
+      ok: false,
+      error: 'Choose at least one person to connect.',
+      createdCount: 0,
+      skippedCount: 0,
+      skippedRelatedIds: [],
+    };
+  }
+
+  let createdCount = 0;
+  const touchedRelatedIds = new Set<string>();
+  const skippedRelatedIds: string[] = [];
+  for (const relatedPersonId of normalizedIds) {
+    const result = await createConnectionPair({
+      ctx,
+      personId,
+      relatedPersonId,
+      connectionTypeId,
+      reciprocalTypeId: type.reciprocalTypeId,
+      notes,
+    });
+    if (result.ok) {
+      createdCount += 1;
+      touchedRelatedIds.add(relatedPersonId);
+      continue;
+    }
+    skippedRelatedIds.push(relatedPersonId);
+  }
+
+  if (createdCount > 0) {
+    revalidatePath(`/people/${personId}`);
+    for (const relatedPersonId of touchedRelatedIds) {
+      revalidatePath(`/people/${relatedPersonId}`);
+    }
+  }
+
+  if (skippedRelatedIds.length === 0) {
+    return {
+      ok: true,
+      createdCount,
+      skippedCount: 0,
+      skippedRelatedIds: [],
+    };
+  }
+
+  const skippedCount = skippedRelatedIds.length;
+  const error =
+    createdCount > 0
+      ? `Added ${createdCount} connection${createdCount === 1 ? '' : 's'}. Skipped ${skippedCount} that already existed or were invalid.`
+      : `No connections were added. Skipped ${skippedCount} that already existed or were invalid.`;
+  return {
+    ok: false,
+    error,
+    createdCount,
+    skippedCount,
+    skippedRelatedIds,
+  };
 }
 
 export type DeletePersonConnectionResult =

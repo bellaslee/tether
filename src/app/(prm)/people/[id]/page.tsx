@@ -493,10 +493,14 @@ export default async function PersonDetailPage(props: PageProps) {
     partitionPersonTimelineRows(timelineRows);
 
   const otherPeople = resolvedAllPeople.filter((p) => p.id !== person.id);
-  const otherPeopleOptions = otherPeople.map((p) => ({
-    id: p.id,
-    label: p.display_name?.trim() || p.full_name,
-  }));
+  const otherPeopleOptions = otherPeople
+    .map((p) => ({
+      id: p.id,
+      label: p.display_name?.trim() || p.full_name,
+    }))
+    .sort((a, b) =>
+      a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }),
+    );
   const subjectName =
     person.display_name?.trim() || person.full_name;
 
