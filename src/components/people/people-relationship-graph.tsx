@@ -407,10 +407,10 @@ function FlowCanvas({
 
   return (
     <div
-      className="people-relationship-graph-flow relative w-full overflow-hidden rounded-2xl border border-border-soft bg-[linear-gradient(160deg,var(--accent-sky-soft)_0%,rgb(255_251_244/0.75)_42%,rgb(255_255_255/0.55)_100%)]"
+      className="people-relationship-graph-flow relative w-full overflow-hidden"
       style={
         {
-          height: 'min(70vh, 36rem)',
+          height: '82dvh',
           width: '100%',
           ['--graph-edge-stroke' as string]: 'var(--accent-sky)',
         } as CSSProperties

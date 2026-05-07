@@ -339,7 +339,7 @@ export default async function PeoplePage(props: {
               ))}
             </ul>
           ) : viewKey === 'graph' ? (
-            <div className="card-surface min-w-0 rounded-[1.75rem] border border-border-soft p-4 sm:p-6 lg:p-8">
+            <div className="card-surface min-w-0 overflow-hidden rounded-[1.75rem] border border-border-soft p-2 sm:p-3 lg:p-4">
               <p id="people-graph-intro" className="sr-only">
                 Map of filtered people as dots; lines link mutual connections.
                 Hover a dot for a name or a line for the connection type.
