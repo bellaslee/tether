@@ -314,6 +314,7 @@ function PersonLogInteractionDialogInner({
       if (r.error) {
         setError(r.error);
       } else {
+        onClose();
         router.refresh();
       }
     });
@@ -323,6 +324,7 @@ function PersonLogInteractionDialogInner({
     attendeeIds,
     timeLocal,
     resolvedTypeForSave,
+    onClose,
     router,
   ]);
 

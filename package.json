@@ -12,7 +12,8 @@
     "db:stop": "npx supabase stop",
     "db:status": "npx supabase status",
     "db:push": "npx supabase db push --local",
-    "db:seed:demo": "npx supabase db query --local -f supabase/seed.demo.sql"
+    "db:seed:demo": "npx supabase db query --local -f supabase/seed.demo.sql",
+    "db:clear:demo": "npx supabase db query --local -f supabase/clear-demo-user.sql"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.0",
