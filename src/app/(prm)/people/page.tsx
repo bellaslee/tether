@@ -13,9 +13,14 @@ import {
 import { computeRelationshipWarmth } from '@/lib/people/relationship-warmth';
 import { PeopleFiltersSidebar } from '@/components/people/people-filters-sidebar';
 import { PeopleListPreferencesSync } from '@/components/people/people-list-preferences-sync';
+import { PeopleRelationshipGraph } from '@/components/people/people-relationship-graph';
 import { PeopleViewSortBar } from '@/components/people/people-view-sort-bar';
 import type { PeopleViewOption } from '@/components/people/people-view-control';
 import { PeopleListItem } from '@/components/people/people-list-item';
+import {
+  collapsePersonConnections,
+  type CollapsedGraphLink,
+} from '@/lib/people/people-graph-data';
 
 const PAGE_COPY = {
   hero: {
@@ -31,6 +36,10 @@ const PAGE_COPY = {
   },
   list: {
     uncategorized: 'Uncategorized',
+  },
+  graph: {
+    noLinksLead:
+      'No links yet among people matching your filters — add connections from someone’s detail page.',
   },
 } as const;
 
@@ -65,6 +74,9 @@ function parsePeopleView(param: string | undefined): PeopleViewOption {
   const v = param?.trim().toLowerCase();
   if (v === 'grid') {
     return 'grid';
+  }
+  if (v === 'graph') {
+    return 'graph';
   }
   return 'categories';
 }
@@ -189,6 +201,42 @@ export default async function PeoplePage(props: {
         )
       : peopleList;
 
+  let graphCollapsedLinks: CollapsedGraphLink[] = [];
+  if (viewKey === 'graph' && warmthFiltered.length > 0) {
+    const idSet = new Set(warmthFiltered.map((p) => p.id));
+    const { data: allConnRows, error: connError } = await ctx.client
+      .from('person_connections')
+      .select('person_id, related_person_id, connection_type_id')
+      .eq('user_id', ctx.userId);
+
+    if (connError) {
+      throw new Error(connError.message);
+    }
+
+    const inScope = (allConnRows ?? []).filter(
+      (r) => idSet.has(r.person_id) && idSet.has(r.related_person_id),
+    );
+
+    const typeIds = [...new Set(inScope.map((r) => r.connection_type_id))];
+    const typeNameById = new Map<string, string>();
+    if (typeIds.length > 0) {
+      const { data: typeRows, error: typesError } = await ctx.client
+        .from('connection_types')
+        .select('id, name')
+        .eq('user_id', ctx.userId)
+        .in('id', typeIds);
+
+      if (typesError) {
+        throw new Error(typesError.message);
+      }
+      for (const t of typeRows ?? []) {
+        typeNameById.set(t.id, t.name);
+      }
+    }
+
+    graphCollapsedLinks = collapsePersonConnections(inScope, typeNameById);
+  }
+
   const gridSortedPeople = [...warmthFiltered].sort((a, b) =>
     comparePeopleListRows(sortKey, a, b),
   );
@@ -311,6 +359,34 @@ export default async function PeoplePage(props: {
                 />
               ))}
             </ul>
+          ) : viewKey === 'graph' ? (
+            <div className="card-surface min-w-0 rounded-[1.75rem] border border-border-soft p-4 sm:p-6 lg:p-8">
+              <p id="people-graph-intro" className="sr-only">
+                Map of filtered people as dots; lines link mutual connections.
+                Hover a dot for a name or a line for the connection type.
+              </p>
+              <p className="sr-only" role="status">
+                {warmthFiltered.length}{' '}
+                {warmthFiltered.length === 1 ? 'person' : 'people'},{' '}
+                {graphCollapsedLinks.length}{' '}
+                {graphCollapsedLinks.length === 1 ? 'link' : 'links'} visible.
+              </p>
+              <div aria-describedby="people-graph-intro" className="min-w-0">
+                {graphCollapsedLinks.length === 0 ? (
+                  <p className="mb-4 text-center text-sm text-muted sm:text-left">
+                    {PAGE_COPY.graph.noLinksLead}
+                  </p>
+                ) : null}
+                <PeopleRelationshipGraph
+                  people={warmthFiltered.map((p) => ({
+                    id: p.id,
+                    full_name: p.full_name,
+                    display_name: p.display_name,
+                  }))}
+                  links={graphCollapsedLinks}
+                />
+              </div>
+            </div>
           ) : (
             <div className="space-y-10">
               {sectionCategoryIds.map((categoryId) => {

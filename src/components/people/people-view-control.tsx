@@ -2,13 +2,15 @@
 
 import { Fragment, useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type { ListViewPreference } from '@/lib/people/list-preferences';
 
-const VIEW_OPTIONS = [
-  { value: 'categories' as const, label: 'List by category' },
-  { value: 'grid' as const, label: 'Grid' },
+const VIEW_OPTIONS: { value: ListViewPreference; label: string }[] = [
+  { value: 'categories', label: 'List by category' },
+  { value: 'grid', label: 'Grid' },
+  { value: 'graph', label: 'Graph' },
 ];
 
-export type PeopleViewOption = (typeof VIEW_OPTIONS)[number]['value'];
+export type PeopleViewOption = ListViewPreference;
 
 type Props = {
   value: PeopleViewOption;

@@ -12,7 +12,7 @@ const FILTER_STORAGE_KEY = 'prm.people.listFilters';
 
 const WARMTH_FILTER_VALUES: RelationshipWarmth[] = ['hot', 'warm', 'cold'];
 
-export type ListViewPreference = 'categories' | 'grid';
+export type ListViewPreference = 'categories' | 'grid' | 'graph';
 
 export type ListSortPreference =
   | 'name'
@@ -23,7 +23,14 @@ export type ListSortPreference =
 export function effectiveListViewFromSearchParams(
   sp: URLSearchParams,
 ): ListViewPreference {
-  return sp.get('view') === 'grid' ? 'grid' : 'categories';
+  const v = sp.get('view')?.trim().toLowerCase();
+  if (v === 'grid') {
+    return 'grid';
+  }
+  if (v === 'graph') {
+    return 'graph';
+  }
+  return 'categories';
 }
 
 export function effectiveListSortFromSearchParams(
@@ -42,7 +49,7 @@ export function readStoredListView(): ListViewPreference | null {
   }
   try {
     const raw = localStorage.getItem(VIEW_STORAGE_KEY);
-    if (raw === 'categories' || raw === 'grid') {
+    if (raw === 'categories' || raw === 'grid' || raw === 'graph') {
       return raw;
     }
     return null;

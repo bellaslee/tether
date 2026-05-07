@@ -64,6 +64,9 @@ export function PeopleListPreferencesSync() {
         if (stored === 'grid') {
           sp.set('view', 'grid');
           changed = true;
+        } else if (stored === 'graph') {
+          sp.set('view', 'graph');
+          changed = true;
         }
       }
 

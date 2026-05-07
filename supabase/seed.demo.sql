@@ -297,6 +297,29 @@ where c.user_id = '00000000-0000-4000-8000-000000000001'::uuid
   and c.name = 'Mentor';
 
 -- -----------------------------------------------------------------------------
+-- Relationship heart baselines (0–20 half-hearts → up to 10 hearts in the UI).
+-- Spread makes /people look lived-in. Presenter explains hearts on one profile only
+-- (see docs/local-demo-script.md — default: Sam).
+-- -----------------------------------------------------------------------------
+update public.people as p
+set relationship_hearts_baseline_halves = v.halves
+from (
+  values
+    ('00000000-0000-4000-8000-000000000101'::uuid, 17), -- Jordan — partner, high bond
+    ('00000000-0000-4000-8000-000000000102'::uuid, 15), -- Sam — key friend for heart narrative
+    ('00000000-0000-4000-8000-000000000103'::uuid, 14), -- Alex — same category, different touch rhythm
+    ('00000000-0000-4000-8000-000000000104'::uuid, 12), -- Priya
+    ('00000000-0000-4000-8000-000000000105'::uuid, 13), -- Chris
+    ('00000000-0000-4000-8000-000000000106'::uuid, 10), -- Morgan
+    ('00000000-0000-4000-8000-000000000107'::uuid, 7),  -- Taylor — networking, lighter floor
+    ('00000000-0000-4000-8000-000000000108'::uuid, 6),  -- Jamie — dormant
+    ('00000000-0000-4000-8000-000000000109'::uuid, 18), -- Mom — family
+    ('00000000-0000-4000-8000-000000000110'::uuid, 11)  -- Robin — mentor
+) as v(id, halves)
+where p.id = v.id
+  and p.user_id = '00000000-0000-4000-8000-000000000001'::uuid;
+
+-- -----------------------------------------------------------------------------
 -- Contact methods (only where the story needs them)
 -- -----------------------------------------------------------------------------
 
