@@ -6,6 +6,7 @@ import type { LinkedPersonProfileForPrompt } from '@/lib/ai/prompts/extract-fact
 import {
   buildAliasMapForPeople,
   buildPersonIdToDisplayLabelMap,
+  deriveFirstNameFromFullName,
   placeholderizeNote,
 } from '@/lib/ai/pii';
 import {
@@ -17,15 +18,20 @@ import {
 function buildLinkedPeopleProfileForPrompt(
   rows: Array<{
     id: string;
+    full_name: string;
     pronouns: string | null;
     occupation: string | null;
   }>,
 ): LinkedPersonProfileForPrompt[] {
-  return rows.map((p) => ({
-    person_id: p.id,
-    pronouns: p.pronouns?.trim() ? p.pronouns.trim() : null,
-    occupation: p.occupation?.trim() ? p.occupation.trim() : null,
-  }));
+  return rows.map((p) => {
+    const first = deriveFirstNameFromFullName(p.full_name);
+    return {
+      person_id: p.id,
+      first_name: first.length > 0 ? first : null,
+      pronouns: p.pronouns?.trim() ? p.pronouns.trim() : null,
+      occupation: p.occupation?.trim() ? p.occupation.trim() : null,
+    };
+  });
 }
 
 export async function loadPlaceholderizedInteractionNote(
@@ -36,13 +42,13 @@ export async function loadPlaceholderizedInteractionNote(
   | {
       rawNote: string;
       redactedNote: string;
-      /** Everyone on this interaction (for placeholders in the note). */
-      linkedPersonIds: string[];
       /**
-       * Subjects for AI-extracted facts and suggested reminders: the interaction’s
-       * primary person, or the first linked person when no primary is set.
+       * Everyone on this interaction (used both for placeholders in the note
+       * and as the allowed set for AI-extracted facts and suggested reminders).
+       * The model is responsible for attributing each output to the correct
+       * linked person via `person_id`.
        */
-      memorySuggestionPersonIds: string[];
+      linkedPersonIds: string[];
       personIdToDisplayLabel: Map<string, string>;
       linkedPeopleProfile: LinkedPersonProfileForPrompt[];
     }
@@ -82,12 +88,6 @@ export async function loadPlaceholderizedInteractionNote(
     return { error: 'Link at least one person to this interaction first.' };
   }
 
-  const orderedLinks = links;
-  const primaryLink = orderedLinks.find((l) => l.role === 'primary');
-  const memorySuggestionPersonIds = primaryLink
-    ? [primaryLink.person_id]
-    : [orderedLinks[0].person_id];
-
   const { data: peopleRows, error: peopleErr } = await client
     .from('people')
     .select('id, full_name, display_name, pronouns, occupation')
@@ -110,7 +110,6 @@ export async function loadPlaceholderizedInteractionNote(
     rawNote,
     redactedNote,
     linkedPersonIds,
-    memorySuggestionPersonIds,
     personIdToDisplayLabel,
     linkedPeopleProfile,
   };

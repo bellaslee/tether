@@ -22,6 +22,7 @@ export async function runRelationshipSummaryModel(args: {
   rateLimitIdentity: LlmRateLimitIdentity;
   kind: RelationshipSummaryKind;
   subjectPersonId: string;
+  subjectFirstName: string | null;
   categoryId: string;
   status: string;
   subjectPronouns: string | null;
@@ -38,6 +39,7 @@ export async function runRelationshipSummaryModel(args: {
   const instructions = buildRelationshipSummaryInstructions(args.kind);
   const userContent = buildRelationshipSummaryUserPayload({
     subjectPersonId: args.subjectPersonId,
+    subjectFirstName: args.subjectFirstName,
     categoryId: args.categoryId,
     status: args.status,
     kind: args.kind,

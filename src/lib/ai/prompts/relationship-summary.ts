@@ -1,13 +1,14 @@
 import type { RelationshipSummaryKind } from '@/lib/db/database.types';
 
-export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 4;
+export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 5;
 
 function kindInstructions(kind: RelationshipSummaryKind) {
   if (kind === 'profile_brief') {
-    return 'profile_brief: Warm, compact—who they are to the note author, what matters lately, stable context. Ground only in supplied facts and snippets.';
+    return 'profile_brief: Warm, compact—who they are to the note author, what matters lately, stable context. Ground only in supplied facts and snippets, and only in material attributable to subject_person_id (subject_first_name).';
   }
   return [
-    'next_meeting: Prep for the next conversation—threads to pick up, what to ask, what to remember. Five numbered lines, one topic per line. Ground only in supplied facts and snippets.',
+    'next_meeting: Prep for the next conversation with subject_first_name—threads to pick up, what to ask, what to remember. Five numbered lines, one topic per line. Ground only in supplied facts and snippets.',
+    'Threads, asks, and reminders must be about subject_first_name (subject_person_id) only; never carry over a fact, plan, or life event that belongs to another person mentioned in the snippets.',
     'Use brief_reference_datetime_utc as "now" for all timing (how long since last touch, how soon until planned time).',
     'Weight subject_last_interaction (last past touch that counts toward last touch) and upcoming_interactions_with_subject (planned future rows for this person) when prioritizing what to mention and how urgent or stale topics feel.',
     'If upcoming_interactions_with_subject is empty, do not invent plans; still use last-touch timing vs reference date.',
@@ -19,7 +20,9 @@ export function buildRelationshipSummaryInstructions(
 ) {
   const lines = [
     'Personal relationship management tool brief. Audience: the user who captured these notes—private, first-person utility.',
-    'Subject as UUID only; input uses [person:<uuid>] in snippets. Use those tokens grammatically as names; never say "UUID" in output (UI substitutes names).',
+    'subject_person_id (UUID) and subject_first_name together identify who this brief is about. Snippets use [person:<uuid>] tokens for any person the user named; only the token whose UUID equals subject_person_id refers to the subject.',
+    'GUARDRAIL: Other people may appear in snippets as [person:<uuid>] tokens. Never treat their facts, plans, or life events as the subject\'s. Ground claims only in material attributable to subject_person_id.',
+    'Use [person:<uuid>] tokens grammatically as names; never say "UUID" in output (UI substitutes names).',
     'subject_pronouns and subject_occupation are optional profile hints for grammar and context only—ground claims in facts and snippets, not these fields alone.',
     'No structured PII (phone, email, street address, birth dates). No guessing beyond the supplied material.',
     kindInstructions(kind),
@@ -27,7 +30,7 @@ export function buildRelationshipSummaryInstructions(
   ];
   if (kind === 'next_meeting') {
     lines.splice(
-      4,
+      6,
       0,
       'Temporal fields (brief_reference_datetime_utc, subject_last_interaction, upcoming_interactions_with_subject) are authoritative for scheduling context; recent_interactions are past snippets only.',
     );
@@ -50,6 +53,7 @@ export type PreMeetingTemporalPayload = {
 
 export function buildRelationshipSummaryUserPayload(input: {
   subjectPersonId: string;
+  subjectFirstName: string | null;
   categoryId: string;
   status: string;
   kind: RelationshipSummaryKind;
@@ -61,6 +65,7 @@ export function buildRelationshipSummaryUserPayload(input: {
 }) {
   const core = {
     subject_person_id: input.subjectPersonId,
+    subject_first_name: input.subjectFirstName,
     category_id: input.categoryId,
     person_status: input.status,
     summary_kind: input.kind,

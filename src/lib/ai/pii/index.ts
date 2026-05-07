@@ -13,3 +13,4 @@ export {
   resolvePersonLabels,
   type PrimaryContactKind,
 } from './resolve';
+export { deriveFirstNameFromFullName } from './derive-first-name';

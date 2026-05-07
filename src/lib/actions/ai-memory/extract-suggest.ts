@@ -68,7 +68,7 @@ export async function extractFactsForInteraction(
     loadAcceptedFactBodiesForPersons(
       ctx.client,
       ctx.userId,
-      loaded.memorySuggestionPersonIds,
+      loaded.linkedPersonIds,
     ),
   ]);
   if ('error' in declined) {
@@ -78,7 +78,7 @@ export async function extractFactsForInteraction(
     return { error: acceptedFactsRes.error };
   }
 
-  const allowed = new Set(loaded.memorySuggestionPersonIds);
+  const allowed = new Set(loaded.linkedPersonIds);
 
   const { error: delErr } = await ctx.client
     .from('facts')
@@ -98,7 +98,7 @@ export async function extractFactsForInteraction(
       openai,
       rateLimitIdentity,
       interactionId,
-      allowedPersonIds: loaded.memorySuggestionPersonIds,
+      allowedPersonIds: loaded.linkedPersonIds,
       linkedPeopleProfile: loaded.linkedPeopleProfile,
       redactedNote: loaded.redactedNote,
       userDeclinedFacts: declined.ok.declinedFactBodies,
@@ -134,7 +134,7 @@ export async function extractFactsForInteraction(
   const existingFacts = await loadExistingFactBodiesByPerson(
     ctx.client,
     ctx.userId,
-    loaded.memorySuggestionPersonIds,
+    loaded.linkedPersonIds,
   );
   if ('error' in existingFacts) {
     return { error: existingFacts.error };
@@ -143,7 +143,7 @@ export async function extractFactsForInteraction(
 
   if (rowsToInsert.length === 0) {
     revalidatePath('/timeline');
-    for (const pid of loaded.memorySuggestionPersonIds) {
+    for (const pid of loaded.linkedPersonIds) {
       revalidatePath(`/people/${pid}`);
     }
     return { ok: true };
@@ -171,7 +171,7 @@ export async function extractFactsForInteraction(
   }
 
   revalidatePath('/timeline');
-  for (const pid of loaded.memorySuggestionPersonIds) {
+  for (const pid of loaded.linkedPersonIds) {
     revalidatePath(`/people/${pid}`);
   }
   return { ok: true };
@@ -215,7 +215,7 @@ export async function suggestTasksForInteraction(
     loadAcceptedTasksForSuggest(
       ctx.client,
       ctx.userId,
-      loaded.memorySuggestionPersonIds,
+      loaded.linkedPersonIds,
     ),
   ]);
   if ('error' in declined) {
@@ -225,7 +225,7 @@ export async function suggestTasksForInteraction(
     return { error: acceptedTasksRes.error };
   }
 
-  const allowed = new Set(loaded.memorySuggestionPersonIds);
+  const allowed = new Set(loaded.linkedPersonIds);
 
   const { error: delErr } = await ctx.client
     .from('tasks')
@@ -247,7 +247,7 @@ export async function suggestTasksForInteraction(
       openai,
       rateLimitIdentity,
       interactionId,
-      allowedPersonIds: loaded.memorySuggestionPersonIds,
+      allowedPersonIds: loaded.linkedPersonIds,
       linkedPeopleProfile: loaded.linkedPeopleProfile,
       redactedNote: loaded.redactedNote,
       userDeclinedReminders: declined.ok.declinedReminders,
@@ -289,7 +289,7 @@ export async function suggestTasksForInteraction(
   const existingTasks = await loadExistingTaskSigsForDedup(
     ctx.client,
     ctx.userId,
-    loaded.memorySuggestionPersonIds,
+    loaded.linkedPersonIds,
     includeNullPerson,
   );
   if ('error' in existingTasks) {
@@ -300,7 +300,7 @@ export async function suggestTasksForInteraction(
   if (rowsToInsert.length === 0) {
     revalidatePath('/timeline');
     revalidatePath('/reminders');
-    const touch = new Set<string>(loaded.memorySuggestionPersonIds);
+    const touch = new Set<string>(loaded.linkedPersonIds);
     for (const pid of touch) {
       revalidatePath(`/people/${pid}`);
     }
@@ -314,7 +314,7 @@ export async function suggestTasksForInteraction(
 
   revalidatePath('/timeline');
   revalidatePath('/reminders');
-  const touch = new Set<string>(loaded.memorySuggestionPersonIds);
+  const touch = new Set<string>(loaded.linkedPersonIds);
   for (const r of rowsToInsert) {
     if (r.person_id) touch.add(r.person_id);
   }

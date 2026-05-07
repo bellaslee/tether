@@ -6,6 +6,7 @@ import type { Database, RelationshipSummaryKind } from '@/lib/db/database.types'
 import {
   buildAliasMapForPeople,
   buildPersonIdToDisplayLabelMap,
+  deriveFirstNameFromFullName,
   placeholderizeNote,
   replacePersonUuidReferencesInText,
 } from '@/lib/ai/pii';
@@ -169,7 +170,7 @@ export async function generateRelationshipSummary(
 
   const { data: person, error: pErr } = await ctx.client
     .from('people')
-    .select('id, user_id, category_id, status, pronouns, occupation')
+    .select('id, user_id, category_id, status, pronouns, occupation, full_name')
     .eq('id', personId)
     .eq('user_id', ctx.userId)
     .maybeSingle();
@@ -381,11 +382,16 @@ export async function generateRelationshipSummary(
   const model = defaultResponsesModel();
   let parsed;
   try {
+    const subjectFirstNameDerived = deriveFirstNameFromFullName(
+      person.full_name ?? '',
+    );
     parsed = await runRelationshipSummaryModel({
       openai,
       rateLimitIdentity,
       kind,
       subjectPersonId: person.id,
+      subjectFirstName:
+        subjectFirstNameDerived.length > 0 ? subjectFirstNameDerived : null,
       categoryId: person.category_id,
       status: person.status,
       subjectPronouns: person.pronouns?.trim() ? person.pronouns.trim() : null,
