@@ -77,8 +77,7 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
               <span className="text-foreground/90">strong separation between accounts</span>, and{' '}
               <span className="text-foreground/90">straightforward explanations</span> of how the
               service works. If anything here conflicts with a separate agreement you accepted (for
-              example with your host or employer), that agreement may govern instead where the law
-              allows.
+              example with your employer), that agreement may govern instead where the law allows.
             </p>
           </section>
 
@@ -157,9 +156,9 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
             <h3 className="font-display text-xl text-foreground">Where data is stored</h3>
             <p className="text-sm leading-7 text-muted">
               Tether is built on Supabase (hosted PostgreSQL, authentication, and related
-              infrastructure). Your primary data lives in databases and systems operated under
-              Supabase and your deployment configuration. AI providers process inputs only when you
-              use features that call them.
+              infrastructure). Your primary data lives in databases and systems operated by
+              Supabase on our behalf. AI providers process inputs only when you use features that
+              call them.
             </p>
           </section>
 
@@ -168,8 +167,8 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
             <p className="text-sm leading-7 text-muted">
               We keep your information while your account is active and as needed to provide the
               service, comply with law, and resolve disputes. You can delete content you control
-              inside the product where those controls exist; account deletion may be offered through
-              your administrator or support depending on deployment.
+              inside the product where those controls exist. For account deletion or similar
+              requests, contact us using the support options available in the product.
             </p>
           </section>
 
@@ -177,8 +176,8 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
             <h3 className="font-display text-xl text-foreground">Your choices</h3>
             <p className="text-sm leading-7 text-muted">
               You can review and update much of your information in the app. You may opt out of
-              optional AI-powered workflows by not using those features. For privacy requests
-              specific to your deployment, contact whoever operates your instance of Tether.
+              optional AI-powered workflows by not using those features. For other privacy requests,
+              contact us using the support options available in the product.
             </p>
           </section>
 
@@ -194,9 +193,8 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
           <section className="space-y-3">
             <h3 className="font-display text-xl text-foreground">Contact</h3>
             <p className="text-sm leading-7 text-muted">
-              Questions about this policy should go to the person or team operating this Tether
-              deployment. If you are using a self-hosted or organization-managed instance, they are
-              the data controller for your use of the product.
+              Questions about this policy can be directed to us using the contact or support
+              options linked from the product.
             </p>
           </section>
         </div>
