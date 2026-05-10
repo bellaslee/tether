@@ -76,7 +76,7 @@ export default async function ProfileSettingsPage() {
       </div>
 
       {user.email ? (
-        <div className="rounded-2xl border border-border-soft bg-white/60 px-4 py-3 sm:px-5">
+        <div className="rounded-2xl border border-border-soft bg-surface/70 px-4 py-3 sm:px-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             {PAGE_COPY.email.label}
           </p>

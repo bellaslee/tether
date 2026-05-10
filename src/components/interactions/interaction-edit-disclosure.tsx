@@ -68,7 +68,7 @@ export function InteractionEditDisclosure({
 
   return (
     <div
-      className={`w-full max-w-xl space-y-3 rounded-2xl border border-border-soft bg-white/80 p-4 sm:p-5 ${editTopAccent}`}
+      className={`w-full max-w-xl space-y-3 rounded-2xl border border-border-soft bg-surface p-4 sm:p-5 ${editTopAccent}`}
     >
       <InteractionEditForm
         interactionId={interactionId}

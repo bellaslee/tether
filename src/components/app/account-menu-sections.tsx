@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { signOutAction } from '@/lib/actions/auth';
+import { ThemeToggle } from '@/components/app/theme-toggle';
 import { Button } from '@/components/ui/button';
 
 export const ACCOUNT_MENU_ITEM_CLASS =
-  'block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-foreground transition-colors hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+  'block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-foreground transition-colors hover:bg-surface-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
 type AccountMenuSectionsProps = {
   accountEmail?: string;
@@ -31,6 +32,7 @@ export function AccountMenuSections({
       ) : null}
 
       <div className="p-1.5">
+        <ThemeToggle />
         <Link
           href="/settings"
           role={linkRole}

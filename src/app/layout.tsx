@@ -4,6 +4,19 @@ import { Fraunces, Nunito } from 'next/font/google';
 import { PrivacyPolicyProvider } from '@/components/app/privacy-policy-context';
 import './globals.css';
 
+const themeBootstrapScript = `
+(function() {
+  try {
+    var storedTheme = window.localStorage.getItem('tether-theme');
+    var theme = storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system'
+      ? storedTheme
+      : 'system';
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && prefersDark));
+  } catch (_) {}
+})();
+`;
+
 const bodyFont = Nunito({
   variable: '--font-nunito',
   subsets: ['latin'],
@@ -36,7 +49,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${bodyFont.variable} ${displayFont.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+      </head>
       <body className="flex min-h-full min-w-0 flex-col">
         <PrivacyPolicyProvider>{children}</PrivacyPolicyProvider>
         <Analytics />

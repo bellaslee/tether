@@ -262,7 +262,7 @@ function VoiceMicControl({
         {phase === 'transcribing' ? (
           <div
             className={[
-              'pointer-events-auto rounded-full border border-border-soft bg-white/90 shadow-sm',
+              'pointer-events-auto rounded-full border border-border-soft bg-surface-strong shadow-sm',
               idleBtnPadding,
             ].join(' ')}
             role="status"
@@ -292,7 +292,7 @@ function VoiceMicControl({
                 : 'Speak to add text'
             }
             className={[
-              'pointer-events-auto flex shrink-0 items-center border border-border-soft bg-white/90 text-foreground shadow-sm transition hover:bg-white',
+              'pointer-events-auto flex shrink-0 items-center border border-border-soft bg-surface-strong text-foreground shadow-sm transition hover:bg-surface',
               phase === 'recording'
                 ? 'max-w-[calc(100vw-2rem)] gap-2 rounded-2xl py-2 pl-3 pr-2 ring-2 ring-red-400/80 sm:max-w-none'
                 : ['rounded-full', idleBtnPadding].join(' '),

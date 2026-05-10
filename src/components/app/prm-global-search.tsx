@@ -74,7 +74,7 @@ export function PrmGlobalSearchTrigger({ className = '' }: { className?: string 
       type="button"
       onClick={() => ctx.openSearch()}
       className={
-        `flex min-w-0 items-center gap-2 rounded-2xl border border-border-soft bg-white/60 px-3 py-2 text-left text-sm text-muted shadow-none transition hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ` +
+        `flex min-w-0 items-center gap-2 rounded-2xl border border-border-soft bg-surface px-3 py-2 text-left text-sm text-muted shadow-none transition hover:bg-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 ` +
         className
       }
       aria-haspopup="dialog"
@@ -83,7 +83,7 @@ export function PrmGlobalSearchTrigger({ className = '' }: { className?: string 
       <span className="min-w-0 flex-1 truncate">Search people &amp; timeline…</span>
       <kbd
         suppressHydrationWarning
-        className="hidden shrink-0 rounded-md border border-border-soft bg-white/80 px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-muted sm:inline"
+        className="hidden shrink-0 rounded-md border border-border-soft bg-surface-strong px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-muted sm:inline"
       >
         {modHint}
       </kbd>
@@ -377,7 +377,7 @@ export function PrmGlobalSearchProvider({ children }: { children: ReactNode }) {
                               `flex w-full flex-col gap-0.5 rounded-2xl px-3 py-2.5 text-left transition ` +
                               (selected
                                 ? 'bg-accent-soft text-foreground'
-                                : 'hover:bg-white/70')
+                                : 'hover:bg-surface-strong')
                             }
                             onMouseEnter={() => setSelectedIndex(index)}
                             onClick={() => go(hit)}
@@ -402,18 +402,18 @@ export function PrmGlobalSearchProvider({ children }: { children: ReactNode }) {
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-soft px-4 py-2 text-[0.65rem] text-muted sm:px-5">
                 <span>
-                  <kbd className="rounded border border-border-soft bg-white/70 px-1 font-mono">
+                  <kbd className="rounded border border-border-soft bg-surface-strong px-1 font-mono">
                     ↑
                   </kbd>{' '}
-                  <kbd className="rounded border border-border-soft bg-white/70 px-1 font-mono">
+                  <kbd className="rounded border border-border-soft bg-surface-strong px-1 font-mono">
                     ↓
                   </kbd>{' '}
                   move ·{' '}
-                  <kbd className="rounded border border-border-soft bg-white/70 px-1 font-mono">
+                  <kbd className="rounded border border-border-soft bg-surface-strong px-1 font-mono">
                     Enter
                   </kbd>{' '}
                   open ·{' '}
-                  <kbd className="rounded border border-border-soft bg-white/70 px-1 font-mono">
+                  <kbd className="rounded border border-border-soft bg-surface-strong px-1 font-mono">
                     Esc
                   </kbd>{' '}
                   close

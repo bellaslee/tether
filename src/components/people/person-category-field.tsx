@@ -125,7 +125,7 @@ export function PersonCategoryField(props: PersonCategoryFieldProps) {
 
       {panelMode === 'add' ? (
         <div
-          className="rounded-2xl border border-border-soft/80 bg-white/40 px-4 py-3"
+          className="rounded-2xl border border-border-soft/80 bg-surface/60 px-4 py-3"
           role="region"
           aria-label="Add category"
         >

@@ -1,7 +1,7 @@
 import type { HTMLAttributes, LiHTMLAttributes } from 'react';
 
 const BASE =
-  'rounded-2xl border border-border-soft bg-white/60 px-4 py-3';
+  'rounded-2xl border border-border-soft bg-surface/70 px-4 py-3';
 
 export function listRowCardClassName(className?: string): string {
   return [BASE, className].filter(Boolean).join(' ');

@@ -65,15 +65,15 @@ export function buttonClassName(options: {
       pill,
     ].join(' '),
     secondary: [
-      'rounded-full border border-border-soft bg-white/80 font-semibold',
+      'rounded-full border border-border-soft bg-surface font-semibold text-foreground',
       HOVER_LIFT_PILL,
-      'enabled:hover:bg-white disabled:opacity-50',
+      'enabled:hover:bg-surface-strong disabled:opacity-50',
       pill,
     ].join(' '),
     secondaryMuted: [
-      'rounded-full border border-border-soft bg-white/70 font-semibold text-foreground',
+      'rounded-full border border-border-soft bg-surface/80 font-semibold text-foreground',
       HOVER_LIFT_PILL,
-      'hover:bg-white disabled:opacity-50',
+      'hover:bg-surface-strong disabled:opacity-50',
       pill,
     ].join(' '),
     ghost: [
@@ -103,7 +103,7 @@ export function buttonClassName(options: {
     dangerLink: [
       'font-semibold text-muted underline-offset-4',
       HOVER_LIFT_TEXT,
-      'hover:text-red-700 hover:underline disabled:opacity-50',
+      'hover:text-red-700 hover:underline disabled:opacity-50 dark:hover:text-red-300',
       text,
     ].join(' '),
   };

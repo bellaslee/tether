@@ -138,7 +138,7 @@ export default async function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">
               {PAGE_COPY.previewColumn.title}
             </p>
-            <div className="space-y-3 rounded-[1.5rem] border border-border-soft border-l-[3px] border-l-accent-sky/75 bg-white/72 p-5 sm:p-6">
+            <div className="space-y-3 rounded-[1.5rem] border border-border-soft border-l-[3px] border-l-accent-sky/75 bg-surface/80 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
                 {PAGE_COPY.previewColumn.quickNote}
               </p>
@@ -146,7 +146,7 @@ export default async function Home() {
                 {flowPreview.rawNote}
               </p>
             </div>
-            <div className="space-y-2 rounded-[1.5rem] border border-border-soft border-l-[3px] border-l-accent-sun/75 bg-white/72 p-5 sm:p-6">
+            <div className="space-y-2 rounded-[1.5rem] border border-border-soft border-l-[3px] border-l-accent-sun/75 bg-surface/80 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
                 {PAGE_COPY.previewColumn.whatYouKeep}
               </p>
@@ -217,7 +217,7 @@ export default async function Home() {
           {upcomingFeatures.map((item) => (
             <article
               key={item.name}
-              className="rounded-[1.5rem] border border-accent-sky/25 bg-white/60 p-5"
+              className="rounded-[1.5rem] border border-accent-sky/25 bg-surface/70 p-5"
             >
               <p className="text-sm font-semibold text-foreground">{item.name}</p>
               <p className="mt-3 text-sm leading-7 text-muted">

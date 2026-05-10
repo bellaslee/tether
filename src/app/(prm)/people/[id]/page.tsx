@@ -632,7 +632,7 @@ export default async function PersonDetailPage(props: PageProps) {
           />
 
           {timelineRows.length === 0 ? (
-            <p className="rounded-2xl border border-border-soft bg-white/50 px-6 py-8 text-sm text-muted">
+            <p className="rounded-2xl border border-border-soft bg-surface/70 px-6 py-8 text-sm text-muted">
               {PAGE_COPY.overview.timeline.empty.lead}{' '}
               <span className="font-semibold text-foreground">
                 {PAGE_COPY.overview.timeline.empty.logInteractionEmphasis}

@@ -153,13 +153,13 @@ export function PrmChatPanel({
           <div key={m.id} className="space-y-3">
             {m.role === 'user' ? (
               <div className="flex justify-end">
-                <div className="max-w-[85%] rounded-2xl bg-white/80 px-4 py-3 text-sm leading-relaxed text-foreground shadow-sm ring-1 ring-border-soft">
+                <div className="max-w-[85%] rounded-2xl bg-surface-strong px-4 py-3 text-sm leading-relaxed text-foreground shadow-sm ring-1 ring-border-soft">
                   {m.content}
                 </div>
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="max-w-[95%] rounded-2xl bg-white/60 px-4 py-3 text-sm leading-relaxed text-foreground ring-1 ring-border-soft">
+                <div className="max-w-[95%] rounded-2xl bg-surface/70 px-4 py-3 text-sm leading-relaxed text-foreground ring-1 ring-border-soft">
                   {m.content}
                 </div>
                 {m.proposals

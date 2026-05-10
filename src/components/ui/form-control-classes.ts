@@ -19,27 +19,27 @@ export function isTemporalFormInputType(type: string | undefined): boolean {
 }
 
 const BASE =
-  'min-w-0 max-w-full border border-border-soft text-base outline-none ring-accent/30 transition focus:ring-2 sm:text-sm';
+  'min-w-0 max-w-full border border-border-soft text-base text-foreground outline-none ring-accent/30 transition placeholder:text-muted focus:ring-2 sm:text-sm';
 
 const BASE_TEMPORAL =
-  'max-w-full border border-border-soft text-base outline-none ring-accent/30 transition focus:ring-2 sm:text-sm';
+  'max-w-full border border-border-soft text-base text-foreground outline-none ring-accent/30 transition placeholder:text-muted focus:ring-2 sm:text-sm';
 
 const SIZE_MAP: Record<FormControlSize, string> = {
-  default: 'w-full rounded-2xl bg-white/80 px-4 py-3',
-  compact: 'w-full rounded-xl bg-white/90 px-3 py-2',
-  dense: 'min-w-0 max-w-full flex-1 rounded-2xl bg-white/80 px-4 py-2.5',
+  default: 'w-full rounded-2xl bg-surface px-4 py-3',
+  compact: 'w-full rounded-xl bg-surface-strong px-3 py-2',
+  dense: 'min-w-0 max-w-full flex-1 rounded-2xl bg-surface px-4 py-2.5',
 };
 
 /** Horizontal padding leaves room for the custom chevron in `Picklist`. */
 const PICKLIST_SIZE_MAP: Record<FormControlSize, string> = {
-  default: 'w-full rounded-2xl bg-white/80 py-3 pl-4',
-  compact: 'w-full rounded-xl bg-white/90 py-2 pl-3',
+  default: 'w-full rounded-2xl bg-surface py-3 pl-4',
+  compact: 'w-full rounded-xl bg-surface-strong py-2 pl-3',
   dense:
-    'min-w-0 max-w-full flex-1 rounded-2xl bg-white/80 py-2.5 pl-4',
+    'min-w-0 max-w-full flex-1 rounded-2xl bg-surface py-2.5 pl-4',
 };
 
 const SIZE_MAP_TEMPORAL_DENSE =
-  'w-full max-w-full flex-1 rounded-2xl bg-white/80 px-4 py-2.5';
+  'w-full max-w-full flex-1 rounded-2xl bg-surface px-4 py-2.5';
 
 export function formControlClassName(options?: {
   size?: FormControlSize;

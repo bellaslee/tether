@@ -18,7 +18,7 @@ type Props = {
 export function PeopleViewSortBar({ viewKey, sortKey, className = '' }: Props) {
   return (
     <div
-      className={`flex flex-col gap-3 rounded-2xl border border-border-soft bg-white/60 px-4 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 sm:gap-y-2 ${className}`.trim()}
+      className={`flex flex-col gap-3 rounded-2xl border border-border-soft bg-surface/70 px-4 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-8 sm:gap-y-2 ${className}`.trim()}
     >
       <PeopleViewControl value={viewKey} variant="inline" />
       {viewKey === 'graph' ? null : (

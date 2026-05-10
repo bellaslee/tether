@@ -23,7 +23,7 @@ export function ContactMethodAddForm({ personId }: ContactMethodAddFormProps) {
   );
 
   return (
-    <form action={formAction} className="space-y-4 rounded-[1.5rem] border border-border-soft bg-white/50 p-5">
+    <form action={formAction} className="space-y-4 rounded-[1.5rem] border border-border-soft bg-surface/70 p-5">
       <p className="text-sm font-semibold">Add a way to reach them</p>
       {state.error ? (
         <FieldError size="compact">{state.error}</FieldError>

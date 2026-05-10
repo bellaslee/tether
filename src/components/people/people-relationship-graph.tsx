@@ -129,12 +129,12 @@ function PersonGraphNode({ id, data }: NodeProps<Node<PersonNodeData, 'person'>>
         <span
           aria-hidden
           style={{ backgroundColor: data.fill }}
-          className={`size-9 block rounded-full border-2 border-white/90 shadow-[0_2px_10px_-3px_rgb(42_38_36/0.22)] transition-[box-shadow,ring-width] duration-150 group-hover:shadow-[0_3px_14px_-2px_rgb(42_38_36/0.28)] motion-reduce:transition-none ${
+          className={`size-9 block rounded-full border-2 border-surface-strong shadow-[0_2px_10px_-3px_rgb(42_38_36/0.22)] transition-[box-shadow,ring-width] duration-150 group-hover:shadow-[0_3px_14px_-2px_rgb(42_38_36/0.28)] motion-reduce:transition-none dark:shadow-[0_2px_12px_-3px_rgb(0_0_0/0.6)] ${
             data.nodeHovered ? 'ring-2 ring-white/95' : 'ring-0 ring-transparent'
           }`}
         />
       </Link>
-      <p className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 max-w-[10rem] -translate-x-1/2 text-center text-[11px] font-semibold leading-snug text-foreground drop-shadow-[0_1px_2px_rgb(255_255_255/0.92)]">
+      <p className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 max-w-[10rem] -translate-x-1/2 text-center text-[11px] font-semibold leading-snug text-foreground drop-shadow-sm dark:drop-shadow-[0_1px_2px_rgb(0_0_0/0.8)]">
         {data.label}
       </p>
     </div>
@@ -169,7 +169,7 @@ function RelationshipEdge(
       {label.length > 0 ? (
         <EdgeLabelRenderer>
           <div
-            className={`pointer-events-none max-w-[15rem] rounded-md bg-white/82 px-1.5 py-0.5 text-center text-[11px] font-medium leading-snug backdrop-blur-sm ${
+            className={`pointer-events-none max-w-[15rem] rounded-md bg-surface/90 px-1.5 py-0.5 text-center text-[11px] font-medium leading-snug backdrop-blur-sm ${
               emphasized ? 'text-foreground' : 'text-muted'
             }`}
             style={{
@@ -448,7 +448,7 @@ function FlowCanvas({
           showFitView
           fitViewOptions={{ padding: 0.18, duration: 200 }}
           aria-label="Zoom and recenter graph"
-          className="!m-3 !rounded-2xl !border-border-soft !border !bg-white/90 !shadow-[var(--shadow-lift)] backdrop-blur-sm [&_button]:text-foreground [&_button:hover]:bg-white [&_svg]:fill-current"
+          className="!m-3 !rounded-2xl !border-border-soft !border !bg-surface-strong !shadow-[var(--shadow-lift)] backdrop-blur-sm [&_button]:text-foreground [&_button:hover]:bg-surface [&_svg]:fill-current"
         />
       </ReactFlow>
     </div>

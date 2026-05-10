@@ -32,7 +32,7 @@ export function PersonDeleteSection({
 
   return (
     <section
-      className="rounded-2xl border border-border-soft bg-white/50 p-5 sm:p-6"
+      className="rounded-2xl border border-border-soft bg-surface/70 p-5 sm:p-6"
       aria-labelledby="person-delete-heading"
     >
       <h2

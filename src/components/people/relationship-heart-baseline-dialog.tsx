@@ -232,7 +232,7 @@ export function RelationshipHeartBaselineButton({
         aria-label={`${COPY.editLabel}. Currently ${barSummary}.`}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="-m-1 inline-flex rounded-xl p-1 text-accent outline-offset-2 transition hover:bg-white/55 focus-visible:ring-2 focus-visible:ring-accent/40"
+        className="-m-1 inline-flex rounded-xl p-1 text-accent outline-offset-2 transition hover:bg-surface focus-visible:ring-2 focus-visible:ring-accent/40"
         onClick={() => setOpen(true)}
       >
         <span aria-hidden title={COPY.editLabel}>
@@ -301,8 +301,8 @@ export function RelationshipHeartBaselineButton({
                       disabled={pending}
                       className={
                         hoverHalves === 0
-                          ? 'mb-0.5 flex h-[calc(1.375rem+2px)] w-2 shrink-0 rounded-md bg-accent/20 ring-2 ring-accent/40 ring-offset-1 ring-offset-white'
-                          : 'mb-0.5 flex h-[calc(1.375rem+2px)] w-2 shrink-0 rounded-md hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent/50'
+                          ? 'mb-0.5 flex h-[calc(1.375rem+2px)] w-2 shrink-0 rounded-md bg-accent/20 ring-2 ring-accent/40 ring-offset-1 ring-offset-background'
+                          : 'mb-0.5 flex h-[calc(1.375rem+2px)] w-2 shrink-0 rounded-md hover:bg-surface-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent/50'
                       }
                       onMouseEnter={() => setHoverHalves(0)}
                       onFocus={() => setHoverHalves(0)}
@@ -337,7 +337,7 @@ export function RelationshipHeartBaselineButton({
                               className={
                                 hoverHalves === leftHalves
                                   ? 'h-full w-1/2 rounded-l-md bg-accent/20 ring-2 ring-inset ring-accent/45'
-                                  : 'h-full w-1/2 rounded-l-md hover:bg-white/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent/50'
+                                  : 'h-full w-1/2 rounded-l-md hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent/50'
                               }
                               onMouseEnter={() => setHoverHalves(leftHalves)}
                               onFocus={() => setHoverHalves(leftHalves)}
@@ -353,7 +353,7 @@ export function RelationshipHeartBaselineButton({
                               className={
                                 hoverHalves === rightHalves
                                   ? 'h-full w-1/2 rounded-r-md bg-accent/20 ring-2 ring-inset ring-accent/45'
-                                  : 'h-full w-1/2 rounded-r-md hover:bg-white/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent/50'
+                                  : 'h-full w-1/2 rounded-r-md hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent/50'
                               }
                               onMouseEnter={() => setHoverHalves(rightHalves)}
                               onFocus={() => setHoverHalves(rightHalves)}

@@ -104,7 +104,7 @@ function AppMainNavMobileInner({
             <button
               ref={closeButtonRef}
               type="button"
-              className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/60 text-foreground shadow-sm transition hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border-soft bg-surface text-foreground shadow-sm transition hover:bg-surface-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
             >
@@ -116,16 +116,16 @@ function AppMainNavMobileInner({
             className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4"
           >
             <div className="flex flex-col gap-4">
-              <div className="rounded-2xl border border-border-soft bg-white/60">
+              <div className="rounded-2xl border border-border-soft bg-surface/70">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-surface-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   aria-expanded={profileExpanded}
                   aria-controls={profileSectionId}
                   id={`${profileSectionId}-trigger`}
                   onClick={() => setProfileExpanded((e) => !e)}
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/80 text-foreground shadow-sm">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-soft bg-surface-strong text-foreground shadow-sm">
                     {initial ? (
                       <span className="font-display text-lg leading-none tracking-tight">
                         {initial}
@@ -200,7 +200,7 @@ function AppMainNavMobileInner({
       <button
         ref={triggerRef}
         type="button"
-        className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/60 text-foreground shadow-sm transition hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border-soft bg-surface text-foreground shadow-sm transition hover:bg-surface-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         aria-label={open ? 'Close main menu' : 'Open main menu'}

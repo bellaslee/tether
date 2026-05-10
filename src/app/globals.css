@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
+  color-scheme: light;
   --background: #fff8f0;
   --foreground: #2a2624;
   --surface: rgba(255, 253, 248, 0.88);
@@ -21,11 +24,37 @@
   --shadow-depth-soft: rgba(42, 38, 50, 0.07);
   --shadow: 4px 5px 0 var(--shadow-depth);
   --shadow-lift: 2px 3px 0 var(--shadow-depth-soft);
+  --selection: rgba(217, 72, 59, 0.22);
   /** Shared with `body` and sticky chrome — viewport-locked via `background-attachment: fixed` where used. */
   --page-wash-image:
     radial-gradient(circle at 0% 0%, rgba(255, 232, 150, 0.16), transparent 55%),
     radial-gradient(circle at 100% 0%, rgba(170, 220, 255, 0.14), transparent 52%),
     linear-gradient(180deg, #fff8f0 0%, #fff7f4 48%, #faf9fc 100%);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #181413;
+  --foreground: #f7eee7;
+  --surface: rgba(42, 34, 31, 0.88);
+  --surface-strong: rgba(34, 27, 25, 0.96);
+  --border-soft: rgba(247, 238, 231, 0.15);
+  --muted: #c8b8af;
+  --accent: #f26f61;
+  --accent-soft: rgba(242, 111, 97, 0.18);
+  --accent-sun: #f0cf60;
+  --accent-sky: #79c7ee;
+  --accent-sun-soft: rgba(240, 207, 96, 0.17);
+  --accent-sky-soft: rgba(121, 199, 238, 0.16);
+  --success: #78d69e;
+  --warning: #f1b36f;
+  --shadow-depth: rgba(0, 0, 0, 0.38);
+  --shadow-depth-soft: rgba(0, 0, 0, 0.24);
+  --selection: rgba(242, 111, 97, 0.3);
+  --page-wash-image:
+    radial-gradient(circle at 0% 0%, rgba(240, 207, 96, 0.1), transparent 52%),
+    radial-gradient(circle at 100% 0%, rgba(121, 199, 238, 0.11), transparent 54%),
+    linear-gradient(180deg, #181413 0%, #201917 52%, #15171d 100%);
 }
 
 @theme inline {
@@ -96,7 +125,7 @@ summary {
 }
 
 ::selection {
-  background: rgba(217, 72, 59, 0.22);
+  background: var(--selection);
 }
 
 .card-surface {

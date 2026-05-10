@@ -284,7 +284,7 @@ export function InteractionParticipantPicker({
                       'flex min-w-0 flex-1 items-center gap-3 transition',
                       rowSelected
                         ? 'border-accent bg-accent-soft text-foreground'
-                        : 'hover:bg-white/90',
+                        : 'hover:bg-surface-strong',
                     ].join(' '),
                   )}
                 >
@@ -304,7 +304,7 @@ export function InteractionParticipantPicker({
                       'disabled:cursor-default disabled:opacity-100',
                       selected
                         ? 'border-accent bg-accent text-white disabled:border-accent disabled:bg-accent disabled:text-white'
-                        : 'border-border-soft bg-white/90 text-transparent',
+                        : 'border-border-soft bg-surface-strong text-transparent',
                     ].join(' ')}
                   >
                     {selected ? (

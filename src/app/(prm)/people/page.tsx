@@ -285,7 +285,7 @@ export default async function PeoplePage(props: {
           <Suspense
             fallback={
               <div
-                className="min-h-[12rem] animate-pulse rounded-2xl bg-white/50"
+                className="min-h-[12rem] animate-pulse rounded-2xl bg-surface/70"
                 aria-hidden
               />
             }
@@ -305,7 +305,7 @@ export default async function PeoplePage(props: {
           <Suspense
             fallback={
               <div
-                className="h-9 animate-pulse rounded-2xl border border-border-soft bg-white/40"
+                className="h-9 animate-pulse rounded-2xl border border-border-soft bg-surface/60"
                 aria-hidden
               />
             }

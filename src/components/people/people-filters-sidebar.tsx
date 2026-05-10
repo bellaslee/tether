@@ -202,7 +202,7 @@ export function PeopleFiltersSidebar({
               categoryOptions.map((c) => (
                 <label
                   key={c.id}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-surface"
                 >
                   <input
                     type="checkbox"
@@ -226,7 +226,7 @@ export function PeopleFiltersSidebar({
             {PERSON_STATUSES.map((s) => (
               <label
                 key={s}
-                className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-white/60"
+                className="flex cursor-pointer items-center gap-2 rounded-lg py-1 pr-2 transition hover:bg-surface"
               >
                 <input
                   type="checkbox"

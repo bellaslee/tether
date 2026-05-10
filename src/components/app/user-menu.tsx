@@ -43,7 +43,7 @@ export function UserMenu({
     <div className="relative" ref={rootRef}>
       <button
         type="button"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/60 text-foreground shadow-sm transition hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-soft bg-surface text-foreground shadow-sm transition hover:bg-surface-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={open ? menuId : undefined}

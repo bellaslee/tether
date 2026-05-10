@@ -287,7 +287,7 @@ function AddConnectionForm(props: {
                         'flex min-w-0 items-center gap-3 transition',
                         selected
                           ? 'border-accent bg-accent-soft text-foreground'
-                          : 'hover:bg-white/90',
+                          : 'hover:bg-surface-strong',
                       ].join(' '),
                     )}
                   >
@@ -305,7 +305,7 @@ function AddConnectionForm(props: {
                         'focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2',
                         selected
                           ? 'border-accent bg-accent text-white'
-                          : 'border-border-soft bg-white/90 text-transparent',
+                          : 'border-border-soft bg-surface-strong text-transparent',
                       ].join(' ')}
                     >
                       {selected ? (
@@ -449,7 +449,7 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
           </Button>
         </div>
       ) : (
-        <div className="mt-6 shrink-0 rounded-2xl border border-border-soft bg-white/40 p-4 sm:p-5">
+        <div className="mt-6 shrink-0 rounded-2xl border border-border-soft bg-surface/60 p-4 sm:p-5">
           <AddConnectionForm
             personId={personId}
             subjectName={subjectName}

@@ -64,7 +64,7 @@ export function PersonBriefsSection({
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Profile brief
               </p>
-              <p className="rounded-2xl border border-border-soft bg-white/50 px-4 py-6 text-sm text-muted">
+              <p className="rounded-2xl border border-border-soft bg-surface/70 px-4 py-6 text-sm text-muted">
                 No profile brief yet.
               </p>
             </>
@@ -90,7 +90,7 @@ export function PersonBriefsSection({
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Before you meet
               </p>
-              <p className="rounded-2xl border border-border-soft bg-white/50 px-4 py-6 text-sm text-muted">
+              <p className="rounded-2xl border border-border-soft bg-surface/70 px-4 py-6 text-sm text-muted">
                 No next-meeting brief yet.
               </p>
             </>
