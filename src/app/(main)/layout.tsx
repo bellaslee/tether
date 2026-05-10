@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AccountTimezoneBootstrap } from '@/components/app/account-timezone-bootstrap';
 import { AppNav } from '@/components/app/app-nav';
 import { HashScrollAfterNavigation } from '@/components/app/hash-scroll-after-navigation';
 import {
@@ -13,6 +14,7 @@ export default async function CrmLayout({ children }: { children: ReactNode }) {
 
   return (
     <GlobalSearchProvider>
+      <AccountTimezoneBootstrap needsSync={!context.accountTimeZone} />
       <HashScrollAfterNavigation />
       <div className="flex min-h-full flex-1 flex-col">
         <AppNav context={context} />

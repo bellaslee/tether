@@ -13,6 +13,45 @@ export type ProfileFormState = {
 const MAX_NAME_LEN = 200;
 const MIN_PASSWORD_LEN = 8;
 
+function revalidateRoutesAffectedByAccountTimezone() {
+  revalidatePath("/settings/profile");
+  revalidatePath("/people", "layout");
+  revalidatePath("/timeline");
+  revalidatePath("/reminders");
+  revalidatePath("/chat");
+  revalidatePath("/interactions", "layout");
+}
+
+/** When auth metadata has no zone, persist the browser-reported IANA id (no-op if already set). */
+export async function syncBrowserTimezoneIfUnsetAction(
+  formData: FormData,
+): Promise<{ synced: boolean }> {
+  const ctx = await getAccountSupabaseContext();
+  if (!ctx) {
+    return { synced: false };
+  }
+  if (ctx.accountTimeZone) {
+    return { synced: false };
+  }
+
+  const timezone = String(formData.get("timezone") ?? "").trim();
+  if (!isValidIanaTimeZone(timezone)) {
+    return { synced: false };
+  }
+
+  const client = await createSupabaseServerClient();
+  const { error } = await client.auth.updateUser({
+    data: { timezone },
+  });
+
+  if (error) {
+    return { synced: false };
+  }
+
+  revalidateRoutesAffectedByAccountTimezone();
+  return { synced: true };
+}
+
 export async function updateAccountNameAction(
   _prev: ProfileFormState,
   formData: FormData,
@@ -64,8 +103,7 @@ export async function updateAccountTimezoneAction(
     return { error: error.message };
   }
 
-  revalidatePath("/settings/profile");
-  revalidatePath("/people", "layout");
+  revalidateRoutesAffectedByAccountTimezone();
   return { success: "Time zone saved." };
 }
 
