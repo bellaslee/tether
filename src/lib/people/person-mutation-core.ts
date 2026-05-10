@@ -1,7 +1,7 @@
 import 'server-only';
 
 import type { PersonStatus } from '@/lib/db/database.types';
-import type { PrmSupabaseContext } from '@/lib/prm/context';
+import type { AccountSupabaseContext } from '@/lib/account/context';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import { syncCategoryChangeTimelineEntry } from '@/lib/interactions/category-change-audit';
 
@@ -47,7 +47,7 @@ export type PersonUpsertFields = {
 };
 
 export async function insertPersonRecord(
-  ctx: PrmSupabaseContext,
+  ctx: AccountSupabaseContext,
   input: PersonUpsertFields,
 ): Promise<{ id: string } | { error: string }> {
   if (!input.full_name.trim()) {
@@ -98,7 +98,7 @@ export async function insertPersonRecord(
 }
 
 export async function updatePersonRecord(
-  ctx: PrmSupabaseContext,
+  ctx: AccountSupabaseContext,
   personId: string,
   input: PersonUpsertFields,
 ): Promise<{ ok: true } | { error: string }> {

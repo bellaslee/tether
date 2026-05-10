@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getPrmSupabaseContext } from '@/lib/prm/context';
+import { getAccountSupabaseContext } from '@/lib/account/context';
 
 export type CreateConnectionTypeResult =
   | { ok: true; id: string; name: string }
@@ -10,7 +10,7 @@ export type CreateConnectionTypeResult =
 export async function createConnectionType(
   nameRaw: string,
 ): Promise<CreateConnectionTypeResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }
@@ -66,7 +66,7 @@ export async function updateConnectionType(
   typeId: string,
   nameRaw: string,
 ): Promise<UpdateConnectionTypeResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }

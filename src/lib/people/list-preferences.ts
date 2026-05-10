@@ -5,9 +5,9 @@ import {
   type StoredPeopleListFilters,
 } from '@/lib/people/people-list-filter-params';
 
-const VIEW_STORAGE_KEY = 'prm.people.listView';
-const SORT_STORAGE_KEY = 'prm.people.listSort';
-const FILTER_STORAGE_KEY = 'prm.people.listFilters';
+const VIEW_STORAGE_KEY = 'tether.people.listView';
+const SORT_STORAGE_KEY = 'tether.people.listSort';
+const FILTER_STORAGE_KEY = 'tether.people.listFilters';
 
 export type ListViewPreference = 'categories' | 'grid' | 'graph';
 

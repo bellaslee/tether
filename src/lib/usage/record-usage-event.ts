@@ -2,7 +2,7 @@ import 'server-only';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@/lib/db/database.types';
-import { isPrmUsageTrackingEnabled } from '@/lib/env';
+import { isUsageTrackingEnabled } from '@/lib/env';
 
 export type LlmUsagePipeline =
   | 'extract_facts'
@@ -15,7 +15,7 @@ export function recordLlmUsage(
   pipeline: LlmUsagePipeline,
   args: { model: string; ok: boolean; error_code?: string },
 ): void {
-  if (!isPrmUsageTrackingEnabled()) return;
+  if (!isUsageTrackingEnabled()) return;
 
   const properties: Json = {
     model: args.model,

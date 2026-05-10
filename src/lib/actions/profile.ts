@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/db/server";
-import { getPrmSupabaseContext } from "@/lib/prm/context";
+import { getAccountSupabaseContext } from "@/lib/account/context";
 import { isValidIanaTimeZone } from "@/lib/timezones";
 
 export type ProfileFormState = {
@@ -17,7 +17,7 @@ export async function updateAccountNameAction(
   _prev: ProfileFormState,
   formData: FormData,
 ): Promise<ProfileFormState> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: "Profile is not available in this environment." };
   }
@@ -45,7 +45,7 @@ export async function updateAccountTimezoneAction(
   _prev: ProfileFormState,
   formData: FormData,
 ): Promise<ProfileFormState> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: "Profile is not available in this environment." };
   }
@@ -73,7 +73,7 @@ export async function updateAccountPasswordAction(
   _prev: ProfileFormState,
   formData: FormData,
 ): Promise<ProfileFormState> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: "Profile is not available in this environment." };
   }

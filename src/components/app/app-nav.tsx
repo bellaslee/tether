@@ -1,18 +1,18 @@
 import Link from 'next/link';
 import { AppMainNavMobile } from '@/components/app/app-main-nav-mobile';
 import { APP_MAIN_NAV_LINKS } from '@/components/app/app-nav-links';
-import { PrmGlobalSearchTrigger } from '@/components/app/prm-global-search';
-import type { PrmSupabaseContext } from '@/lib/prm/context';
+import { GlobalSearchTrigger } from '@/components/app/global-search';
+import type { AccountSupabaseContext } from '@/lib/account/context';
 import { UserMenu } from '@/components/app/user-menu';
 
 type AppNavProps = {
-  context: Pick<PrmSupabaseContext, 'accountEmail' | 'accountDisplayName'>;
+  context: Pick<AccountSupabaseContext, 'accountEmail' | 'accountDisplayName'>;
 };
 
 export function AppNav({ context }: AppNavProps) {
   return (
     <header className="relative z-[101] border-b border-accent-sky/35 bg-surface-strong/80 backdrop-blur-md">
-      <div className="prm-app-nav-inner prm-shell-gutter-x mx-auto flex w-full max-w-6xl flex-col gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
+      <div className="app-nav-inner shell-gutter-x mx-auto flex w-full max-w-6xl flex-col gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
         <div className="flex min-w-0 flex-nowrap items-center gap-3 md:gap-6">
           <Link
             href="/people"
@@ -36,7 +36,7 @@ export function AppNav({ context }: AppNavProps) {
           </nav>
         </div>
         <div className="flex min-w-0 w-full flex-1 items-center gap-3 md:w-auto md:max-w-xl md:justify-end">
-          <PrmGlobalSearchTrigger className="min-w-0 flex-1 max-w-full md:max-w-[min(22rem,42vw)]" />
+          <GlobalSearchTrigger className="min-w-0 flex-1 max-w-full md:max-w-[min(22rem,42vw)]" />
           <AppMainNavMobile
             accountEmail={context.accountEmail}
             accountDisplayName={context.accountDisplayName}

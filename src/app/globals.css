@@ -135,41 +135,41 @@ summary {
 }
 
 /**
- * Horizontal gutters aligned with `.prm-page` / marketing shells, plus safe-area insets.
+ * Horizontal gutters aligned with `.page-frame` / marketing shells, plus safe-area insets.
  */
-.prm-shell-gutter-x {
+.shell-gutter-x {
   padding-left: max(1.5rem, env(safe-area-inset-left));
   padding-right: max(1.5rem, env(safe-area-inset-right));
 }
 
 @media (min-width: 640px) {
-  .prm-shell-gutter-x {
+  .shell-gutter-x {
     padding-left: max(2.5rem, env(safe-area-inset-left));
     padding-right: max(2.5rem, env(safe-area-inset-right));
   }
 }
 
 @media (min-width: 1024px) {
-  .prm-shell-gutter-x {
+  .shell-gutter-x {
     padding-left: max(3rem, env(safe-area-inset-left));
     padding-right: max(3rem, env(safe-area-inset-right));
   }
 }
 
 /** App nav vertical rhythm; extra top inset when `viewport-fit=cover`. */
-.prm-app-nav-inner {
+.app-nav-inner {
   padding-top: calc(1rem + env(safe-area-inset-top));
   padding-bottom: 1rem;
 }
 
 /** Site footer: preserve prior `py-6` feel with home-indicator clearance. */
-.prm-site-footer-shell {
+.site-footer-shell {
   padding-top: 1.5rem;
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
 /** Fixed full-screen modal backdrops — matches prior `p-4` / `sm:p-6`. */
-.prm-modal-overlay-inset {
+.modal-overlay-inset {
   padding-top: max(1rem, env(safe-area-inset-top));
   padding-right: max(1rem, env(safe-area-inset-right));
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -177,7 +177,7 @@ summary {
 }
 
 @media (min-width: 640px) {
-  .prm-modal-overlay-inset {
+  .modal-overlay-inset {
     padding-top: max(1.5rem, env(safe-area-inset-top));
     padding-right: max(1.5rem, env(safe-area-inset-right));
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
@@ -186,7 +186,7 @@ summary {
 }
 
 /** Global search: top offset + safe-area (additive). */
-.prm-search-modal-overlay {
+.search-modal-overlay {
   padding-left: max(1rem, env(safe-area-inset-left));
   padding-right: max(1rem, env(safe-area-inset-right));
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -194,7 +194,7 @@ summary {
 }
 
 @media (min-width: 640px) {
-  .prm-search-modal-overlay {
+  .search-modal-overlay {
     padding-left: max(1.5rem, env(safe-area-inset-left));
     padding-right: max(1.5rem, env(safe-area-inset-right));
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
@@ -203,7 +203,7 @@ summary {
 }
 
 /** Person detail sticky header — same wash as the page, locked to the viewport. */
-.prm-person-sticky-header {
+.person-sticky-header {
   background-color: var(--background);
   background-image: var(--page-wash-image);
   background-repeat: no-repeat;
@@ -211,7 +211,7 @@ summary {
 }
 
 /** Shared PRM page shells — keep list views and form flows visually aligned. */
-.prm-page {
+.page-frame {
   margin-inline: auto;
   display: flex;
   width: 100%;
@@ -226,20 +226,20 @@ summary {
 }
 
 @media (min-width: 640px) {
-  .prm-page {
+  .page-frame {
     padding-left: max(2.5rem, env(safe-area-inset-left));
     padding-right: max(2.5rem, env(safe-area-inset-right));
   }
 }
 
 @media (min-width: 1024px) {
-  .prm-page {
+  .page-frame {
     padding-left: max(3rem, env(safe-area-inset-left));
     padding-right: max(3rem, env(safe-area-inset-right));
   }
 }
 
-.prm-form-shell {
+.form-shell {
   margin-inline: auto;
   display: flex;
   width: 100%;
@@ -253,20 +253,20 @@ summary {
 }
 
 @media (min-width: 640px) {
-  .prm-form-shell {
+  .form-shell {
     padding-left: max(2.5rem, env(safe-area-inset-left));
     padding-right: max(2.5rem, env(safe-area-inset-right));
   }
 }
 
 @media (min-width: 1024px) {
-  .prm-form-shell {
+  .form-shell {
     padding-left: max(3rem, env(safe-area-inset-left));
     padding-right: max(3rem, env(safe-area-inset-right));
   }
 }
 
-.prm-eyebrow {
+.section-eyebrow {
   font-size: 0.75rem;
   line-height: 1rem;
   font-weight: 600;
@@ -280,7 +280,7 @@ summary {
 }
 
 /* Quick Log calendar — DayPicker tokens + per-day palette swatches (coral / sun / sky) */
-.prm-quick-log-calendar.rdp-root {
+.quick-log-calendar.rdp-root {
   --rdp-accent-color: var(--accent);
   --rdp-accent-background-color: var(--accent-soft);
   --rdp-today-color: var(--accent);
@@ -288,44 +288,44 @@ summary {
   line-height: 1.25rem;
 }
 
-.prm-quick-log-calendar .rdp-weekday {
+.quick-log-calendar .rdp-weekday {
   color: var(--muted);
   opacity: 1;
 }
 
-.prm-quick-log-calendar .rdp-selected {
+.quick-log-calendar .rdp-selected {
   font-size: inherit;
   font-weight: inherit;
 }
 
-.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch {
+.quick-log-calendar .rdp-day_button.quick-log-swatch {
   font-weight: 600;
 }
 
-.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch--coral {
+.quick-log-calendar .rdp-day_button.quick-log-swatch--coral {
   background-color: var(--accent) !important;
   color: var(--surface-strong) !important;
   border: 2px solid var(--accent) !important;
 }
 
-.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch--sun {
+.quick-log-calendar .rdp-day_button.quick-log-swatch--sun {
   background-color: var(--accent-sun) !important;
   color: var(--foreground) !important;
   border: 2px solid var(--accent-sun) !important;
 }
 
-.prm-quick-log-calendar .rdp-day_button.prm-quick-log-swatch--sky {
+.quick-log-calendar .rdp-day_button.quick-log-swatch--sky {
   background-color: var(--accent-sky) !important;
   color: var(--surface-strong) !important;
   border: 2px solid var(--accent-sky) !important;
 }
 
-.prm-quick-log-calendar
-  .rdp-day_button.prm-quick-log-swatch:hover:not(:disabled) {
+.quick-log-calendar
+  .rdp-day_button.quick-log-swatch:hover:not(:disabled) {
   filter: brightness(0.96);
 }
 
-.prm-quick-log-calendar .rdp-today:not(.rdp-selected) .rdp-day_button {
+.quick-log-calendar .rdp-today:not(.rdp-selected) .rdp-day_button {
   color: var(--accent);
   font-weight: 600;
 }

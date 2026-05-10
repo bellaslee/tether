@@ -2,9 +2,9 @@
  * Postgres-backed fields that must never appear in outbound LLM prompts.
  * Allowed identifiers: `people.id` (UUID), coarse enums like category/status when needed.
  *
- * **Account login email:** The signed-in user's auth email (`PrmSupabaseContext.accountEmail`)
+ * **Account login email:** The signed-in user's auth email (`AccountSupabaseContext.accountEmail`)
  * must never be concatenated into LLM instructions, user messages, or metadata sent to the model.
- * AI server actions use `PrmContextForLlmActions` (client + userId only) so email is not in scope.
+ * AI server actions use `AccountContextForLlmActions` (client + userId only) so email is not in scope.
  * User-authored note text may still contain any string the user typed; do not inject the account email from session.
  *
  * @see docs/plans/phase-2-ai-memory-layer.md

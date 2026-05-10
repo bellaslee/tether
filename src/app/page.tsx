@@ -1,7 +1,7 @@
 import { SiteFooter } from '@/components/app/site-footer';
 import { ButtonLink } from '@/components/ui/button';
 import { redirect } from 'next/navigation';
-import { getPrmSupabaseContext } from '@/lib/prm/context';
+import { getAccountSupabaseContext } from '@/lib/account/context';
 
 const PAGE_COPY = {
   badges: {
@@ -65,7 +65,7 @@ const PAGE_COPY = {
 } as const;
 
 export default async function Home() {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (ctx) {
     redirect('/people');
   }
@@ -74,7 +74,7 @@ export default async function Home() {
 
   return (
     <>
-    <main className="prm-shell-gutter-x mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 py-8">
+    <main className="shell-gutter-x mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 py-8">
       <section className="card-surface overflow-hidden rounded-[2rem] border border-border-soft border-t-2 border-t-accent-sun/55">
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_1fr] lg:px-12 lg:py-12">
           <div className="space-y-6">

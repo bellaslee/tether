@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { PersonStatus } from '@/lib/db/database.types';
-import { getPrmSupabaseContext } from '@/lib/prm/context';
+import { getAccountSupabaseContext } from '@/lib/account/context';
 import { PERSON_STATUSES } from '@/lib/domain/constants';
 import {
   insertPersonRecord,
@@ -29,7 +29,7 @@ export async function createPerson(
   _prev: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }
@@ -99,7 +99,7 @@ export async function updatePerson(
   _prev: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }
@@ -163,7 +163,7 @@ export async function updatePersonRelationshipBaseline(
   personId: string,
   halves: number | null,
 ): Promise<ActionResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }
@@ -208,7 +208,7 @@ export async function updatePersonRelationshipBaseline(
 
 /** Removes the person and cascades related rows (contacts, facts, tasks, links, etc.). */
 export async function deletePerson(personId: string): Promise<ActionResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }

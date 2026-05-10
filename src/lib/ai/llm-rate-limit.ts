@@ -5,7 +5,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import {
   hasUpstashRedisForRateLimit,
-  isPrmLlmRateLimitDisabled,
+  isLlmRateLimitDisabled,
 } from '@/lib/env';
 
 export type LlmRateLimitIdentity = {
@@ -30,42 +30,42 @@ function createLimiters(redis: Redis): Limiters {
   return {
     userBurst: new Ratelimit({
       redis,
-      prefix: 'prm:llm:u:burst',
+      prefix: 'tether:llm:u:burst',
       limiter: Ratelimit.slidingWindow(3, '5 s'),
     }),
     userMinute: new Ratelimit({
       redis,
-      prefix: 'prm:llm:u:min',
+      prefix: 'tether:llm:u:min',
       limiter: Ratelimit.slidingWindow(5, '1 m'),
     }),
     userHour: new Ratelimit({
       redis,
-      prefix: 'prm:llm:u:hr',
+      prefix: 'tether:llm:u:hr',
       limiter: Ratelimit.slidingWindow(200, '1 h'),
     }),
     userDay: new Ratelimit({
       redis,
-      prefix: 'prm:llm:u:day',
+      prefix: 'tether:llm:u:day',
       limiter: Ratelimit.slidingWindow(1000, '1 d'),
     }),
     ipBurst: new Ratelimit({
       redis,
-      prefix: 'prm:llm:ip:burst',
+      prefix: 'tether:llm:ip:burst',
       limiter: Ratelimit.slidingWindow(3, '5 s'),
     }),
     ipMinute: new Ratelimit({
       redis,
-      prefix: 'prm:llm:ip:min',
+      prefix: 'tether:llm:ip:min',
       limiter: Ratelimit.slidingWindow(5, '1 m'),
     }),
     ipHour: new Ratelimit({
       redis,
-      prefix: 'prm:llm:ip:hr',
+      prefix: 'tether:llm:ip:hr',
       limiter: Ratelimit.slidingWindow(200, '1 h'),
     }),
     ipDay: new Ratelimit({
       redis,
-      prefix: 'prm:llm:ip:day',
+      prefix: 'tether:llm:ip:day',
       limiter: Ratelimit.slidingWindow(1000, '1 d'),
     }),
   };
@@ -120,7 +120,7 @@ export type LlmRateLimitResult =
 export async function enforceLlmRateLimits(
   id: LlmRateLimitIdentity,
 ): Promise<LlmRateLimitResult> {
-  if (isPrmLlmRateLimitDisabled()) {
+  if (isLlmRateLimitDisabled()) {
     return { ok: true };
   }
 

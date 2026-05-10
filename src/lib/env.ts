@@ -2,11 +2,11 @@ const publicSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publicSupabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const openAiApiKey = process.env.OPENAI_API_KEY;
 const openAiModel = process.env.OPENAI_MODEL;
-const prmAiDebugPrompts = process.env.PRM_AI_DEBUG_PROMPTS;
+const aiDebugPromptsEnv = process.env.PRM_AI_DEBUG_PROMPTS;
 const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
 const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-const prmDisableLlmRateLimit = process.env.PRM_DISABLE_LLM_RATE_LIMIT;
-const publicPrmUsageTracking = process.env.NEXT_PUBLIC_PRM_USAGE_TRACKING;
+const disableLlmRateLimitEnv = process.env.PRM_DISABLE_LLM_RATE_LIMIT;
+const publicUsageTrackingEnv = process.env.NEXT_PUBLIC_PRM_USAGE_TRACKING;
 
 function isNonEmpty(value: string | undefined): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -59,7 +59,7 @@ export function getOpenAiModel() {
 /** Development-only: log redacted AI request metadata (never logs full note text). */
 export function isAiDebugPromptsEnabled() {
   return (
-    process.env.NODE_ENV === 'development' && isTruthyEnv(prmAiDebugPrompts)
+    process.env.NODE_ENV === 'development' && isTruthyEnv(aiDebugPromptsEnv)
   );
 }
 
@@ -71,13 +71,13 @@ export function hasUpstashRedisForRateLimit() {
 }
 
 /** When true, skips distributed LLM rate limits (emergency / local only). */
-export function isPrmLlmRateLimitDisabled() {
-  return isTruthyEnv(prmDisableLlmRateLimit);
+export function isLlmRateLimitDisabled() {
+  return isTruthyEnv(disableLlmRateLimitEnv);
 }
 
 /** Client + server: first-party usage / screen / LLM metadata logging. */
-export function isPrmUsageTrackingEnabled() {
-  return isTruthyEnv(publicPrmUsageTracking);
+export function isUsageTrackingEnabled() {
+  return isTruthyEnv(publicUsageTrackingEnv);
 }
 
 export function getSetupStatus() {
@@ -105,7 +105,7 @@ export function getSetupStatus() {
     },
     {
       description:
-        hasUpstashRedisForRateLimit() || isPrmLlmRateLimitDisabled()
+        hasUpstashRedisForRateLimit() || isLlmRateLimitDisabled()
           ? 'Upstash Redis is configured (or LLM rate limits are explicitly disabled).'
           : process.env.NODE_ENV !== 'production'
             ? 'Optional locally: add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for LLM rate limits.'
@@ -116,7 +116,7 @@ export function getSetupStatus() {
       ready:
         !isNonEmpty(openAiApiKey) ||
         hasUpstashRedisForRateLimit() ||
-        isPrmLlmRateLimitDisabled() ||
+        isLlmRateLimitDisabled() ||
         process.env.NODE_ENV !== 'production',
     },
   ] as const;

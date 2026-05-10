@@ -5,18 +5,18 @@ import {
 } from "@/lib/ai/llm-rate-limit";
 import { tryCreateOpenAiClient } from "@/lib/ai/openai";
 import { transcribeAudioFile, TRANSCRIBE_MODEL } from "@/lib/ai/transcribe-audio";
-import { getPrmSupabaseContext } from "@/lib/prm/context";
+import { getAccountSupabaseContext } from "@/lib/account/context";
 import { recordLlmUsage } from "@/lib/usage/record-usage-event";
 
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
 export async function POST(request: Request) {
-  const prm = await getPrmSupabaseContext();
-  if (!prm) {
+  const account = await getAccountSupabaseContext();
+  if (!account) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { client, userId } = prm;
+  const { client, userId } = account;
 
   const openai = tryCreateOpenAiClient();
   if (!openai) {

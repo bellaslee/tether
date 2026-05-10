@@ -1,8 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getPrmSupabaseContext } from '@/lib/prm/context';
-import { assertOwnsInteractionType, assertOwnsPeople } from '@/lib/prm/assert-owns';
+import { getAccountSupabaseContext } from '@/lib/account/context';
+import { assertOwnsInteractionType, assertOwnsPeople } from '@/lib/account/assert-owns';
 import { resolveQuickLogInteractionTitle } from '@/lib/interactions/quick-log-shared';
 import { resolveQuickLogTimeLocal } from '@/lib/interactions/quick-log-shared';
 import type { ActionResult } from '@/lib/actions/interactions';
@@ -126,7 +126,7 @@ export async function updateQuickLogPreset(
     return { error: 'Include at least one person in this preset.' };
   }
 
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }
@@ -188,7 +188,7 @@ export async function deleteQuickLogPreset(presetId: string): Promise<ActionResu
     return { error: 'Invalid preset.' };
   }
 
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }

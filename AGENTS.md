@@ -298,7 +298,7 @@ Avoid:
 - Do not send unnecessary personal data to the model
 - Never pass the signed-in user's login (auth) email into LLM instructions or
   text payloads; AI server actions should use `requireCrmForAiAction()` /
-  `PrmContextForLlmActions` so account email stays out of scope
+  `AccountContextForLlmActions` so account email stays out of scope
 - Avoid background AI jobs that silently change user-visible relationship memory
   without traceability
 - Prefer deterministic or low-variance settings for extraction workflows and
@@ -383,7 +383,7 @@ Philosophy** and **UX Guardrails**. Do not contradict those rules here.
 
 ### Layout and surfaces
 
-- Primary page framing uses utilities such as `prm-page`, `card-surface`, and
+- Primary page framing uses utilities such as `page-frame`, `card-surface`, and
   `border-border-soft` on large rounded shells (often `rounded-[1.75rem]`).
 - Softer inline regions use translucent whites (`bg-white/80`, `bg-white/60`)
   and generous radius (`rounded-2xl`) for controls and nested panels.
@@ -445,7 +445,7 @@ Philosophy** and **UX Guardrails**. Do not contradict those rules here.
 - Use descriptive page titles and concise descriptions
 - **Route loading UI:** App Router `loading.tsx` files (and shared helpers in
   `src/components/app/route-loading-skeleton.tsx`) should mirror each page’s
-  layout—`prm-page` vs `prm-form-shell`, grids, sticky headers, and major
+  layout—`page-frame` vs `form-shell`, grids, sticky headers, and major
   sections—so transitions feel coherent. When you change a page’s structure in a
   meaningful way, check the matching `loading.tsx` for that segment (and add one
   for new routes when the page is not instant). Prefer reusing
@@ -486,7 +486,7 @@ After meaningful code changes:
 - Confirm interactive elements have appropriate labels
 - Confirm new UI matches the app's warm, minimal, non-sales-oriented tone
 - When a **page layout** changes (or you add a non-trivial route), check whether
-  the corresponding `loading.tsx` (or `(prm)/loading.tsx` fallback) still matches;
+  the corresponding `loading.tsx` (or `(main)/loading.tsx` fallback) still matches;
   update skeletons and add `loading.tsx` where applicable
 
 ## Decision Rules for Future Agents

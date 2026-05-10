@@ -45,8 +45,8 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse;
 }
 
-/** Refreshes the Supabase session cookie. PRM routes under `src/app/(prm)` enforce
- *  sign-in via `requirePrmAccess()` in the layout, not here.
+/** Refreshes the Supabase session cookie. Signed-in routes under `src/app/(main)` enforce
+ *  access via `requireAccountAccess()` in the layout, not here.
  *
  *  When you add a new authenticated page or API that relies on refreshed cookies,
  *  add its path pattern here so session refresh still runs. */

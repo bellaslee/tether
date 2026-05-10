@@ -364,7 +364,7 @@ function PersonLogInteractionDialogInner({
 
   return createPortal(
     <div
-      className="prm-modal-overlay-inset fixed inset-0 z-[200] flex items-center justify-center bg-foreground/35 backdrop-blur-[2px]"
+      className="modal-overlay-inset fixed inset-0 z-[200] flex items-center justify-center bg-foreground/35 backdrop-blur-[2px]"
       role="presentation"
       onClick={() => {
         if (!pending) {
@@ -417,7 +417,7 @@ function PersonLogInteractionDialogInner({
               <div className="flex justify-center">
                 <DayPicker
                   mode="multiple"
-                  className="prm-quick-log-calendar"
+                  className="quick-log-calendar"
                   selected={selected}
                   onSelect={setSelected}
                   disabled={pending}

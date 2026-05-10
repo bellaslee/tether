@@ -6,7 +6,7 @@ import {
 /** Sticky header row + tab strip (matches person detail loading route). */
 export function PersonDetailLoadingHeaderSkeleton() {
   return (
-    <div className="prm-person-sticky-header sticky top-0 z-40 -mx-6 w-[calc(100%+3rem)] max-w-none px-6 pt-2 sm:-mx-10 sm:w-[calc(100%+5rem)] sm:px-10 lg:-mx-12 lg:w-[calc(100%+6rem)] lg:px-12">
+    <div className="person-sticky-header sticky top-0 z-40 -mx-6 w-[calc(100%+3rem)] max-w-none px-6 pt-2 sm:-mx-10 sm:w-[calc(100%+5rem)] sm:px-10 lg:-mx-12 lg:w-[calc(100%+6rem)] lg:px-12">
       <div className="w-full space-y-4 border-b border-border-soft pb-3">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1 space-y-4">
@@ -72,7 +72,7 @@ export function PersonDetailLoadingBodySkeleton() {
 /** Full-page skeleton for the `/people/[id]` route `loading.tsx` segment. */
 export default function PersonDetailPageSkeleton() {
   return (
-    <RouteLoadingMain className="prm-page" ariaLabel="Loading person profile">
+    <RouteLoadingMain className="page-frame" ariaLabel="Loading person profile">
       <PersonDetailLoadingHeaderSkeleton />
       <PersonDetailLoadingBodySkeleton />
     </RouteLoadingMain>

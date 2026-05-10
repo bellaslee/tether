@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { localWallTimeToUtcIso } from '@/lib/datetime';
-import { getPrmSupabaseContext } from '@/lib/prm/context';
+import { getAccountSupabaseContext } from '@/lib/account/context';
 import { resolvePreferredIanaTimeZone } from '@/lib/timezones';
 import { refreshLastInteractionAtForPersonIds } from '@/lib/interactions/last-touch';
 import {
@@ -17,7 +17,7 @@ import {
   deleteEmbeddingsForSource,
   syncInteractionNoteEmbeddings,
 } from '@/lib/retrieval/sync-embeddings';
-import { assertOwnsInteractionType, assertOwnsPeople } from '@/lib/prm/assert-owns';
+import { assertOwnsInteractionType, assertOwnsPeople } from '@/lib/account/assert-owns';
 import {
   resolveQuickLogInteractionTitle,
   resolveQuickLogTimeLocal,
@@ -323,7 +323,7 @@ export async function updateInteractionCore(
     return { error: 'Invalid interaction.' };
   }
 
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }
@@ -481,7 +481,7 @@ export async function updateInteraction(
 export async function deleteInteraction(
   interactionId: string,
 ): Promise<ActionResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { error: 'You need to sign in again.' };
   }

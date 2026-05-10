@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getPrmSupabaseContext } from '@/lib/prm/context';
+import { getAccountSupabaseContext } from '@/lib/account/context';
 
 function optionalNotes(raw: FormDataEntryValue | null): string | null {
   if (raw == null || typeof raw !== 'string') return null;
@@ -22,7 +22,7 @@ type CreateConnectionPairResult =
     };
 
 type CreateConnectionContext = Awaited<
-  ReturnType<typeof getPrmSupabaseContext>
+  ReturnType<typeof getAccountSupabaseContext>
 >;
 
 async function resolveReciprocalTypeId(
@@ -125,7 +125,7 @@ export async function createPersonConnection(
   connectionTypeId: string,
   notesRaw?: string | null,
 ): Promise<CreatePersonConnectionResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }
@@ -175,7 +175,7 @@ export async function createPersonConnectionsBatch(
   connectionTypeId: string,
   notesRaw?: string | null,
 ): Promise<CreatePersonConnectionsBatchResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return {
       ok: false,
@@ -266,7 +266,7 @@ export type DeletePersonConnectionResult =
 export async function deletePersonConnection(
   connectionId: string,
 ): Promise<DeletePersonConnectionResult> {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (!ctx) {
     return { ok: false, error: 'You need to sign in again.' };
   }

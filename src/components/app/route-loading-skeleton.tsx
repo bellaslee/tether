@@ -34,8 +34,8 @@ export function RouteLoadingMain({
   );
 }
 
-/** Matches typical PRM list/settings hero: eyebrow, title, description, optional action. */
-export function RouteLoadingPrmHero({
+/** Matches typical list/settings hero: eyebrow, title, description, optional action. */
+export function RouteLoadingHero({
   withPrimaryAction,
 }: {
   withPrimaryAction?: boolean;
@@ -55,7 +55,7 @@ export function RouteLoadingPrmHero({
   );
 }
 
-export function RouteLoadingPrmCard({
+export function RouteLoadingCard({
   className = '',
   children,
 }: {

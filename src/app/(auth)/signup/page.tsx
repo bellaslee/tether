@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/app/site-footer";
 import { SignupForm } from "@/components/auth/signup-form";
-import { getPrmSupabaseContext } from "@/lib/prm/context";
+import { getAccountSupabaseContext } from "@/lib/account/context";
 
 const PAGE_COPY = {
   hero: {
@@ -18,14 +18,14 @@ const PAGE_COPY = {
 } as const;
 
 export default async function SignupPage() {
-  const ctx = await getPrmSupabaseContext();
+  const ctx = await getAccountSupabaseContext();
   if (ctx) {
     redirect("/people");
   }
 
   return (
     <>
-    <main className="prm-shell-gutter-x mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-16">
+    <main className="shell-gutter-x mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-16">
       <div className="card-surface rounded-[2rem] border border-border-soft border-t-2 border-t-accent-sun/50 p-8 sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
           {PAGE_COPY.hero.eyebrow}

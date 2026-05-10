@@ -34,7 +34,7 @@ export function PersonQuickLogDayButton(
       {...props}
       className={[
         className,
-        tone ? `prm-quick-log-swatch prm-quick-log-swatch--${tone}` : '',
+        tone ? `quick-log-swatch quick-log-swatch--${tone}` : '',
       ]
         .filter(Boolean)
         .join(' ')}

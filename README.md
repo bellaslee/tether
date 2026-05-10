@@ -33,7 +33,7 @@ see [AGENTS.md](./AGENTS.md).
   AI tables). All changes go through SQL migrations.
 
 The marketing-style home page at `/` includes setup hints; signed-in PRM routes
-live under the `(prm)` route group (e.g. `/people`, `/timeline`).
+live under the `(main)` route group (e.g. `/people`, `/timeline`).
 
 ## Getting started
 
