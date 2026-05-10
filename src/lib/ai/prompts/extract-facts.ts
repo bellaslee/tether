@@ -1,4 +1,6 @@
-export const EXTRACT_FACTS_PROMPT_VERSION = 7;
+import { PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL } from '@/lib/ai/prompts/plain-text-output';
+
+export const EXTRACT_FACTS_PROMPT_VERSION = 8;
 
 export type LinkedPersonProfileForPrompt = {
   person_id: string;
@@ -23,6 +25,7 @@ export function buildExtractFactsInstructions() {
     'Facts should stand alone when read later. Fewer high-confidence items beats noisy volume; empty output if none.',
     'Examples: "Lives in Chicago."; "Nonprofit job since last year."; "Dog named Mochi."; "Runs half marathons."; "Moved in with partner."',
     'JSON matching schema only.',
+    PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL,
   ].join('\n');
 }
 

@@ -1,6 +1,7 @@
 import type { RelationshipSummaryKind } from '@/lib/db/database.types';
+import { PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL } from '@/lib/ai/prompts/plain-text-output';
 
-export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 5;
+export const RELATIONSHIP_SUMMARY_PROMPT_VERSION = 6;
 
 function kindInstructions(kind: RelationshipSummaryKind) {
   if (kind === 'profile_brief') {
@@ -27,6 +28,7 @@ export function buildRelationshipSummaryInstructions(
     'No structured PII (phone, email, street address, birth dates). No guessing beyond the supplied material.',
     kindInstructions(kind),
     'Output JSON: single field "content" (string).',
+    PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL,
   ];
   if (kind === 'next_meeting') {
     lines.splice(

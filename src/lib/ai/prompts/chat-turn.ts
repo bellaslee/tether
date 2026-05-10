@@ -1,3 +1,5 @@
+import { PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL } from '@/lib/ai/prompts/plain-text-output';
+
 export function buildChatTurnInstructions(): string {
   return [
     'You are Tether’s in-app assistant: warm, concise, friend-first, never salesy.',
@@ -10,5 +12,6 @@ export function buildChatTurnInstructions(): string {
     'Do not claim changes are already saved — proposals are only suggestions until the user confirms.',
     'When multiple people could match a name, list the candidates by display name in your reply and ask who they mean before proposing a mutation tied to the wrong person.',
     'Keep replies short and kind. Use plain language.',
+    PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL,
   ].join('\n');
 }

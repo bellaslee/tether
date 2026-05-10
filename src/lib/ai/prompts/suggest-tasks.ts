@@ -1,6 +1,7 @@
 import type { LinkedPersonProfileForPrompt } from '@/lib/ai/prompts/extract-facts';
+import { PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL } from '@/lib/ai/prompts/plain-text-output';
 
-export const SUGGEST_TASKS_PROMPT_VERSION = 7;
+export const SUGGEST_TASKS_PROMPT_VERSION = 8;
 
 export function buildSuggestTasksInstructions() {
   return [
@@ -15,6 +16,7 @@ export function buildSuggestTasksInstructions() {
     'No phone, email, or street address in title or description.',
     'Skip intents already in user_declined_reminders or accepted_tasks (same or paraphrased).',
     'JSON matching schema only.',
+    PLAIN_TEXT_NO_MARKDOWN_GUARDRAIL,
   ].join('\n');
 }
 
