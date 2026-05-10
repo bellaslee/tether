@@ -26,7 +26,7 @@ export async function signUpAction(
   }
 
   const client = await createSupabaseServerClient();
-  const { error } = await client.auth.signUp({
+  const { data, error } = await client.auth.signUp({
     email,
     password,
     options: {
@@ -38,6 +38,9 @@ export async function signUpAction(
   }
 
   revalidatePath("/", "layout");
+  if (!data.session) {
+    redirect(`/signup/check-email?email=${encodeURIComponent(email)}`);
+  }
   redirect("/people");
 }
 
