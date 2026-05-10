@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import Link from 'next/link';
-import { signOutAction } from '@/lib/actions/auth';
-import { Button } from '@/components/ui/button';
+import {
+  AccountMenuSections,
+} from '@/components/app/account-menu-sections';
 
 type UserMenuProps = {
   accountEmail?: string;
@@ -39,9 +39,6 @@ export function UserMenu({
     accountEmail?.trim()?.[0]?.toUpperCase() ??
     null;
 
-  const itemClass =
-    'block w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-foreground transition-colors hover:bg-white/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
-
   return (
     <div className="relative" ref={rootRef}>
       <button
@@ -69,45 +66,11 @@ export function UserMenu({
           aria-orientation="vertical"
           className="card-surface absolute right-0 z-50 mt-2 min-w-[12.5rem] rounded-2xl border border-border-soft py-2"
         >
-          {accountEmail ? (
-            <p
-              className="border-b border-border-soft px-3 py-2 text-xs leading-snug text-muted"
-              role="presentation"
-            >
-              {accountEmail}
-            </p>
-          ) : null}
-
-          <div className="p-1.5">
-            <Link
-              href="/settings"
-              role="menuitem"
-              className={itemClass}
-              onClick={() => setOpen(false)}
-            >
-              Label settings
-            </Link>
-            <Link
-              href="/settings/profile"
-              role="menuitem"
-              className={itemClass}
-              onClick={() => setOpen(false)}
-            >
-              Profile settings
-            </Link>
-            <form action={signOutAction} className="mt-1 border-t border-border-soft pt-1.5">
-              <Button
-                type="submit"
-                variant="secondaryMuted"
-                size="sm"
-                fullWidth
-                className="rounded-xl"
-                role="menuitem"
-              >
-                Sign out
-              </Button>
-            </form>
-          </div>
+          <AccountMenuSections
+            accountEmail={accountEmail}
+            linkRole="menuitem"
+            onNavigate={() => setOpen(false)}
+          />
         </div>
       ) : null}
     </div>
