@@ -81,7 +81,10 @@ export function PrmGlobalSearchTrigger({ className = '' }: { className?: string 
     >
       <Search className="size-4 shrink-0 opacity-70" aria-hidden />
       <span className="min-w-0 flex-1 truncate">Search people &amp; timeline…</span>
-      <kbd className="hidden shrink-0 rounded-md border border-border-soft bg-white/80 px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-muted sm:inline">
+      <kbd
+        suppressHydrationWarning
+        className="hidden shrink-0 rounded-md border border-border-soft bg-white/80 px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-muted sm:inline"
+      >
         {modHint}
       </kbd>
     </button>
