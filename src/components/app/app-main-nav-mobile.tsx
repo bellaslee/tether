@@ -104,7 +104,7 @@ function AppMainNavMobileInner({
             <button
               ref={closeButtonRef}
               type="button"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/60 text-foreground shadow-sm transition hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/60 text-foreground shadow-sm transition hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               aria-label="Close menu"
               onClick={() => setOpen(false)}
             >
@@ -200,7 +200,7 @@ function AppMainNavMobileInner({
       <button
         ref={triggerRef}
         type="button"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/60 text-foreground shadow-sm transition hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white/60 text-foreground shadow-sm transition hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         aria-label={open ? 'Close main menu' : 'Open main menu'}

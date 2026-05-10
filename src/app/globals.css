@@ -105,6 +105,74 @@ summary {
   box-shadow: var(--shadow);
 }
 
+/**
+ * Horizontal gutters aligned with `.prm-page` / marketing shells, plus safe-area insets.
+ */
+.prm-shell-gutter-x {
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .prm-shell-gutter-x {
+    padding-left: max(2.5rem, env(safe-area-inset-left));
+    padding-right: max(2.5rem, env(safe-area-inset-right));
+  }
+}
+
+@media (min-width: 1024px) {
+  .prm-shell-gutter-x {
+    padding-left: max(3rem, env(safe-area-inset-left));
+    padding-right: max(3rem, env(safe-area-inset-right));
+  }
+}
+
+/** App nav vertical rhythm; extra top inset when `viewport-fit=cover`. */
+.prm-app-nav-inner {
+  padding-top: calc(1rem + env(safe-area-inset-top));
+  padding-bottom: 1rem;
+}
+
+/** Site footer: preserve prior `py-6` feel with home-indicator clearance. */
+.prm-site-footer-shell {
+  padding-top: 1.5rem;
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+/** Fixed full-screen modal backdrops — matches prior `p-4` / `sm:p-6`. */
+.prm-modal-overlay-inset {
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left));
+}
+
+@media (min-width: 640px) {
+  .prm-modal-overlay-inset {
+    padding-top: max(1.5rem, env(safe-area-inset-top));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+  }
+}
+
+/** Global search: top offset + safe-area (additive). */
+.prm-search-modal-overlay {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-top: calc(min(12vh, 8rem) + env(safe-area-inset-top));
+}
+
+@media (min-width: 640px) {
+  .prm-search-modal-overlay {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    padding-top: calc(min(12vh, 8rem) + env(safe-area-inset-top));
+  }
+}
+
 /** Person detail sticky header — same wash as the page, locked to the viewport. */
 .prm-person-sticky-header {
   background-color: var(--background);
@@ -123,19 +191,22 @@ summary {
   flex: 1 1 0%;
   flex-direction: column;
   row-gap: 2rem;
-  padding-inline: 1.5rem;
   padding-block: 2.5rem;
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
 }
 
 @media (min-width: 640px) {
   .prm-page {
-    padding-inline: 2.5rem;
+    padding-left: max(2.5rem, env(safe-area-inset-left));
+    padding-right: max(2.5rem, env(safe-area-inset-right));
   }
 }
 
 @media (min-width: 1024px) {
   .prm-page {
-    padding-inline: 3rem;
+    padding-left: max(3rem, env(safe-area-inset-left));
+    padding-right: max(3rem, env(safe-area-inset-right));
   }
 }
 
@@ -147,19 +218,22 @@ summary {
   flex: 1 1 0%;
   flex-direction: column;
   row-gap: 2rem;
-  padding-inline: 1.5rem;
   padding-block: 2.5rem;
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
 }
 
 @media (min-width: 640px) {
   .prm-form-shell {
-    padding-inline: 2.5rem;
+    padding-left: max(2.5rem, env(safe-area-inset-left));
+    padding-right: max(2.5rem, env(safe-area-inset-right));
   }
 }
 
 @media (min-width: 1024px) {
   .prm-form-shell {
-    padding-inline: 3rem;
+    padding-left: max(3rem, env(safe-area-inset-left));
+    padding-right: max(3rem, env(safe-area-inset-right));
   }
 }
 

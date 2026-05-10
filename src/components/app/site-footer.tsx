@@ -6,8 +6,8 @@ export function SiteFooter() {
   const { openPrivacyPolicy } = usePrivacyPolicy();
 
   return (
-    <footer className="mt-auto border-t border-accent-sun/30 bg-surface-strong/40 py-6">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-2 px-6 text-sm text-muted sm:px-10 lg:px-12">
+    <footer className="prm-site-footer-shell mt-auto border-t border-accent-sun/30 bg-surface-strong/40">
+      <div className="prm-shell-gutter-x mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted">
         <button
           type="button"
           aria-haspopup="dialog"

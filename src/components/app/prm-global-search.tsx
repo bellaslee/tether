@@ -287,7 +287,7 @@ export function PrmGlobalSearchProvider({ children }: { children: ReactNode }) {
     open && typeof document !== 'undefined'
       ? createPortal(
           <div
-            className="fixed inset-0 z-[200] flex items-start justify-center bg-foreground/35 p-4 pt-[min(12vh,8rem)] backdrop-blur-[2px] sm:p-6"
+            className="prm-search-modal-overlay fixed inset-0 z-[200] flex items-start justify-center bg-foreground/35 backdrop-blur-[2px]"
             role="presentation"
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) {

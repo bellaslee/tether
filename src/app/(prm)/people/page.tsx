@@ -268,7 +268,7 @@ export default async function PeoplePage(props: {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="prm-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
-          <h1 className="mt-2 font-display text-4xl tracking-tight">
+          <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
             {PAGE_COPY.hero.title}
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
@@ -376,7 +376,7 @@ export default async function PeoplePage(props: {
                   PAGE_COPY.list.uncategorized;
                 return (
                   <section key={categoryId} className="space-y-3">
-                    <h2 className="font-display text-xl tracking-tight text-muted">
+                    <h2 className="font-display text-lg tracking-tight text-muted sm:text-xl">
                       {sectionTitle}
                     </h2>
                     <ul className="grid grid-cols-1 gap-3">

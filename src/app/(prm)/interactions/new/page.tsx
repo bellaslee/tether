@@ -64,7 +64,7 @@ export default async function NewInteractionPage() {
           {PAGE_COPY.backLink}
         </Link>
         <p className="prm-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-4xl tracking-tight">
+        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
           {PAGE_COPY.hero.title}
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted max-sm:leading-8">

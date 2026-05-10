@@ -19,10 +19,10 @@ export function isTemporalFormInputType(type: string | undefined): boolean {
 }
 
 const BASE =
-  'min-w-0 max-w-full border border-border-soft text-sm outline-none ring-accent/30 transition focus:ring-2';
+  'min-w-0 max-w-full border border-border-soft text-base outline-none ring-accent/30 transition focus:ring-2 sm:text-sm';
 
 const BASE_TEMPORAL =
-  'max-w-full border border-border-soft text-sm outline-none ring-accent/30 transition focus:ring-2';
+  'max-w-full border border-border-soft text-base outline-none ring-accent/30 transition focus:ring-2 sm:text-sm';
 
 const SIZE_MAP: Record<FormControlSize, string> = {
   default: 'w-full rounded-2xl bg-white/80 px-4 py-3',

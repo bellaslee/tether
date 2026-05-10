@@ -58,7 +58,7 @@ export default async function ProfileSettingsPage() {
       : baseZones;
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-6 py-10 sm:px-10 lg:px-12">
+    <main className="prm-shell-gutter-x mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 py-10">
       <div>
         <Link
           href="/people"
@@ -67,7 +67,7 @@ export default async function ProfileSettingsPage() {
           {PAGE_COPY.backLink}
         </Link>
         <p className="prm-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-4xl tracking-tight">
+        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
           {PAGE_COPY.hero.title}
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">

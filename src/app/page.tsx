@@ -97,7 +97,7 @@ export default async function Home() {
 
   return (
     <>
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-6 py-8 sm:px-10 lg:px-12">
+    <main className="prm-shell-gutter-x mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 py-8">
       <section className="card-surface overflow-hidden rounded-[2rem] border border-border-soft border-t-2 border-t-accent-sun/55">
         <div className="grid gap-10 px-6 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.15fr_1fr] lg:px-12 lg:py-12">
           <div className="space-y-6">
@@ -110,7 +110,7 @@ export default async function Home() {
               </div>
             </div>
             <div className="space-y-4">
-              <h1 className="max-w-3xl font-display text-5xl leading-none tracking-tight text-balance sm:text-6xl">
+              <h1 className="max-w-3xl font-display text-4xl leading-none tracking-tight text-balance sm:text-6xl">
                 {PAGE_COPY.hero.title}
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-foreground/90">
@@ -188,7 +188,7 @@ export default async function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
               {block.subtitle}
             </p>
-            <h2 className="mt-2 font-display text-2xl leading-tight">
+            <h2 className="mt-2 font-display text-xl leading-tight sm:text-2xl">
               {block.title}
             </h2>
             <p className="mt-4 flex-1 text-sm leading-7 text-muted">
@@ -204,7 +204,7 @@ export default async function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
               {PAGE_COPY.roadmap.eyebrow}
             </p>
-            <h2 className="mt-2 font-display text-3xl leading-tight">
+            <h2 className="mt-2 font-display text-2xl leading-tight sm:text-3xl">
               {PAGE_COPY.roadmap.title}
             </h2>
           </div>
@@ -229,7 +229,7 @@ export default async function Home() {
       </section>
 
       <section className="card-surface rounded-[1.75rem] border border-border-soft px-6 py-10 text-center sm:px-10">
-        <blockquote className="mx-auto max-w-2xl font-display text-2xl leading-snug tracking-tight text-balance sm:text-3xl">
+        <blockquote className="mx-auto max-w-2xl font-display text-xl leading-snug tracking-tight text-balance sm:text-3xl">
           {PAGE_COPY.closing.quote}
         </blockquote>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

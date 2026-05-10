@@ -67,7 +67,7 @@ export function QuickLogPresetStrip({
               onClick={() => openLogWithPreset(preset)}
               className="min-w-0 text-left"
             >
-              <p className="font-display text-lg leading-snug tracking-tight [overflow-wrap:anywhere]">
+              <p className="font-display text-base leading-snug tracking-tight [overflow-wrap:anywhere] sm:text-lg">
                 {preset.interaction_title.trim() || preset.label}
               </p>
               <p className="mt-1 text-xs text-muted">{preset.interaction_type_name}</p>

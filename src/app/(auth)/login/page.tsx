@@ -25,12 +25,12 @@ export default async function LoginPage() {
 
   return (
     <>
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-16">
+    <main className="prm-shell-gutter-x mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-16">
       <div className="card-surface rounded-[2rem] border border-border-soft border-t-2 border-t-accent-sky/50 p-8 sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
           {PAGE_COPY.hero.eyebrow}
         </p>
-        <h1 className="mt-3 font-display text-3xl tracking-tight">
+        <h1 className="mt-3 font-display text-2xl tracking-tight sm:text-3xl">
           {PAGE_COPY.hero.title}
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">

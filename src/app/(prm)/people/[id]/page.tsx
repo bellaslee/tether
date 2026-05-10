@@ -512,7 +512,7 @@ export default async function PersonDetailPage(props: PageProps) {
             className={`card-surface flex min-h-0 h-full min-w-0 flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(0)}`}
             aria-label={PAGE_COPY.overview.context.ariaLabel}
           >
-            <h2 className="shrink-0 font-display text-2xl">
+            <h2 className="shrink-0 font-display text-xl sm:text-2xl">
               {PAGE_COPY.overview.context.title}
             </h2>
             <div className="mt-6 min-h-0 flex-1">
@@ -613,7 +613,7 @@ export default async function PersonDetailPage(props: PageProps) {
             <div className="min-w-0 flex-1">
               <h2
                 id={PAGE_COPY.overview.timeline.headingId}
-                className="font-display text-2xl tracking-tight"
+                className="font-display text-xl tracking-tight sm:text-2xl"
               >
                 {PAGE_COPY.overview.timeline.title}
               </h2>
@@ -737,7 +737,7 @@ export default async function PersonDetailPage(props: PageProps) {
           <div
             className={`card-surface flex min-h-0 h-full flex-col rounded-[1.75rem] border border-border-soft p-6 sm:p-8 ${panelTopAccentAt(0)}`}
           >
-            <h2 className="shrink-0 font-display text-2xl">
+            <h2 className="shrink-0 font-display text-xl sm:text-2xl">
               {PAGE_COPY.details.stayInTouch}
             </h2>
             <ul className="mt-6 min-h-0 flex-1 space-y-4 overflow-y-auto">
@@ -809,7 +809,7 @@ export default async function PersonDetailPage(props: PageProps) {
           </Link>
           <p className="prm-eyebrow mt-4">{PAGE_COPY.header.eyebrow}</p>
           <div className="mt-2 flex min-w-0 flex-wrap items-center gap-3">
-            <h1 className="max-w-full font-display text-4xl tracking-tight text-balance [overflow-wrap:anywhere]">
+            <h1 className="max-w-full font-display text-3xl tracking-tight text-balance [overflow-wrap:anywhere] sm:text-4xl">
               {person.full_name}
             </h1>
             <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
@@ -916,7 +916,7 @@ function PersonTimelineRow({
             ) : null}
           </div>
           {interaction.title ? (
-            <p className="font-display text-2xl [overflow-wrap:anywhere]">
+            <p className="font-display text-xl [overflow-wrap:anywhere] sm:text-2xl">
               {interaction.title}
             </p>
           ) : null}

@@ -137,7 +137,7 @@ export function PrmChatPanel({
     <div className="space-y-6">
       <div
         ref={scrollRef}
-        className="card-surface max-h-[min(32rem,70vh)] min-h-[12rem] space-y-4 overflow-y-auto rounded-[1.75rem] border border-border-soft p-4 sm:p-6"
+        className="card-surface max-h-[min(32rem,70dvh)] min-h-[12rem] space-y-4 overflow-y-auto rounded-[1.75rem] border border-border-soft p-4 sm:p-6"
         aria-label="Chat messages"
       >
         {messages.length === 0 ? (

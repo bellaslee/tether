@@ -395,7 +395,7 @@ export function PersonConnectionsPanel(props: PersonConnectionsPanelProps) {
     >
       <div className="flex flex-wrap items-start justify-between gap-3 shrink-0">
         <div>
-          <h2 className="font-display text-2xl">Connected people</h2>
+          <h2 className="font-display text-xl sm:text-2xl">Connected people</h2>
           <p className="mt-2 text-sm leading-7 text-muted">
             Who they know in your circle and how those people relate to them.
           </p>

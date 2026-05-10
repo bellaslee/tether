@@ -33,7 +33,7 @@ export default async function NewPersonPage() {
           {PAGE_COPY.backLink}
         </Link>
         <p className="prm-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-4xl tracking-tight">{PAGE_COPY.hero.title}</h1>
+        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">{PAGE_COPY.hero.title}</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
           {PAGE_COPY.hero.description}
         </p>

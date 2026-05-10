@@ -12,7 +12,7 @@ type AppNavProps = {
 export function AppNav({ context }: AppNavProps) {
   return (
     <header className="relative z-[101] border-b border-accent-sky/35 bg-surface-strong/80 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-4 sm:px-10 md:flex-row md:flex-wrap md:items-center md:justify-between lg:px-12">
+      <div className="prm-app-nav-inner prm-shell-gutter-x mx-auto flex w-full max-w-6xl flex-col gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
         <div className="flex min-w-0 flex-nowrap items-center gap-3 md:gap-6">
           <Link
             href="/people"

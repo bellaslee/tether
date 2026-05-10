@@ -78,7 +78,7 @@ export function ConfirmLightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-foreground/35 p-4 backdrop-blur-[2px] sm:p-6"
+      className="prm-modal-overlay-inset fixed inset-0 z-[200] flex items-center justify-center bg-foreground/35 backdrop-blur-[2px]"
       role="presentation"
       onClick={() => {
         if (!pending) {

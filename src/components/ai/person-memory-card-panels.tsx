@@ -58,7 +58,7 @@ export function PersonFactsMemorySection({
         <div className="min-w-0 flex-1">
           <h2
             id="person-memory-facts-heading"
-            className="font-display text-2xl tracking-tight text-foreground"
+            className="font-display text-xl tracking-tight text-foreground sm:text-2xl"
           >
             Facts
           </h2>
@@ -166,7 +166,7 @@ export function PersonRemindersMemorySection({
         <div className="min-w-0 flex-1">
           <h2
             id="person-memory-tasks-heading"
-            className="font-display text-2xl tracking-tight text-foreground"
+            className="font-display text-xl tracking-tight text-foreground sm:text-2xl"
           >
             Open loops &amp; reminders
           </h2>

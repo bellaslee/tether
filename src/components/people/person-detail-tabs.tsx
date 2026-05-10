@@ -93,7 +93,7 @@ export function PersonDetailTabsProvider({
 }
 
 const tabLinkBase =
-  'inline-flex border-b-2 px-1 pb-3 text-sm font-semibold transition sm:text-base';
+  'inline-flex shrink-0 border-b-2 px-1 pb-3 text-sm font-semibold transition sm:text-base';
 const tabLinkActive = `${tabLinkBase} border-accent text-foreground`;
 const tabLinkInactive = `${tabLinkBase} border-transparent text-muted hover:text-foreground/80`;
 
@@ -137,11 +137,12 @@ export function PersonDetailTabNav({
   };
 
   return (
-    <nav
-      role="tablist"
-      aria-label={profileSectionsAria}
-      className="flex w-full flex-wrap gap-x-6 gap-y-3 sm:gap-x-8"
-    >
+    <div className="-mx-6 min-w-0 overflow-x-auto overflow-y-hidden px-6 pb-0.5 [-webkit-overflow-scrolling:touch] scroll-px-6 sm:-mx-10 sm:px-10 sm:scroll-px-10 lg:-mx-12 lg:px-12 lg:scroll-px-12">
+      <nav
+        role="tablist"
+        aria-label={profileSectionsAria}
+        className="flex w-max flex-nowrap gap-x-6 sm:gap-x-8"
+      >
       {PERSON_DETAIL_TAB_ORDER.map((tabKey, index) => {
         const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
@@ -183,7 +184,8 @@ export function PersonDetailTabNav({
           </button>
         );
       })}
-    </nav>
+      </nav>
+    </div>
   );
 }
 

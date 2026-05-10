@@ -36,7 +36,7 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-foreground/35 p-4 backdrop-blur-[2px] sm:p-6"
+      className="prm-modal-overlay-inset fixed inset-0 z-[200] flex items-center justify-center bg-foreground/35 backdrop-blur-[2px]"
       role="presentation"
       onClick={onClose}
     >
@@ -50,7 +50,7 @@ export function PrivacyPolicyLightbox({ open, onClose }: PrivacyPolicyLightboxPr
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">Tether</p>
-            <h2 id={titleId} className="mt-2 font-display text-2xl tracking-tight sm:text-3xl">
+            <h2 id={titleId} className="mt-2 font-display text-xl tracking-tight sm:text-3xl">
               Privacy Policy
             </h2>
             <p className="mt-2 text-sm text-muted">Last updated: May 6, 2026</p>

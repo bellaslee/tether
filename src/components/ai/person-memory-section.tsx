@@ -42,7 +42,7 @@ export function PersonBriefsSection({
     >
       <h2
         id="person-memory-briefs-heading"
-        className="shrink-0 font-display text-2xl tracking-tight text-foreground"
+        className="shrink-0 font-display text-xl tracking-tight text-foreground sm:text-2xl"
       >
         Briefs
       </h2>

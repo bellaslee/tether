@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/react';
 import { Fraunces, Nunito } from 'next/font/google';
 import { PrivacyPolicyProvider } from '@/components/app/privacy-policy-context';
@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   title: 'Tether',
   description:
     'A warm, respectful relationship PRM for remembering people well.',
+};
+
+export const viewport: Viewport = {
+  viewportFit: 'cover',
+  themeColor: '#fff8f0',
+  interactiveWidget: 'resizes-content',
 };
 
 export default function RootLayout({

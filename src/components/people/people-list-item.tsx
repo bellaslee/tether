@@ -72,7 +72,7 @@ export function PeopleListItem({
         }`}
       >
         <div className={stacked ? 'min-w-0' : 'min-w-0 sm:flex-1'}>
-          <p className="font-display text-lg leading-snug tracking-tight [overflow-wrap:anywhere]">
+          <p className="font-display text-base leading-snug tracking-tight [overflow-wrap:anywhere] sm:text-lg">
             {personShownName(person)}
           </p>
         </div>

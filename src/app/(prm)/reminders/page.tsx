@@ -176,7 +176,7 @@ export default async function RemindersPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="prm-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
-          <h1 className="mt-2 font-display text-4xl tracking-tight">
+          <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
             {PAGE_COPY.hero.title}
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
@@ -196,7 +196,7 @@ export default async function RemindersPage() {
       >
         <h2
           id="reminders-list-heading"
-          className="font-display text-2xl tracking-tight text-foreground"
+          className="font-display text-xl tracking-tight text-foreground sm:text-2xl"
         >
           {PAGE_COPY.list.sectionTitle}
         </h2>

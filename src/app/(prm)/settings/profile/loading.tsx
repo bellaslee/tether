@@ -6,7 +6,7 @@ import {
 export default function ProfileSettingsLoading() {
   return (
     <RouteLoadingMain
-      className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-6 py-10 sm:px-10 lg:px-12"
+      className="prm-shell-gutter-x mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 py-10"
       ariaLabel="Loading profile settings"
     >
       <div className="space-y-4">
