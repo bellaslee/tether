@@ -56,29 +56,6 @@ const PAGE_COPY = {
     brief:
       'Ask how the new team is settling in; mention the pottery class idea if it comes up.',
   },
-  roadmap: {
-    eyebrow: 'On the roadmap',
-    title: 'Upcoming features',
-    description:
-      'The core idea is simple: private memory you control, not a contact database or a sales tool. Here is what we are building toward next.',
-  },
-  upcomingFeatures: [
-    {
-      name: 'Reminders that make sense',
-      description:
-        'Follow-ups tied to real context—not generic nudges—so you reconnect with intention.',
-    },
-    {
-      name: 'Ask your memory',
-      description:
-        'Pose questions in plain language and get answers grounded in what you actually wrote, with room to edit and correct.',
-    },
-    {
-      name: 'Smarter recall across people',
-      description:
-        'Search and surface moments across your circle when fuzzy memory is not enough.',
-    },
-  ],
   closing: {
     quote:
       'It is not about knowing more people. It is about showing up for the ones you already care about.',
@@ -93,7 +70,7 @@ export default async function Home() {
     redirect('/people');
   }
 
-  const { flowMoments, flowPreview, upcomingFeatures } = PAGE_COPY;
+  const { flowMoments, flowPreview } = PAGE_COPY;
 
   return (
     <>
@@ -161,11 +138,11 @@ export default async function Home() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-[1.5rem] border border-accent-soft bg-accent-soft/40 p-5 sm:p-6">
+            <div className="space-y-2 rounded-[1.5rem] border border-border-soft border-l-[3px] border-l-accent/75 bg-surface/80 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
                 {PAGE_COPY.previewColumn.beforeAgain}
               </p>
-              <p className="mt-2 text-sm leading-7 text-foreground/90">
+              <p className="text-sm leading-7 text-foreground/90">
                 {flowPreview.brief}
               </p>
             </div>
@@ -196,36 +173,6 @@ export default async function Home() {
             </p>
           </article>
         ))}
-      </section>
-
-      <section className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
-              {PAGE_COPY.roadmap.eyebrow}
-            </p>
-            <h2 className="mt-2 font-display text-2xl leading-tight sm:text-3xl">
-              {PAGE_COPY.roadmap.title}
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-7 text-muted">
-            {PAGE_COPY.roadmap.description}
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {upcomingFeatures.map((item) => (
-            <article
-              key={item.name}
-              className="rounded-[1.5rem] border border-accent-sky/25 bg-surface/70 p-5"
-            >
-              <p className="text-sm font-semibold text-foreground">{item.name}</p>
-              <p className="mt-3 text-sm leading-7 text-muted">
-                {item.description}
-              </p>
-            </article>
-          ))}
-        </div>
       </section>
 
       <section className="card-surface rounded-[1.75rem] border border-border-soft px-6 py-10 text-center sm:px-10">
