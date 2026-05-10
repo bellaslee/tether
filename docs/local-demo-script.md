@@ -1,118 +1,127 @@
-# Local demo script (mock PRM data)
+# Local demo script
 
-Use this when presenting **Tether** with the **local narrative seed**. Lead with **what makes the product respectful and trustworthy**—then let the **story** (cast + timeline) prove each point in the UI. The narrative is someone roughly eighteen months into a **new city and new job**, balancing an **inner circle**, **work relationships**, **family**, and **light networking**—without feeling like a sales CRM.
+Use this when presenting **Tether** locally. Open with why the product is **trustworthy**: memory and follow-through you control—not surveillance, pipeline scoring, or automatic outreach. Everything below assumes a **warm, friend-first PRM** tone (see repo authoring guidelines).
 
-Fictional names and notes are safe to show on screen.
+Demo names and journal-style notes are **fictional** and safe to show on screen.
 
-## Story at a glance (weave, don’t lecture)
+## Cast (quick anchor)
 
-| Thread | Who | Moral hook |
-|--------|-----|------------|
-| Home base | Jordan | Intimacy without treating people as “accounts.” |
-| Inner circle | Sam vs Alex | Same label, different reality—no guilt algorithm. |
-| Work pod | Priya, Chris, Morgan | Dependencies and trust, not pipeline stages. |
-| Old chapter | Jamie | Dormant ties stay in context; nothing’s “deleted.” |
-| Networking | Taylor | Open loops tied to a **reason**, not nag volume. |
-| Family | Diane | Different relationship textures, same respect. |
-| Mentor | Robin | Perspective over frequency. |
-
-Refer back to this table only when you need a quick anchor—the demo flow below weaves these beats into each stop.
+| Who | Role in the story |
+|-----|-------------------|
+| **Jun** | Partner — use for hearts deep-dive and **live logging + AI** |
+| **Stella** | Sister — family texture on the roster |
+| **Jen** | Friend — standing hangouts and facts in seeded data |
+| **Hazel** | Old college friend, **dormant** — drift without deleting history |
 
 ## Prerequisites
 
-1. **Docker** running; local Supabase stack up (`npx supabase start` or `npm run db:local`).
-2. Schema matches the repo: `npx supabase db reset` (applies migrations and the empty [`supabase/seed.sql`](../supabase/seed.sql)).
-3. Load demo data: `npm run db:seed:demo`  
-   This runs [`supabase/seed.demo.sql`](../supabase/seed.demo.sql) against the local database (see the file for credentials and idempotency).
-4. App env pointed at local Supabase (`NEXT_PUBLIC_SUPABASE_*` in `.env.local`). Start the app: `npm run dev`.
+1. **Docker** running; local Supabase up (`npx supabase start` or your usual stack command).
+2. Schema applied (`npx supabase db reset` or migrations pushed) and app env pointed at that database (`NEXT_PUBLIC_SUPABASE_*` in `.env.local`).
+3. **`npm run dev`** — presenter and browser on the same build.
+4. A signed-in **demo tenant** that already includes Jun, Stella, Jen, and Hazel (categories and sample timeline/facts optional but helpful).  
+   - The packaged **`npm run db:seed:demo`** script loads a **different** fictional cast (see [`supabase/seed.demo.sql`](../supabase/seed.demo.sql)).  
+   - For this script’s **Jun / Stella / Jen / Hazel** narrative, use an account you’ve set up yourself or run the journal-demo SQL under [`supabase/scripts/`](../supabase/scripts/) (see comments in those files for the demo user id / email).
+5. **AI steps (4 and 6):** `OPENAI_API_KEY` configured where the server can read it. Without it, say you’ll skip extraction/chat or show recorded screenshots.
 
 ## Demo login
 
+Use whichever account holds your demo roster (often a shared local user). Example:
+
 | Field | Value |
 |--------|--------|
-| Email | `test@test.com` |
-| Password | `password` |
+| Email | Your demo user (e.g. `test@test.com`) |
+| Password | However that user was created (Supabase Studio, [`supabase/seed.demo.sql`](../supabase/seed.demo.sql), etc.) |
 
-There is a **single** demo login; **relationship baselines** (heart floors) differ **per person** in the seed so `/people` looks like a real roster. If you need multiple logins for side-by-side builds, that would be a separate seed—this script assumes one tenant.
+---
 
-## Suggested flow (moral features first, story woven in)
+## Flow (follow in order)
 
-### 1. Sign in
+### Sign in (setup beat)
 
-Open `/login`, sign in with the demo account.
+Open `/login`, sign in.
 
-**Lead with ethics:** The product is built for **memory and follow-through**, not surveillance or pipeline math. You’re not scoring relationships—you’re supporting intention. The ethical posture is closer to a journal + address book + reminders.
+**One-liner:** “Personal relationship memory—friends first—not a sales CRM.”
 
-**Weave the story:** Everything you’re about to see is **fictional local data**; it exists to show how real notes and relationships could look when the tool stays **human-scale**.
+---
 
-**One-liner:** “This is a **personal** relationship memory tool—friends first—not a CRM funnel.”
+### 1. People list (`/people`)
 
-### 2. People list (`/people`)
+Stay on the directory first.
 
-Scan the list once without clicking.
+**Show:** Categories, last touch, interaction counts, and **heart bars** as a glanceable picture of care—not a leaderboard.
 
-**Lead with ethics:** Categories and labels should clarify **care**, not compress people into funnel stages. Recency and warmth help you notice drift **without shame**.
+**Point to the cast:** Jun (partner), Stella (sister), Jen (friend), Hazel (dormant). Mention that **dormant** keeps context without pretending you talk weekly.
 
-**Hearts (glance only):** The demo seed sets **different connection baselines** per person so heart bars look varied—like a real account. **Do not** walk the audience through every row. Optionally say: “You’ll see different bars; I’ll unpack what that means on **one** relationship.”
+---
 
-**Weave the story:**
+### 2. Jun — profile + hearts (`/people/[jun-id]`)
 
-- **Same label, different reality:** Two **close friends**—**Sam** (constant touch) vs **Alex** (meaningful but infrequent). The list makes the contrast visible; it doesn’t declare a winner.
-- **Dormant, not deleted:** **Jamie** (college-era) is **dormant**—life moved on, but you’re not pretending they never mattered.
-- **Roles:** Partner, coworkers, family, mentor, networking—each row exists for a **reason** in the narrative, not to populate a dropdown.
+Open **Jun**.
 
-### 3. Person profiles (~2 minutes total)
+**Hearts:** Explain once—baseline (“how close this relationship tends to feel”), plus recent moments and recency. Optionally hover or use whatever hint your build exposes. Do **not** repeat the full lecture on every person.
 
-**Hearts deep-dive — pick one:** Open **Sam Rivera** and briefly explain **baseline + logged moments + recency** (hover the heart bar if your build shows it). That’s enough; treat everyone else’s hearts as **set dressing**.
+**Glance:** Facts and existing interactions set the stage for what you’ll add live in step 3.
 
-**Story tour — stay light:** Glance other profiles for narrative beats **without** re-explaining hearts:
+---
 
-1. **Jordan Lee** — Partner; “home base” (optional if time is tight).
-2. **Alex Kim** — Same **close friend** category as Sam; **older** last touch so the bar tells the drift story **next to** Sam if you flip between them—still no second lecture on mechanics.
-3. **Priya Desai** — Manager; steady 1:1 rhythm.
-4. **Taylor Brooks** — Networking + **open task** (article follow-up).
+### 3. Log a new interaction for Jun + save a preset
 
-On **Chris Patel** or **Morgan Riley**, open **connections** if your build surfaces them: **coworker** link between adjacent squads—the graph reflects **real team ties**, not territory.
+From Jun’s profile, open **Log interaction** (timeline area / primary action).
 
-**Optional:** **Diane Foster (Mom)** — family cadence vs friends/work.
+**Show:**
 
-**Lead with ethics:** Detail pages are where **trust** shows up: you see **why** someone matters to you, not a lead score. Networking contacts still get **consent-shaped** follow-ups (tasks tied to real conversations).
+- Pick type, title, and a short **journal-style note** (where you went, what you talked about, anything you’d want to remember later—same energy as “we got pizza… then she told me she’s moving…”).
+- Log it on the calendar / save so it appears on their timeline.
 
-**Weave the story:** Sam vs Alex shows **intimacy without ranking people**; Jordan / Priya / Taylor round out home, work, and light networking without needing the full hearts tour on each.
+Then **save a preset** from the same flow: use **Save preset** so “Log presets” can reuse this shape later (type, title pattern, people, time). Mention presets also appear from **`/timeline`** via **Log presets** when you want a global shortcut.
 
-### 4. Timeline (`/timeline`)
+**Ethics beat:** You chose what to record; nothing is mined from inboxes.
 
-Scroll chronologically (newest first).
+---
 
-**Lead with ethics:** The timeline is **your notes**, not an activity feed mined from inboxes. Multi-person events are stored **once** and linked honestly—no duplicate ghost entries.
+### 4. Suggest facts & follow-ups (that new interaction)
 
-**Weave the story:**
+Scroll to the **interaction you just added** (still on Jun’s profile, or open it from the timeline in step 5 if your layout prefers).
 
-- **Sounds like real notes:** Interaction text reads like someone logging life—messy shorthand and work bullets—not polished PR prose.
-- **Multi-person moments:** **Dinner at ours—Taylor met Sam** (inner circle + networking) and **patio lunch** with **Priya, Chris, Morgan** (cross-team work). Shows why **interactions** attach to multiple people once.
-- **Long tail:** Older rows (**Jamie**, **Alex** deep in the past) preserve history without hiding who’s active today.
+Click **Suggest facts & follow-ups**.
 
-### 5. Facts & tasks (where the app shows them)
+**Show:**
 
-**Lead with ethics:** Facts are **candidate memory**—things you’d want to recall before the next touch. Tasks should **explain their reason** (why this follow-up exists) and stay **opt-in**, not naggy automation.
+- **Candidate facts** tied to the note—short, declarative memory (review, accept, dismiss).
+- **Suggested tasks** if the pipeline surfaces them.
 
-**Weave the story**
+**Ethics beat:** AI proposes; **you confirm**. Facts stay editable; nothing silently overwrites the relationship record.
 
-**Facts (examples in seed)**
+If the button reads **Facts & follow-ups already suggested**, use a fresh note or a different interaction so the audience sees one full cycle—or explain idempotency in one sentence.
 
-- **Mom / pollinators** — concrete detail you’d want before the next call.
-- **Chris / async-first** — working style for collaboration.
-- **Taylor / PM pivot (candidate)** — something to treat lightly until they invite depth.
+---
 
-**Tasks**
+### 5. Timeline (`/timeline`)
 
-- **Taylor:** Send the long-form article (closes the loop from the meetup—**reasoned** follow-up).
-- **Morgan:** Optional deck link from lunch—**suggested**, not a guilt ping.
+Open the global timeline.
+
+**Show:** Newest-first **moments**, your language preserved, Jun’s new row alongside older history. If you have a **multi-person** interaction elsewhere in seed data, point out one event linked to multiple people once—no duplicate ghost entries.
+
+Contrast **timeline** (what happened) with **facts** on profiles (durable things to recall next time).
+
+---
+
+### 6. Demo AI capabilities (`/chat`)
+
+Open **Chat** (“Ask Tether”).
+
+**Show:**
+
+- Ask a **natural-language** question over stored notes and facts (e.g. “What do I know about Jun’s schedule stress?” or “Who did I talk to about ceramics?”).
+- When the assistant proposes **timeline or profile updates**, walk through **review before anything saves**—same trust posture as step 4.
+
+**Close:** AI is for extraction, recall, and drafting **candidate** updates—not for autonomous messaging or hidden scoring.
+
+---
 
 ## If asked
 
-- **Why do hearts differ on every row?** The seed sets **personal baselines** plus each person has different **logged moments** and **last touch**—so the list looks credible. In the demo you only **explain** that system once (on Sam).
-- **Privacy:** Demo data is **fictional** and lives only in **local** Postgres unless you import it elsewhere on purpose.
-- **AI (if applicable):** Anything generated should stay **editable** and traceable to sources—same idea as repository AI guidance in the authoring guidelines at the repo root.
-- **“Is this manipulative?”** The intent is **assistive recall**—you choose what to log, what to keep, and what to act on. No auto-messaging, no scraping-by-default.
-- **Re-running the demo:** `npx supabase db reset` then `npm run db:seed:demo` gives a clean slate (seed replaces `test@test.com` when present).
+- **Manipulative?** Assistive recall only; no auto-send, no scraping-by-default.
+- **Privacy:** Local Postgres stays on your machine unless you deploy or export data elsewhere.
+- **Hearts differ per row:** Baselines + logged history make the list credible; you only **explain** hearts in depth once (on Jun).
+- **Fresh demo DB:** Reset/migrate your local DB, reload seed or SQL patches for `test@test.com`, then sign in again.
