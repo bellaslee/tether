@@ -312,7 +312,7 @@ function GlobalTimelineRow({
     : 'card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8';
 
   return (
-    <li className={cardClass}>
+    <li id={`interaction-${interaction.id}`} className={cardClass}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PrmGlobalSearchTrigger } from '@/components/app/prm-global-search';
 import type { PrmSupabaseContext } from '@/lib/prm/context';
 import { UserMenu } from '@/components/app/user-menu';
 
@@ -9,7 +10,7 @@ type AppNavProps = {
 export function AppNav({ context }: AppNavProps) {
   return (
     <header className="relative z-[101] border-b border-accent-sky/35 bg-surface-strong/80 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4 sm:px-10 lg:px-12">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-4 px-6 py-4 sm:justify-between sm:px-10 lg:px-12">
         <div className="flex flex-wrap items-center gap-6">
           <Link
             href="/people"
@@ -35,7 +36,8 @@ export function AppNav({ context }: AppNavProps) {
             </Link>
           </nav>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 w-full flex-1 items-center justify-end gap-3 sm:w-auto sm:max-w-xl">
+          <PrmGlobalSearchTrigger className="min-w-0 w-full max-w-full sm:max-w-[min(22rem,42vw)]" />
           <UserMenu
             accountEmail={context.accountEmail}
             accountDisplayName={context.accountDisplayName}
