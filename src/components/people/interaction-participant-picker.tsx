@@ -27,6 +27,21 @@ function comparePeopleByName(a: PersonOption, b: PersonOption): number {
   });
 }
 
+function orderVisibleParticipants(
+  filtered: PersonOption[],
+  selectedIds: ReadonlySet<string>,
+  primaryId: string,
+): PersonOption[] {
+  const selectedRows = filtered.filter((p) => selectedIds.has(p.id));
+  const unselectedRows = filtered.filter((p) => !selectedIds.has(p.id));
+  const primaryFirstSelected = [...selectedRows].sort((a, b) => {
+    const aMain = primaryId && a.id === primaryId ? 0 : 1;
+    const bMain = primaryId && b.id === primaryId ? 0 : 1;
+    return aMain - bMain;
+  });
+  return [...primaryFirstSelected, ...unselectedRows];
+}
+
 function personMatchesSearch(person: PersonOption, q: string) {
   if (!q) {
     return true;
@@ -141,14 +156,14 @@ export function InteractionParticipantPicker({
       return [];
     }
     const q = query.trim().toLowerCase();
-    if (!q) {
-      return orderedPeople;
-    }
-    return orderedPeople.filter(
-      (person) =>
-        selectedIds.has(person.id) || personMatchesSearch(person, q),
-    );
-  }, [orderedPeople, query, listRevealed, selectedIds]);
+    const filtered = !q
+      ? orderedPeople
+      : orderedPeople.filter(
+          (person) =>
+            selectedIds.has(person.id) || personMatchesSearch(person, q),
+        );
+    return orderVisibleParticipants(filtered, selectedIds, primaryId);
+  }, [orderedPeople, primaryId, query, listRevealed, selectedIds]);
 
   function revealList() {
     setListRevealed(true);

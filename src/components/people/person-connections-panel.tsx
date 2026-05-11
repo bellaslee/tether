@@ -52,6 +52,15 @@ function comparePersonOptionByLabel(
   return a.label.localeCompare(b.label, undefined, { sensitivity: 'base' });
 }
 
+function visiblePeopleStickySelectedFirst(
+  filtered: PersonConnectionPersonOption[],
+  selectedRelatedIds: ReadonlySet<string>,
+): PersonConnectionPersonOption[] {
+  const selectedRows = filtered.filter((p) => selectedRelatedIds.has(p.id));
+  const unselectedRows = filtered.filter((p) => !selectedRelatedIds.has(p.id));
+  return [...selectedRows, ...unselectedRows];
+}
+
 function ConnectionRow(props: {
   row: PersonConnectionListItem;
   onRemoved: () => void;
@@ -158,14 +167,14 @@ function AddConnectionForm(props: {
       return [];
     }
     const q = query.trim().toLowerCase();
-    if (!q) {
-      return orderedPeople;
-    }
-    return orderedPeople.filter(
-      (person) =>
-        selectedRelatedIds.has(person.id) ||
-        person.label.toLowerCase().includes(q),
-    );
+    const filtered = !q
+      ? orderedPeople
+      : orderedPeople.filter(
+          (person) =>
+            selectedRelatedIds.has(person.id) ||
+            person.label.toLowerCase().includes(q),
+        );
+    return visiblePeopleStickySelectedFirst(filtered, selectedRelatedIds);
   }, [listRevealed, orderedPeople, query, selectedRelatedIds]);
 
   function revealList() {
