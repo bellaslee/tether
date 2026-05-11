@@ -181,6 +181,8 @@ function snapHalfHearts(value: number, max: number): number {
  * Hearts = capped bond soft floor (category + tenure, max DISPLAY_BASELINE_CAP_HEARTS)
  * plus an activity band (frequency with linear early-game sensitivity × recency).
  * This avoids max(baseline, dynamic) freezing the bar when baseline already nears 10.
+ * Frequency can saturate the activity term so strong logging plus recency can still
+ * fill the bar when tenure is still low (soft floor cap leaves headroom in the band).
  */
 export function computeRelationshipHearts(
   input: ComputeRelationshipWarmthInput,
@@ -221,8 +223,11 @@ export function computeRelationshipHearts(
 
   const freqStrength = interactionFrequencyStrength(interactionCount);
 
-  const bondPotentialActivity = clamp01(
+  const tenureFrequencyBlend = clamp01(
     ACTIVITY_WEIGHT_TENURE * tenureT + ACTIVITY_WEIGHT_FREQUENCY * freqStrength,
+  );
+  const bondPotentialActivity = clamp01(
+    Math.max(tenureFrequencyBlend, freqStrength),
   );
 
   const daysSince = Math.floor(
