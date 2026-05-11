@@ -34,7 +34,7 @@ export function RouteLoadingMain({
   );
 }
 
-/** Matches typical list/settings hero: eyebrow, title, description, optional action. */
+/** Matches typical page hero: title line, optional primary action. */
 export function RouteLoadingHero({
   withPrimaryAction,
 }: {
@@ -42,11 +42,8 @@ export function RouteLoadingHero({
 }) {
   return (
     <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0 space-y-3">
-        <RouteLoadingPulse className="h-4 w-28" />
+      <div className="min-w-0">
         <RouteLoadingPulse className="h-10 w-full max-w-sm" />
-        <RouteLoadingPulse className="h-4 w-full max-w-xl" />
-        <RouteLoadingPulse className="h-4 w-full max-w-lg" />
       </div>
       {withPrimaryAction ? (
         <RouteLoadingPulse className="h-11 w-36 shrink-0 rounded-xl" />

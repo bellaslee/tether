@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ChatPanel } from '../chat/_components/chat-panel';
+import { ChatPanel } from '@/components/dashboard/chat-panel';
 import { ReminderTaskRow } from '@/components/reminders/reminder-task-row';
 import { ButtonLink } from '@/components/ui/button';
 import { requireAccountAccess } from '@/lib/account/guard';

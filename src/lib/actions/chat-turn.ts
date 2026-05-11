@@ -163,6 +163,7 @@ export async function applyChatProposal(
     }
     revalidatePath('/people');
     revalidatePath(`/people/${res.id}`);
+    revalidatePath('/dashboard');
     return {
       ok: true,
       message: 'Saved a new person — open People to see them.',
@@ -196,6 +197,7 @@ export async function applyChatProposal(
     revalidatePath(`/people/${p.person_id}`);
     revalidatePath(`/people/${p.person_id}/edit`);
     revalidatePath('/timeline');
+    revalidatePath('/dashboard');
     return {
       ok: true,
       message: 'Updated their profile.',
@@ -320,6 +322,7 @@ export async function applyChatProposal(
     }
     revalidatePath(`/people/${p.person_id}`);
     revalidatePath('/reminders');
+    revalidatePath('/dashboard');
     return { ok: true, message: 'Saved a reminder for them.' };
   }
 

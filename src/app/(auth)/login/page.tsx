@@ -6,10 +6,8 @@ import { getAccountSupabaseContext } from "@/lib/account/context";
 
 const PAGE_COPY = {
   hero: {
-    eyebrow: "Welcome back",
     title: "Sign in",
-    description:
-      "Access your people and timeline. Everything stays in your workspace.",
+    subtitle: "Use the email and password for your Tether account.",
   },
   footer: {
     lead: "New here?",
@@ -20,21 +18,18 @@ const PAGE_COPY = {
 export default async function LoginPage() {
   const ctx = await getAccountSupabaseContext();
   if (ctx) {
-    redirect("/people");
+    redirect("/dashboard");
   }
 
   return (
     <>
     <main className="shell-gutter-x mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-16">
       <div className="card-surface rounded-[2rem] border border-border-soft border-t-2 border-t-accent-sky/50 p-8 sm:p-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-          {PAGE_COPY.hero.eyebrow}
-        </p>
-        <h1 className="mt-3 font-display text-2xl tracking-tight sm:text-3xl">
+        <h1 className="font-display text-2xl tracking-tight sm:text-3xl">
           {PAGE_COPY.hero.title}
         </h1>
         <p className="mt-2 text-sm leading-7 text-muted">
-          {PAGE_COPY.hero.description}
+          {PAGE_COPY.hero.subtitle}
         </p>
         <div className="mt-8">
           <LoginForm />

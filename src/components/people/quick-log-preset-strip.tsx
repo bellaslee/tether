@@ -47,9 +47,7 @@ export function QuickLogPresetStrip({
 
   return (
     <div className="-mx-6 min-w-0 sm:-mx-8">
-      <p className="mb-2 px-6 text-xs font-semibold uppercase tracking-[0.24em] text-muted sm:px-8">
-        Log presets
-      </p>
+      <p className="mb-2 px-6 text-sm text-muted sm:px-8">Log presets</p>
       <div
         className="flex gap-3 overflow-x-auto px-6 pb-1 pt-0.5 scroll-px-6 sm:px-8 sm:scroll-px-8"
         role="list"

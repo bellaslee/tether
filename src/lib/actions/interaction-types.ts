@@ -55,6 +55,7 @@ export async function createInteractionType(
   }
 
   revalidatePath('/timeline', 'layout');
+  revalidatePath('/dashboard');
   return { ok: true, id: data.id, name: data.name };
 }
 
@@ -110,6 +111,7 @@ export async function updateInteractionType(
   }
 
   revalidatePath('/timeline', 'layout');
+  revalidatePath('/dashboard');
   return { ok: true, name: data.name };
 }
 
@@ -172,5 +174,6 @@ export async function reorderInteractionTypes(
   revalidatePath('/people', 'layout');
   revalidatePath('/settings');
   revalidatePath('/interactions/new');
+  revalidatePath('/dashboard');
   return { ok: true };
 }

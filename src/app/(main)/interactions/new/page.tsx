@@ -9,10 +9,9 @@ import {
 const PAGE_COPY = {
   backLink: '← Timeline',
   hero: {
-    eyebrow: 'Shared moments',
     title: 'Log a shared moment',
-    description:
-      'Optionally name who this was mainly about, then add everyone who was part of it under Also there. One entry keeps every timeline in sync.',
+    subtitle:
+      "Optional: pick who it was mainly about, then add everyone else under Also there. One entry updates everyone's timeline.",
   },
   emptyPeople: {
     lead: 'Add at least one person before logging interactions.',
@@ -63,12 +62,11 @@ export default async function NewInteractionPage() {
         >
           {PAGE_COPY.backLink}
         </Link>
-        <p className="section-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+        <h1 className="mt-4 font-display text-3xl tracking-tight sm:text-4xl">
           {PAGE_COPY.hero.title}
         </h1>
-        <p className="mt-2 text-sm leading-7 text-muted max-sm:leading-8">
-          {PAGE_COPY.hero.description}
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+          {PAGE_COPY.hero.subtitle}
         </p>
       </div>
 

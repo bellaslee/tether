@@ -27,10 +27,9 @@ import { fetchInteractionPeopleLinksForUserInteractions } from '@/lib/interactio
 
 const PAGE_COPY = {
   hero: {
-    eyebrow: 'Across your circle',
     title: 'Timeline',
-    description:
-      'Plans you are looking forward to and moments you have already shared. People listed together were part of the same entry — it lives once in the database.',
+    subtitle:
+      'Moments in date order. If several people were there, they share one entry so each person’s timeline stays in sync.',
   },
   empty: {
     lead: "Nothing logged yet. Start from a person's page or",
@@ -179,12 +178,11 @@ export default async function TimelinePage() {
       >
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="section-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
-            <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+            <h1 className="font-display text-3xl tracking-tight sm:text-4xl">
               {PAGE_COPY.hero.title}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-              {PAGE_COPY.hero.description}
+              {PAGE_COPY.hero.subtitle}
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-3">
@@ -218,7 +216,7 @@ export default async function TimelinePage() {
             <section aria-labelledby={PAGE_COPY.sections.upcoming.id}>
               <h2
                 id={PAGE_COPY.sections.upcoming.id}
-                className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                className="mb-4 font-display text-lg tracking-tight text-foreground"
               >
                 {PAGE_COPY.sections.upcoming.title}
               </h2>
@@ -244,7 +242,7 @@ export default async function TimelinePage() {
               {upcoming.length > 0 ? (
                 <h2
                   id={PAGE_COPY.sections.past.id}
-                  className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                  className="mb-4 font-display text-lg tracking-tight text-foreground"
                 >
                   {PAGE_COPY.sections.past.title}
                 </h2>

@@ -5,10 +5,8 @@ import { requireAccountAccess } from "@/lib/account/guard";
 const PAGE_COPY = {
   backLink: "← Back to people",
   hero: {
-    eyebrow: "Your circle",
     title: "Add someone",
-    description:
-      "Capture the basics now; you can always deepen the story later with notes and moments.",
+    subtitle: "Name and basics. You can add notes and moments on their page after you save.",
   },
   categoriesLoading:
     "Categories are still loading for your account. Refresh in a moment or sign out and back in.",
@@ -32,10 +30,9 @@ export default async function NewPersonPage() {
         <Link href="/people" className="text-sm font-semibold text-muted underline-offset-4 hover:underline">
           {PAGE_COPY.backLink}
         </Link>
-        <p className="section-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">{PAGE_COPY.hero.title}</h1>
+        <h1 className="mt-4 font-display text-3xl tracking-tight sm:text-4xl">{PAGE_COPY.hero.title}</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-          {PAGE_COPY.hero.description}
+          {PAGE_COPY.hero.subtitle}
         </p>
       </div>
       <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">

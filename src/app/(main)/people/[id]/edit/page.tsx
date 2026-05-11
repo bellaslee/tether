@@ -8,10 +8,8 @@ import { personShownName } from '@/lib/people/list-name';
 const PAGE_COPY = {
   backLink: '← Back to profile',
   hero: {
-    eyebrow: 'Profile',
     titlePrefix: 'Edit ',
-    description:
-      'Keep this feeling honest — tweak what helps you show up thoughtfully next time.',
+    subtitle: 'Update their profile fields. To remove them from the app, use Delete at the bottom.',
   },
   categoriesLoading:
     'Categories are still loading for your account. Refresh in a moment or sign out and back in.',
@@ -56,13 +54,12 @@ export default async function EditPersonPage(props: PageProps) {
         >
           {PAGE_COPY.backLink}
         </Link>
-        <p className="section-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+        <h1 className="mt-4 font-display text-3xl tracking-tight sm:text-4xl">
           {PAGE_COPY.hero.titlePrefix}
           {personShownName(person)}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-          {PAGE_COPY.hero.description}
+          {PAGE_COPY.hero.subtitle}
         </p>
       </div>
       <div className="card-surface rounded-[1.75rem] border border-border-soft p-6 sm:p-8">

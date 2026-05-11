@@ -239,6 +239,7 @@ export async function suggestTasksForInteraction(
   }
 
   revalidatePath('/reminders');
+  revalidatePath('/dashboard');
 
   const model = defaultResponsesModel();
   let parsed;
@@ -300,6 +301,7 @@ export async function suggestTasksForInteraction(
   if (rowsToInsert.length === 0) {
     revalidatePath('/timeline');
     revalidatePath('/reminders');
+    revalidatePath('/dashboard');
     const touch = new Set<string>(loaded.linkedPersonIds);
     for (const pid of touch) {
       revalidatePath(`/people/${pid}`);
@@ -314,6 +316,7 @@ export async function suggestTasksForInteraction(
 
   revalidatePath('/timeline');
   revalidatePath('/reminders');
+  revalidatePath('/dashboard');
   const touch = new Set<string>(loaded.linkedPersonIds);
   for (const r of rowsToInsert) {
     if (r.person_id) touch.add(r.person_id);

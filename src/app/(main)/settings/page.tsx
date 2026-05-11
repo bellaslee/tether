@@ -11,14 +11,12 @@ const PAGE_COPY = {
   },
   backLink: '← People',
   hero: {
-    eyebrow: 'Your workspace',
     title: 'Label settings',
-    description:
-      'Labels and types you use across people and the timeline. Changes apply everywhere right away.',
+    subtitle:
+      'Edit the names for person categories, how two people can be linked, and timeline moment types. Changes apply everywhere.',
   },
   nav: {
     ariaLabel: 'Label settings sections',
-    jumpTo: 'Jump to',
     personCategories: 'Person categories',
     connectionTypes: 'Connection types',
     timelineTypes: 'Timeline types',
@@ -26,18 +24,18 @@ const PAGE_COPY = {
   sections: {
     categories: {
       title: 'Person categories',
-      description:
-        'How someone fits in your life — used in profiles, filters, and the order of groups on the People page.',
+      subtitle:
+        'Groups on the People page and in filters. Drag to set the default order of groups.',
     },
     connectionTypes: {
       title: 'Connection types',
-      description:
-        'How one person relates to another — partner, sibling, coworker, or anything you add.',
+      subtitle:
+        'Labels for a link between two people (for example partner, sibling, coworker).',
     },
     timelineTypes: {
       title: 'Timeline types',
-      description:
-        "Kinds of moments on the timeline — plus a reserved type for category changes on someone's profile. You can reorder them like person categories; that order is used when logging a moment.",
+      subtitle:
+        'Labels when you log a moment. Drag to set the order in the type picker.',
     },
   },
 } as const;
@@ -87,21 +85,17 @@ export default async function SettingsPage() {
         >
           {PAGE_COPY.backLink}
         </Link>
-        <p className="section-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+        <h1 className="mt-4 font-display text-3xl tracking-tight sm:text-4xl">
           {PAGE_COPY.hero.title}
         </h1>
-        <p className="mt-2 text-sm leading-7 text-muted">
-          {PAGE_COPY.hero.description}
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+          {PAGE_COPY.hero.subtitle}
         </p>
         <nav
           aria-label={PAGE_COPY.nav.ariaLabel}
           className="card-surface mt-6 rounded-2xl border border-border-soft p-4 sm:p-5"
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {PAGE_COPY.nav.jumpTo}
-          </p>
-          <ul className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-1 sm:gap-y-2">
+          <ul className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-x-1 sm:gap-y-2">
             <li className="sm:after:mx-2 sm:after:text-muted sm:after:content-['·'] sm:last:after:content-none">
               <a
                 href="#categories"
@@ -135,8 +129,8 @@ export default async function SettingsPage() {
           <h2 className="font-display text-xl tracking-tight sm:text-2xl">
             {PAGE_COPY.sections.categories.title}
           </h2>
-          <p className="mt-2 text-sm leading-7 text-muted">
-            {PAGE_COPY.sections.categories.description}
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+            {PAGE_COPY.sections.categories.subtitle}
           </p>
         </div>
         <ManageCategoriesPanel categories={categoriesRes.data ?? []} />
@@ -147,8 +141,8 @@ export default async function SettingsPage() {
           <h2 className="font-display text-xl tracking-tight sm:text-2xl">
             {PAGE_COPY.sections.connectionTypes.title}
           </h2>
-          <p className="mt-2 text-sm leading-7 text-muted">
-            {PAGE_COPY.sections.connectionTypes.description}
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+            {PAGE_COPY.sections.connectionTypes.subtitle}
           </p>
         </div>
         <ManageConnectionTypesPanel types={connectionTypesRes.data ?? []} />
@@ -159,8 +153,8 @@ export default async function SettingsPage() {
           <h2 className="font-display text-xl tracking-tight sm:text-2xl">
             {PAGE_COPY.sections.timelineTypes.title}
           </h2>
-          <p className="mt-2 text-sm leading-7 text-muted">
-            {PAGE_COPY.sections.timelineTypes.description}
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+            {PAGE_COPY.sections.timelineTypes.subtitle}
           </p>
         </div>
         <ManageInteractionTypesPanel types={interactionTypesRes.data ?? []} />

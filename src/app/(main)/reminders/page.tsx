@@ -1,20 +1,22 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { TaskReviewForms } from '@/components/ai/task-review-forms';
-import { updateCrmTask } from '@/lib/actions/ai-memory/reminders';
-import type { CrmTaskStatus, Tables } from '@/lib/db/database.types';
+import { ReminderTaskRow } from '@/components/reminders/reminder-task-row';
+import type { Tables } from '@/lib/db/database.types';
 import { requireAccountAccess } from '@/lib/account/guard';
-import { personShownName } from '@/lib/people/list-name';
+import {
+  isUpcomingTask,
+  sortTasksForRemindersList,
+} from '@/lib/reminders/task-list-helpers';
 
 const PAGE_COPY = {
   meta: {
     title: 'Reminders',
-    description: 'Open loops and follow-ups across the people in your circle.',
+    description: 'Tasks and follow-ups you add from profiles or notes.',
   },
   hero: {
-    eyebrow: 'Follow through',
     title: 'Reminders',
-    description: 'Open loops from your notes, sorted with the neediest first.',
+    subtitle:
+      "Open items come first. Add tasks from a person's page or when you save a note with a follow-up.",
   },
   counts: {
     openWord: 'open',
@@ -25,17 +27,18 @@ const PAGE_COPY = {
     sectionTitle: 'Your reminders',
     empty: {
       body:
-        "Nothing here yet. Add a reminder on someone's profile, or log a timeline note with a follow-up—suggestions from your notes will show up here.",
+        "Nothing here yet. Add a reminder from someone's profile, or attach a follow-up when you log a moment.",
       browsePeople: 'Browse people',
     },
     upcoming: {
       heading: 'Upcoming',
       ariaLabel: 'Upcoming reminders',
-      caughtUp: 'Nothing open right now—you are caught up on active follow-ups.',
+      caughtUp: 'Nothing open right now.',
     },
     done: {
       heading: 'Done',
-      helper: 'Completed reminders stay here until you edit or remove them.',
+      subtitle:
+        'Completed tasks stay here until you edit or remove them. They stay out of the open list above.',
       ariaLabel: 'Completed reminders',
     },
   },
@@ -59,64 +62,6 @@ function remindersTaskCountSummary(openCount: number, total: number): string {
 }
 
 type PersonLabel = Pick<Tables<'people'>, 'id' | 'full_name' | 'display_name'>;
-
-function statusSortRank(status: CrmTaskStatus): number {
-  switch (status) {
-    case 'suggested':
-      return 0;
-    case 'active':
-      return 1;
-    case 'snoozed':
-      return 2;
-    case 'done':
-      return 3;
-    case 'dismissed':
-      return 4;
-    default:
-      return 99;
-  }
-}
-
-function isUpcomingTask(task: Tables<'tasks'>): boolean {
-  return (
-    task.status === 'suggested' ||
-    task.status === 'active' ||
-    task.status === 'snoozed'
-  );
-}
-
-function ReminderTaskRow({
-  task,
-  peopleById,
-}: {
-  task: Tables<'tasks'>;
-  peopleById: Map<string, PersonLabel>;
-}) {
-  const person = task.person_id ? peopleById.get(task.person_id) : undefined;
-  return (
-    <>
-      {person ? (
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-          <Link
-            href={`/people/${person.id}`}
-            className="text-accent underline-offset-4 hover:underline"
-          >
-            {personShownName(person)}
-          </Link>
-        </p>
-      ) : task.person_id ? (
-        <p className="mb-2 text-xs text-muted">{PAGE_COPY.taskRow.unknownPerson}</p>
-      ) : (
-        <p className="mb-2 text-xs text-muted">{PAGE_COPY.taskRow.general}</p>
-      )}
-      <TaskReviewForms
-        key={`${task.id}-${task.updated_at}`}
-        task={task}
-        action={updateCrmTask}
-      />
-    </>
-  );
-}
 
 export default async function RemindersPage() {
   const ctx = await requireAccountAccess();
@@ -154,18 +99,7 @@ export default async function RemindersPage() {
     }
   }
 
-  const sorted = [...tasks].sort((a, b) => {
-    const sr = statusSortRank(a.status) - statusSortRank(b.status);
-    if (sr !== 0) {
-      return sr;
-    }
-    const ad = a.due_at ? Date.parse(a.due_at) : Number.POSITIVE_INFINITY;
-    const bd = b.due_at ? Date.parse(b.due_at) : Number.POSITIVE_INFINITY;
-    if (ad !== bd) {
-      return ad - bd;
-    }
-    return Date.parse(b.created_at) - Date.parse(a.created_at);
-  });
+  const sorted = sortTasksForRemindersList(tasks);
 
   const openCount = tasks.filter(isUpcomingTask).length;
   const upcoming = sorted.filter(isUpcomingTask);
@@ -175,12 +109,11 @@ export default async function RemindersPage() {
     <main className="page-frame">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="section-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
-          <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+          <h1 className="font-display text-3xl tracking-tight sm:text-4xl">
             {PAGE_COPY.hero.title}
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
-            {PAGE_COPY.hero.description}
+            {PAGE_COPY.hero.subtitle}
           </p>
           {tasks.length > 0 ? (
             <p className="mt-2 text-xs text-muted">
@@ -220,7 +153,12 @@ export default async function RemindersPage() {
                 <ul className="mt-4 space-y-4" aria-label={PAGE_COPY.list.upcoming.ariaLabel}>
                   {upcoming.map((task) => (
                     <li key={task.id} className="min-w-0">
-                      <ReminderTaskRow task={task} peopleById={peopleById} />
+                      <ReminderTaskRow
+                        task={task}
+                        peopleById={peopleById}
+                        unknownPersonLabel={PAGE_COPY.taskRow.unknownPerson}
+                        generalLabel={PAGE_COPY.taskRow.general}
+                      />
                     </li>
                   ))}
                 </ul>
@@ -235,8 +173,8 @@ export default async function RemindersPage() {
                 <h3 className="font-display text-lg tracking-tight text-muted">
                   {PAGE_COPY.list.done.heading}
                 </h3>
-                <p className="mt-1 text-xs text-muted">
-                  {PAGE_COPY.list.done.helper}
+                <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
+                  {PAGE_COPY.list.done.subtitle}
                 </p>
                 <ul
                   className="mt-4 space-y-4 opacity-90"
@@ -244,7 +182,12 @@ export default async function RemindersPage() {
                 >
                   {doneTasks.map((task) => (
                     <li key={task.id} className="min-w-0">
-                      <ReminderTaskRow task={task} peopleById={peopleById} />
+                      <ReminderTaskRow
+                        task={task}
+                        peopleById={peopleById}
+                        unknownPersonLabel={PAGE_COPY.taskRow.unknownPerson}
+                        generalLabel={PAGE_COPY.taskRow.general}
+                      />
                     </li>
                   ))}
                 </ul>

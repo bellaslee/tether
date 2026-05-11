@@ -41,7 +41,7 @@ export async function signUpAction(
   if (!data.session) {
     redirect(`/signup/check-email?email=${encodeURIComponent(email)}`);
   }
-  redirect("/people");
+  redirect("/dashboard");
 }
 
 export async function signInAction(
@@ -61,7 +61,7 @@ export async function signInAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/people");
+  redirect("/dashboard");
 }
 
 export async function signOutAction() {

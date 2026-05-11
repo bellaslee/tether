@@ -22,9 +22,9 @@ import {
 
 const PAGE_COPY = {
   hero: {
-    eyebrow: 'Your circle',
     title: 'People',
-    description: "Details you don't want to forget. Let them know you care.",
+    subtitle:
+      'Everyone in your account, grouped by category. Use the sidebar to filter.',
   },
   addSomeone: 'Add someone',
   empty: {
@@ -267,12 +267,11 @@ export default async function PeoplePage(props: {
     <main className="page-frame">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="section-eyebrow">{PAGE_COPY.hero.eyebrow}</p>
-          <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+          <h1 className="font-display text-3xl tracking-tight sm:text-4xl">
             {PAGE_COPY.hero.title}
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-7 text-muted max-sm:leading-8">
-            {PAGE_COPY.hero.description}
+            {PAGE_COPY.hero.subtitle}
           </p>
         </div>
         <ButtonLink href="/people/new" variant="primary" size="lg">

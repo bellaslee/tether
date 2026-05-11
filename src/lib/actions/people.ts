@@ -83,6 +83,7 @@ export async function createPerson(
   }
 
   revalidatePath('/people');
+  revalidatePath('/dashboard');
   redirect(`/people/${created.id}`);
 }
 
@@ -156,6 +157,7 @@ export async function updatePerson(
   revalidatePath(`/people/${personId}`);
   revalidatePath(`/people/${personId}/edit`);
   revalidatePath('/timeline');
+  revalidatePath('/dashboard');
   redirect(`/people/${personId}`);
 }
 
@@ -243,6 +245,7 @@ export async function deletePerson(personId: string): Promise<ActionResult> {
   revalidatePath('/people', 'layout');
   revalidatePath('/timeline');
   revalidatePath('/reminders');
+  revalidatePath('/dashboard');
   revalidatePath(`/people/${personId}`);
   revalidatePath(`/people/${personId}/edit`);
   return { ok: true };

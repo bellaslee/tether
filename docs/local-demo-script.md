@@ -106,9 +106,9 @@ Contrast **timeline** (what happened) with **facts** on profiles (durable things
 
 ---
 
-### 6. Demo AI capabilities (`/chat`)
+### 6. Demo AI capabilities (Dashboard chat)
 
-Open **Chat** (“Ask Tether”).
+Open **Dashboard** (`/dashboard`) and use **Ask Tether** in the chat section.
 
 **Show:**
 

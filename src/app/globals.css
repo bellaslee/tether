@@ -266,15 +266,6 @@ summary {
   }
 }
 
-.section-eyebrow {
-  font-size: 0.75rem;
-  line-height: 1rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-  color: var(--muted);
-}
-
 .text-balance {
   text-wrap: balance;
 }
@@ -328,4 +319,41 @@ summary {
 .quick-log-calendar .rdp-today:not(.rdp-selected) .rdp-day_button {
   color: var(--accent);
   font-weight: 600;
+}
+
+/* Chat panel: loading dots (coral / sun / sky) */
+@keyframes tether-chat-dot-wave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.4rem);
+  }
+}
+
+.tether-chat-loading-dot {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  animation: tether-chat-dot-wave 0.75s ease-in-out infinite;
+}
+
+.tether-chat-loading-dot:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.tether-chat-loading-dot:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.tether-chat-loading-dot:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tether-chat-loading-dot {
+    animation: none;
+  }
 }

@@ -56,6 +56,7 @@ export async function createPersonCategory(
 
   revalidatePath('/people', 'layout');
   revalidatePath('/settings');
+  revalidatePath('/dashboard');
   return { ok: true, id: data.id, name: data.name };
 }
 
@@ -112,6 +113,7 @@ export async function updatePersonCategory(
 
   revalidatePath('/people', 'layout');
   revalidatePath('/settings');
+  revalidatePath('/dashboard');
   return { ok: true, name: data.name };
 }
 
@@ -172,5 +174,6 @@ export async function reorderPersonCategories(
 
   revalidatePath('/people', 'layout');
   revalidatePath('/settings');
+  revalidatePath('/dashboard');
   return { ok: true };
 }

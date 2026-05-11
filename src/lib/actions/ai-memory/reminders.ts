@@ -55,6 +55,7 @@ export async function createManualReminder(
 
   revalidatePath(`/people/${personId}`);
   revalidatePath('/reminders');
+  revalidatePath('/dashboard');
   return { ok: true };
 }
 
@@ -91,6 +92,7 @@ export async function updateCrmTask(
     }
     revalidatePath('/timeline');
     revalidatePath('/reminders');
+    revalidatePath('/dashboard');
   };
 
   if (intent === 'delete') {

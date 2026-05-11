@@ -11,14 +11,13 @@ const PAGE_COPY = {
   },
   backLink: '← People',
   hero: {
-    eyebrow: 'Your account',
     title: 'Profile settings',
-    description: 'Update how you appear, your time zone, and your password.',
+    subtitle: 'How you show up in the app, your time zone, and your password.',
   },
   email: {
     label: 'Email',
     helper:
-      'Email sign-in is managed by your auth provider. Contact support or your project admin if you need to change it.',
+      'Email sign-in is managed by your auth provider. Contact support if you need to change it.',
   },
   errors: {
     notSignedIn: 'Not signed in.',
@@ -66,12 +65,11 @@ export default async function ProfileSettingsPage() {
         >
           {PAGE_COPY.backLink}
         </Link>
-        <p className="section-eyebrow mt-4">{PAGE_COPY.hero.eyebrow}</p>
-        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-4xl">
+        <h1 className="mt-4 font-display text-3xl tracking-tight sm:text-4xl">
           {PAGE_COPY.hero.title}
         </h1>
-        <p className="mt-2 text-sm leading-7 text-muted">
-          {PAGE_COPY.hero.description}
+        <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
+          {PAGE_COPY.hero.subtitle}
         </p>
       </div>
 

@@ -72,7 +72,6 @@ const PAGE_COPY = {
   },
   header: {
     backToPeople: '← People',
-    eyebrow: 'Profile',
     categoryPlaceholder: '—',
   },
   overview: {
@@ -94,8 +93,8 @@ const PAGE_COPY = {
     timeline: {
       headingId: 'person-timeline-heading',
       title: 'Timeline',
-      description:
-        'Plans you are looking forward to and moments you have already shared.',
+      subtitle:
+        'Moments that include this person: upcoming first, then past. Shared entries appear once.',
       empty: {
         lead: 'Nothing logged yet. Use',
         logInteractionEmphasis: 'Log interaction',
@@ -618,7 +617,7 @@ export default async function PersonDetailPage(props: PageProps) {
                 {PAGE_COPY.overview.timeline.title}
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-7 text-muted max-sm:leading-8">
-                {PAGE_COPY.overview.timeline.description}
+                {PAGE_COPY.overview.timeline.subtitle}
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-4 sm:pt-1">
@@ -654,7 +653,7 @@ export default async function PersonDetailPage(props: PageProps) {
                 >
                   <h3
                     id={PAGE_COPY.overview.timeline.upcoming.headingId}
-                    className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                    className="mb-4 font-display text-lg tracking-tight text-foreground"
                   >
                     {PAGE_COPY.overview.timeline.upcoming.title}
                   </h3>
@@ -692,7 +691,7 @@ export default async function PersonDetailPage(props: PageProps) {
                   {upcomingTimelineRows.length > 0 ? (
                     <h3
                       id={PAGE_COPY.overview.timeline.past.headingId}
-                      className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted"
+                      className="mb-4 font-display text-lg tracking-tight text-foreground"
                     >
                       {PAGE_COPY.overview.timeline.past.title}
                     </h3>
@@ -807,8 +806,7 @@ export default async function PersonDetailPage(props: PageProps) {
           >
             {PAGE_COPY.header.backToPeople}
           </Link>
-          <p className="section-eyebrow mt-4">{PAGE_COPY.header.eyebrow}</p>
-          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-3">
+          <div className="mt-4 flex min-w-0 flex-wrap items-center gap-3">
             <h1 className="max-w-full font-display text-3xl tracking-tight text-balance [overflow-wrap:anywhere] sm:text-4xl">
               {person.full_name}
             </h1>

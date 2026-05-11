@@ -15,7 +15,7 @@ export function AppNav({ context }: AppNavProps) {
       <div className="app-nav-inner shell-gutter-x mx-auto flex w-full max-w-6xl flex-col gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
         <div className="flex min-w-0 flex-nowrap items-center gap-3 md:gap-6">
           <Link
-            href="/people"
+            href="/dashboard"
             className="font-display text-xl tracking-tight text-foreground"
           >
             Tether

@@ -18,7 +18,7 @@ function revalidateRoutesAffectedByAccountTimezone() {
   revalidatePath("/people", "layout");
   revalidatePath("/timeline");
   revalidatePath("/reminders");
-  revalidatePath("/chat");
+  revalidatePath("/dashboard");
   revalidatePath("/interactions", "layout");
 }
 
