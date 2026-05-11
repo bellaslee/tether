@@ -25,6 +25,11 @@ export function isUpcomingTask(task: Tables<'tasks'>): boolean {
   );
 }
 
+/** Dashboard "active" strip: suggested + active only (snoozed stay on /reminders). */
+export function isDashboardActiveReminder(task: Tables<'tasks'>): boolean {
+  return task.status === 'suggested' || task.status === 'active';
+}
+
 /** Same ordering as the reminders page: status rank, then due_at, then created_at. */
 export function sortTasksForRemindersList(
   tasks: Tables<'tasks'>[],

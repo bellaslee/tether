@@ -10,7 +10,7 @@ import { formatCalendarDateOnly } from '@/lib/datetime';
 import { isValidIanaTimeZone } from '@/lib/timezones';
 import { personShownName } from '@/lib/people/list-name';
 import {
-  isUpcomingTask,
+  isDashboardActiveReminder,
   sortTasksForRemindersList,
 } from '@/lib/reminders/task-list-helpers';
 import { DateTime } from 'luxon';
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
 
   const sortedTasks = sortTasksForRemindersList(tasks);
   const openTasks = sortedTasks
-    .filter(isUpcomingTask)
+    .filter(isDashboardActiveReminder)
     .slice(0, DASHBOARD_REMINDER_CAP);
 
   const rawTz =
