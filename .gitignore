@@ -43,4 +43,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-*.sql
+seed.sql
+seed.demo.sql
+clear-demo-user.sql
