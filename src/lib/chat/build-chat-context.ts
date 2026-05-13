@@ -100,6 +100,7 @@ export async function buildChatContextPack(args: {
       .select('id, body, review_status, person_id, updated_at')
       .eq('user_id', ctx.userId)
       .neq('review_status', 'dismissed')
+      .is('archived_at', null)
       .order('updated_at', { ascending: false })
       .limit(RECENT_FACTS_LIMIT),
   ]);

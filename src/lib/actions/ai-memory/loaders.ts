@@ -26,6 +26,7 @@ export async function loadAcceptedFactBodiesForPersons(
     .eq('user_id', userId)
     .in('person_id', personIds)
     .eq('review_status', 'accepted')
+    .is('archived_at', null)
     .order('updated_at', { ascending: false })
     .limit(ACCEPTED_FACTS_CONTEXT_LIMIT);
 

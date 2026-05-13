@@ -396,6 +396,7 @@ export interface Database {
           body: string;
           review_status: FactReviewStatus;
           extractor_metadata: Json;
+          archived_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -407,6 +408,7 @@ export interface Database {
           body: string;
           review_status?: FactReviewStatus;
           extractor_metadata?: Json;
+          archived_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -418,6 +420,7 @@ export interface Database {
           body?: string;
           review_status?: FactReviewStatus;
           extractor_metadata?: Json;
+          archived_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

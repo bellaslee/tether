@@ -94,7 +94,7 @@ export async function syncFactEmbeddings(args: {
 
   const { data: row, error: rowErr } = await client
     .from('facts')
-    .select('id, body, review_status, person_id')
+    .select('id, body, review_status, person_id, archived_at')
     .eq('id', factId)
     .eq('user_id', userId)
     .maybeSingle();
@@ -103,6 +103,9 @@ export async function syncFactEmbeddings(args: {
     return;
   }
   if (row.review_status === 'dismissed') {
+    return;
+  }
+  if (row.archived_at) {
     return;
   }
 

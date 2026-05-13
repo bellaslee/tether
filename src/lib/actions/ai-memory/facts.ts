@@ -38,6 +38,7 @@ export async function updateFactReview(
       .update({ body: bodyRaw })
       .eq('id', factId)
       .eq('user_id', ctx.userId)
+      .is('archived_at', null)
       .in('review_status', ['candidate', 'accepted'])
       .select('person_id')
       .maybeSingle();
@@ -88,6 +89,65 @@ export async function updateFactReview(
     return { ok: true };
   }
 
+  if (intent === 'archive') {
+    const archivedAt = new Date().toISOString();
+    const { data: updated, error } = await ctx.client
+      .from('facts')
+      .update({ archived_at: archivedAt })
+      .eq('id', factId)
+      .eq('user_id', ctx.userId)
+      .eq('review_status', 'accepted')
+      .is('archived_at', null)
+      .select('person_id')
+      .maybeSingle();
+
+    if (error) {
+      return { error: error.message };
+    }
+    if (!updated) {
+      return { error: 'Fact not found or cannot be archived.' };
+    }
+    await deleteEmbeddingsForSource(ctx.client, ctx.userId, 'fact', factId);
+    revalidatePath(`/people/${updated.person_id}`);
+    return { ok: true };
+  }
+
+  if (intent === 'unarchive') {
+    const { data: updated, error } = await ctx.client
+      .from('facts')
+      .update({ archived_at: null })
+      .eq('id', factId)
+      .eq('user_id', ctx.userId)
+      .not('archived_at', 'is', null)
+      .select('person_id, review_status')
+      .maybeSingle();
+
+    if (error) {
+      return { error: error.message };
+    }
+    if (!updated) {
+      return { error: 'Fact not found or is not archived.' };
+    }
+
+    if (updated.review_status !== 'dismissed') {
+      const openai = tryCreateOpenAiClient();
+      if (openai) {
+        try {
+          await syncFactEmbeddings({
+            client: ctx.client,
+            openai,
+            userId: ctx.userId,
+            factId,
+          });
+        } catch (e) {
+          console.error('[updateFactReview] embeddings', e);
+        }
+      }
+    }
+    revalidatePath(`/people/${updated.person_id}`);
+    return { ok: true };
+  }
+
   let reviewStatus: FactReviewStatus | null = null;
   if (intent === 'accept') reviewStatus = 'accepted';
   if (intent === 'dismiss') reviewStatus = 'dismissed';
@@ -109,6 +169,7 @@ export async function updateFactReview(
     .update(patch)
     .eq('id', factId)
     .eq('user_id', ctx.userId)
+    .is('archived_at', null)
     .select('person_id')
     .maybeSingle();
 
@@ -116,7 +177,7 @@ export async function updateFactReview(
     return { error: error.message };
   }
   if (!updated) {
-    return { error: 'Fact not found.' };
+    return { error: 'Fact not found or cannot be changed while archived.' };
   }
 
   if (reviewStatus === 'dismissed') {

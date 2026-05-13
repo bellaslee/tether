@@ -185,6 +185,7 @@ export async function generateRelationshipSummary(
     .eq('user_id', ctx.userId)
     .eq('person_id', personId)
     .eq('review_status', 'accepted')
+    .is('archived_at', null)
     .order('updated_at', { ascending: false })
     .limit(40);
 

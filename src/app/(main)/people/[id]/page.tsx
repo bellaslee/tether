@@ -212,6 +212,7 @@ export default async function PersonDetailPage(props: PageProps) {
     { data: personConnectionRows, error: personConnectionsError },
     linksRes,
     { data: factsData, error: factsError },
+    { data: archivedFactsData, error: archivedFactsError },
     { data: summariesData, error: summariesError },
     { data: tasksData, error: tasksError },
   ] = await Promise.all([
@@ -261,7 +262,16 @@ export default async function PersonDetailPage(props: PageProps) {
       .eq('person_id', id)
       .eq('user_id', ctx.userId)
       .in('review_status', ['candidate', 'accepted'])
+      .is('archived_at', null)
       .order('created_at', { ascending: false }),
+    ctx.client
+      .from('facts')
+      .select('*')
+      .eq('person_id', id)
+      .eq('user_id', ctx.userId)
+      .in('review_status', ['candidate', 'accepted'])
+      .not('archived_at', 'is', null)
+      .order('archived_at', { ascending: false }),
     ctx.client
       .from('relationship_summaries')
       .select('*')
@@ -295,6 +305,9 @@ export default async function PersonDetailPage(props: PageProps) {
   if (factsError) {
     throw new Error(factsError.message);
   }
+  if (archivedFactsError) {
+    throw new Error(archivedFactsError.message);
+  }
   if (summariesError) {
     throw new Error(summariesError.message);
   }
@@ -306,6 +319,7 @@ export default async function PersonDetailPage(props: PageProps) {
 
   const summaryRows = summariesData ?? [];
   const factRows = factsData ?? [];
+  const archivedFactRows = archivedFactsData ?? [];
   const taskRows = tasksData ?? [];
 
   const interactionLabels = new Map<string, string>();
@@ -593,6 +607,7 @@ export default async function PersonDetailPage(props: PageProps) {
           <PersonFactsSection
             personId={person.id}
             facts={factRows}
+            archivedFacts={archivedFactRows}
             topAccentIndex={0}
           />
           <PersonRemindersSection

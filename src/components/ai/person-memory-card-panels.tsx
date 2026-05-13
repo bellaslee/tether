@@ -32,15 +32,18 @@ const TASKS_INITIAL_VISIBLE = 3;
 type FactsProps = {
   personId: string;
   facts: FactRow[];
+  archivedFacts: FactRow[];
   topAccentIndex?: number;
 };
 
 export function PersonFactsMemorySection({
   personId,
   facts,
+  archivedFacts,
   topAccentIndex,
 }: FactsProps) {
   const [factsExpanded, setFactsExpanded] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const onSaved = useCallback(() => setAddOpen(false), []);
@@ -131,6 +134,44 @@ export function PersonFactsMemorySection({
               </div>
             ) : null}
           </>
+        ) : null}
+        {archivedFacts.length > 0 ? (
+          <div
+            className={
+              facts.length > 0
+                ? 'mt-6 border-t border-border-soft pt-6'
+                : 'pt-0'
+            }
+          >
+            <Button
+              type="button"
+              variant="secondaryMuted"
+              size="sm"
+              aria-expanded={archiveOpen}
+              aria-controls="person-memory-facts-archive-list"
+              onClick={() => setArchiveOpen((o) => !o)}
+            >
+              {archiveOpen
+                ? 'Hide archived facts'
+                : `Archived facts (${archivedFacts.length})`}
+            </Button>
+            {archiveOpen ? (
+              <ul
+                id="person-memory-facts-archive-list"
+                className="mt-4 space-y-4"
+              >
+                {archivedFacts.map((fact) => (
+                  <li key={fact.id}>
+                    <FactReviewForms
+                      key={`${fact.id}-${fact.updated_at}`}
+                      fact={fact}
+                      action={updateFactReview}
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </section>
