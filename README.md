@@ -1,10 +1,14 @@
 # Tether
 
-A personal relationship PRM focused on friends first and networking second:
+A personal relationship manager (PRM) focused on friends first and networking second:
 remember who people are, how you know them, what changed recently, and what to
-follow up on—without sales-PRM vibes.
+follow up on.
 
-## Stack
+## deployment status
+
+Previously live with 3 test users. Current deployment deprecated due to Supabase hosting limitations.
+
+## stack
 
 - **Next.js** 16 (App Router) with **React** 19
 - **TypeScript**
@@ -17,7 +21,7 @@ Domain logic and server actions live under `src/lib`; UI under `src/components`
 and `src/app`. For product philosophy, phase priorities, and intended layout,
 see [AGENTS.md](./AGENTS.md).
 
-## What’s in the repo today
+## implemented features
 
 - **Auth:** login and signup (`/login`, `/signup`).
 - **People:** list, detail, create, edit; categories; how-you-met; connection
@@ -35,7 +39,7 @@ see [AGENTS.md](./AGENTS.md).
 The marketing-style home page at `/` includes setup hints; signed-in PRM routes
 live under the `(main)` route group (e.g. `/people`, `/timeline`).
 
-## Getting started
+## to run locally
 
 1. Install dependencies.
 
@@ -73,12 +77,3 @@ live under the `(main)` route group (e.g. `/people`, `/timeline`).
 
 Open [http://localhost:3000](http://localhost:3000). Create an account via
 `/signup` or sign in at `/login`.
-
-## Validation
-
-From the repository root:
-
-```bash
-npm run lint
-npm run build
-```
